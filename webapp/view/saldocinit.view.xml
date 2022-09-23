@@ -1,0 +1,117 @@
+<mvc:View controllerName="zuisaldoc2.zuisaldoc2.controller.saldocinit"
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m" 
+    xmlns:cards="sap.f.cards"
+    xmlns:core="sap.ui.core" 
+    xmlns:c="zuisaldoc2.zuisaldoc2.control"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:semantic="sap.m.semantic"
+    xmlns:sv="sap.ui.comp.smartvariants"
+    xmlns:layout="sap.ui.layout"
+    xmlns:t="sap.ui.table" 
+    xmlns:plugins="sap.ui.table.plugins" 
+    xmlns:fb="sap.ui.comp.filterbar" 
+    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
+	displayBlock="true">
+    <Page id="_IDGenPage1" title="{i18n>title}" showHeader="false">
+        <content>
+
+        <VBox fitContainer="true"> 
+        <!-- #### Smart Filter Bar #### -->
+        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" persistencyKey="3DERP_StylesPKey" filterContainerWidth="15rem" useToolbar="false" useDateRangeType="true">
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SBU" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SALESDOCTYP" groupId="_BASIC" label="{i18n>SALESDOCTYP}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SEASON" groupId="_BASIC" label="{i18n>SEASON}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:layoutData>
+                        <FlexItemData growFactor="0"/>
+                    </smartfilterbar:layoutData>
+                </smartfilterbar:SmartFilterBar>
+
+        <!--  #### Toolbar #### -->
+        <!-- <layout:HorizontalLayout class="sapUiResponsiveContentPadding"> -->
+            <!-- <FlexBox id="_IDGenFlexBox1" class="sapUiTinyMarginBottom" direction="Row" fitContainer="false" alignItems="Start" justifyContent="Start">
+				<Text id="_IDGenText1" class="sapUiSmallMarginBottom" /> -->
+
+            <!-- <OverflowToolbar id="otb10" height="2.5rem"> -->
+            <Toolbar>
+                <GenericTag id="_IDGenGenericTag1" text="Forecast" design="StatusIconHidden" status="Warning">
+					<ObjectNumber id="_IDGenObjectNumber1" state="Warning" emphasized="false" number="5000" />
+				</GenericTag>
+
+				<GenericTag id="_IDGenGenericTag3" text="Order"  design="StatusIconHidden" status="Error">
+					<ObjectNumber id="_IDGenObjectNumber3" state="Error" emphasized="false" number="4500" />
+				</GenericTag>
+
+				<GenericTag id="_IDGenGenericTag4" text="Shipped"  design="StatusIconHidden" status="Success">
+					<ObjectNumber id="_IDGenObjectNumber4" state="Success" emphasized="false" number="2000" />
+				</GenericTag>	
+                <!-- <layoutData>
+                    <OverflowToolbarLayoutData shrinkable="true" group="2" minWidth="70px"/>
+                </layoutData> -->
+            <!-- </OverflowToolbar>			
+
+        <OverflowToolbar id="_IDGenOverflowToolbar1" design="Transparent" > -->
+            <!-- <HBox> -->
+            <ToolbarSpacer id="_IDGenToolbarSpacer3"/>
+                <Title id="SalesDocCount"/>
+                <Title text="{i18n>salesDocNo}" class="sapUiTinyMarginBegin"/>
+            <!-- </HBox> -->
+				<ToolbarSpacer id="_IDGenToolbarSpacer1"/>                    
+                    <Button id="_IDGenButton1" text="Reset" type="Transparent" press="onReset"/>
+                    <OverflowToolbarButton id="_IDGenOverflowToolbarButton1" icon="sap-icon://activate" tooltip="Apply UI state changes" press="applyUiState"/>
+                    <OverflowToolbarButton id="_IDGenOverflowToolbarButton2" icon="sap-icon://sort" tooltip="Sort" text="Sort" press="onSort"/>
+				    <OverflowToolbarButton id="_IDGenOverflowToolbarButton3" icon="sap-icon://filter" tooltip="Filter" text="Filter" press="onFilter"/>
+				    <OverflowToolbarButton id="_IDGenOverflowToolbarButton4" icon="sap-icon://group-2" tooltip="Group" text="Group" press="onGroup"/>
+                    <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
+			        <menu>
+				        <Menu id="_IDGenMenu1">
+                            <MenuItem id="_IDGenMenuItem1" text="Style" press="onPress"/>
+                            <MenuItem id="_IDGenMenuItem2" text="IO" />
+					        <MenuItem id="_IDGenMenuItem3" text="Style/IO" />
+                        </Menu>
+			        </menu>                    
+		            </MenuButton>
+                    <layoutData>
+                    <OverflowToolbarLayoutData shrinkable="true" group="2" minWidth="70px"/>
+                </layoutData>
+                </Toolbar>
+                <!-- </OverflowToolbar>  -->
+
+    <!-- #### DYNAMIC TABLE #### cellClick="onCellClick" rowSelectionChange="onRowChange" dblClick="onDblClick"
+    selectionBehavior="RowOnly"--> 
+    <!-- <Panel class="sapUiTinyMarginTop" height="auto">
+        <ScrollContainer id="scTable" width="100%" horizontal="true" vertical="true" focusable="true">
+             <c:TableEvents id="salDocDynTable" class="sapUiSizeCompact" showColumnVisibilityMenu="true" enableColumnFreeze="true"
+                    enableCellFilter="true" dblClick="onDblClick"
+                    selectionMode="Single" 
+                    >
+            </c:TableEvents> 
+            
+        </ScrollContainer> 
+        </Panel> -->
+
+            <t:Table id="salDocDynTable" 
+                class="sapUiSizeCompact sidePadding" 
+                visibleRowCountMode="Auto"
+                showColumnVisibilityMenu="true" 
+                enableColumnFreeze="true"
+                enableCellFilter="true"
+                selectionMode="Single" 
+                selectionBehavior="RowOnly"
+                rowSelectionChange="onRowChange">
+
+                <t:layoutData>
+                    <FlexItemData growFactor="1" baseSize="0%"/>
+                </t:layoutData>  
+            </t:Table>
+            </VBox>
+       </content>
+    </Page>
+</mvc:View>

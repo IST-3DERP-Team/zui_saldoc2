@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZGW_3DERP_COMMON_SRV" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="Columns" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="ColumnName"/>
+                    <PropertyRef Name="ColumnType"/>
+                </Key>
+                <Property Name="Length" Type="Edm.Int32" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="DataType" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Decimal" Type="Edm.Int32" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="DictType" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Key" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ColumnWidth" Type="Edm.Int32" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ColumnLabel" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ColumnName" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ColumnType" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Order" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Sorted" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicator" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SortOrder" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SortSeq" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Mandatory" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicator" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Creatable" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicator" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Editable" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicator" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Visible" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Indicator" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Pivot" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="TableLayout" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="USER"/>
+                </Key>
+                <Property Name="USER" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="USER" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TABNAME" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="TABNAME" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="TYPE" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="TYPE" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="SBU" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <NavigationProperty Name="TableLayoutToItems" Relationship="ZGW_3DERP_COMMON_SRV.TableLayoutToItems" FromRole="FromRole_TableLayoutToItems" ToRole="ToRole_TableLayoutToItems"/>
+            </EntityType>
+            <EntityType Name="TableLayoutItems" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="USER"/>
+                </Key>
+                <Property Name="WIDTH" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="WIDTH" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="VISIBLE" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="VISIBLE" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SORTSEQ" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="SORTSEQ" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SORTORDER" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="SORTORDER" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="SORTED" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="SORTED" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ORDER" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="ORDER" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="COLUMNNAME" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="COLUMNNAME" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="USER" Type="Edm.String" Nullable="false" sap:unicode="false" sap:label="USER" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <Association Name="TableLayoutToItems" sap:content-version="1">
+                <End Type="ZGW_3DERP_COMMON_SRV.TableLayout" Multiplicity="1" Role="FromRole_TableLayoutToItems"/>
+                <End Type="ZGW_3DERP_COMMON_SRV.TableLayoutItems" Multiplicity="*" Role="ToRole_TableLayoutToItems"/>
+                <ReferentialConstraint>
+                    <Principal Role="FromRole_TableLayoutToItems">
+                        <PropertyRef Name="USER"/>
+                    </Principal>
+                    <Dependent Role="ToRole_TableLayoutToItems">
+                        <PropertyRef Name="USER"/>
+                    </Dependent>
+                </ReferentialConstraint>
+            </Association>
+            <EntityContainer Name="ZGW_3DERP_COMMON_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ColumnsSet" EntityType="ZGW_3DERP_COMMON_SRV.Columns" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="TableLayoutSet" EntityType="ZGW_3DERP_COMMON_SRV.TableLayout" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="TableLayoutItemsSet" EntityType="ZGW_3DERP_COMMON_SRV.TableLayoutItems" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <AssociationSet Name="TableLayoutToItemsSet" Association="ZGW_3DERP_COMMON_SRV.TableLayoutToItems" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="TableLayoutSet" Role="FromRole_TableLayoutToItems"/>
+                    <End EntitySet="TableLayoutItemsSet" Role="ToRole_TableLayoutToItems"/>
+                </AssociationSet>
+            </EntityContainer>
+            <atom:link rel="self" href="http://159.138.39.203:8000/sap/opu/odata/sap/ZGW_3DERP_COMMON_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://159.138.39.203:8000/sap/opu/odata/sap/ZGW_3DERP_COMMON_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

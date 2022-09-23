@@ -1,0 +1,47 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core" class="sapUiSizeCompact" xmlns:tnt="sap.tnt"
+    xmlns:c="zuisaldoc2.zuisaldoc2.control" xmlns:t="sap.ui.table">
+    <!-- <Panel id="detailPanel" expandable="true" expanded="false" width="80%" class="sapUiSmallMargin sapUiSizeCompact">
+        <headerToolbar>
+                <Toolbar id="TB2" height="2rem" style="Clear">
+                    <Title text="{i18n>Detail}" />
+                    <ToolbarSpacer/>
+                    <Button type="Ghost" icon="sap-icon://add" tooltip="{i18n>Editsaldocdetail}" press="setDetailEditMode" visible="true"/>
+                    <Button type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocdetail}" press="setDetailEditMode" visible="true"/>
+                    <Button type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocdetail}" press="onDeleteDetail" visible="true"/>  
+                    <Button type="Ghost" icon="sap-icon://save" tooltip="{i18n>Savesaldocdetail}" press="onSaveDetail" visible="true"/>                  
+                    <Button type="Ghost" icon="sap-icon://decline" tooltip="{i18n>Canceledit}" press="cancelDetailEdit" visible="true"/>
+                    <Button type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
+                    <Button type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
+                    <Button type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/>
+                    
+                </Toolbar>
+            </headerToolbar>
+
+            <MessageStrip id="DetailMessageStrip" text="" showIcon="true" showCloseButton="true" class="sapUiMediumMarginBottom" type="Error" visible="false"/>
+
+        </Panel>  -->
+    <OverflowToolbar id="_ovfToolBarSalDocDet" design="Transparent" >
+        <HBox>
+            <Title id="SalesDocDetCount"/>
+            <Title text="{i18n>salesDocDetail}" class="sapUiTinyMarginBegin"/>
+        </HBox>
+            <Button type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd"/>
+            <Button type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit"/>
+			<Button type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete"/>
+			<Button type="Ghost"  icon="sap-icon://save" tooltip="Save" press="onSalDocDetSave"/>
+            <Button type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" press="onSalDocDetCancel"/>
+
+            <Button type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
+            <Button type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
+            <Button type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/>
+    </OverflowToolbar>
+
+    <!-- #### DYNAMIC TABLE #### --> 
+    <Panel class="sapUiTinyMarginTop" height="auto"> 
+        <!-- <ScrollContainer width="100%" horizontal="true" vertical="true" focusable="true"> -->
+            <c:DynamicTable id="salDocDetDynTable" class="sapUiSizeCompact" selectionMode="None" 
+                        showColumnVisibilityMenu="true">
+            </c:DynamicTable>
+        <!-- </ScrollContainer> -->
+    </Panel>  
+</core:FragmentDefinition>

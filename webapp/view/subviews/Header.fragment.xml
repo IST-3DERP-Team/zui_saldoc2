@@ -1,0 +1,210 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core" class="sapUiSizeCompact" xmlns:tnt="sap.tnt"
+    xmlns:c="zuisaldoc2.zuisaldoc2.control" xmlns:t="sap.ui.table">
+        <Panel id="headerPanel" expandable="true" expanded="true" width="auto" class="sapUiSizeCompact">
+
+            <headerToolbar>
+                <Toolbar id="TB1" height="2rem" style="Clear">
+                    <Title text="{i18n>Header}" />
+                    <ToolbarSpacer />
+                    <Button type="Ghost" icon="sap-icon://add" tooltip="{i18n>Addsaldocheader}" press="setHeaderEditMode" visible="true"/>
+                    <Button type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" press="setHeaderEditMode" visible="true"/>
+                    <Button type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="true"/> 
+                    <!-- <Button type="Ghost" icon="sap-icon://delete" text="{i18n>Deletesaldoc}" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="${HeaderEditModeModel>/editMode} === true ? false : true }"/>  -->
+                    <Button type="Ghost" icon="sap-icon://save" tooltip="{i18n>Savesaldocheader}" press="onSaveHeader" visible="true"/> 
+                    <Button type="Ghost" icon="sap-icon://decline" tooltip="{i18n>Canceledit}" press="cancelHeaderEdit" visible="true"/> 
+                    
+                </Toolbar>
+            </headerToolbar>
+
+            <MessageStrip id="HeaderMessageStrip" text="" showIcon="true" showCloseButton="true" class="sapUiMediumMarginBottom" type="Error" visible="false"/>
+            
+            <f:Form id="SalesDocHeaderForm1" editable="false" class="sapUiNoContentPadding">
+                <f:layout>
+                    <f:ResponsiveGridLayout columnsXL="4" columnsL="3" columnsM="3" singleContainerFullSize="false" />
+                </f:layout>
+                <f:formContainers>
+                    <f:FormContainer ariaLabelledBy="Grp1" class="sapUiNoContentPadding" >
+                        <f:formElements>
+                            <f:FormElement label="{i18n>SALESDOCNO}" visible="{= ${VisibleFieldsData>/SALESDOCTYP} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SALESDOCTYP" value="{headerData>/SALESDOCTYP}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required">
+                                    </Input>
+                                    <Input id="SALESDOCNO" value="{headerData>/SALESDOCNO}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>  
+                            <f:FormElement label="{i18n>SALESORG}" visible="{= ${VisibleFieldsData>/SALESORG} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SALESORG" value="{headerData>/CUSTGRP}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>   
+                            <f:FormElement label="{i18n>CUSTGRP}" visible="{= ${VisibleFieldsData>/CUSTGRP} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CUSTGRP" value="{headerData>/CUSTGRP}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>CUSTSOLDTO}" visible="{= ${VisibleFieldsData>/CUSTSOLDTO} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CUSTSOLDTO" value="{headerData>/CUSTSOLDTO}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>CUSTBILLTO}" visible="{= ${VisibleFieldsData>/CUSTBILLTO} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CUSTBILLTO" value="{headerData>/CUSTBILLTO}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange" ></Input>
+                                </f:fields>
+                            </f:FormElement>
+                                                  
+                        </f:formElements>
+                    </f:FormContainer> 
+                    <f:FormContainer ariaLabelledBy="Grp2">
+                        <f:formElements>
+                            <f:FormElement label="{i18n>DOCDT}" visible="{= ${VisibleFieldsData>/DOCDT} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="DOCDT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required" value="{headerData>/DOCDT}"
+                                        change="onHeaderChange" liveChange="onHeaderChange">                                        
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>    
+                            <f:FormElement label="{i18n>PAYMETHODCD}" visible="{= ${VisibleFieldsData>/PAYMETHODCD} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="PAYMETHODCD" value="{headerData>/PAYMETHODCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>PAYTERMTEXT}" visible="{= ${VisibleFieldsData>/PAYTERMTEXT} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="PAYTERMTEXT" value="{headerData>/PAYTERMTEXT}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>PURTAXCD}" visible="{= ${VisibleFieldsData>/PURTAXCD} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="PURTAXCD" value="{headerData>/PURTAXCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>SALESTERM}" visible="{= ${VisibleFieldsData>/SALESTERM} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SALESTERM" value="{headerData>/SALESTERM}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>SALESTERMTEXT}" visible="{= ${VisibleFieldsData>/SALESTERMTEXT} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SALESTERMTEXT" value="{headerData>/SALESTERMTEXT}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                </f:fields>
+                            </f:FormElement> 
+                                                   
+                        </f:formElements>
+                    </f:FormContainer>  
+                    <f:FormContainer ariaLabelledBy="Grp3">
+                        <f:formElements>
+                            <f:FormElement label="{i18n>CURRENCYCD}" visible="{= ${VisibleFieldsData>/CURRENCYCD} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CURRENCYCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/CURRENCYCD}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>DSTCHAN}" visible="{= ${VisibleFieldsData>/DSTCHAN} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="DSTCHAN" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/DSTCHAN}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>DIVISION}" visible="{= ${VisibleFieldsData>/DIVISION} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="DIVISION" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/DIVISION}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>SALESGRP}" visible="{= ${VisibleFieldsData>/SALESGRP} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SALESGRP" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/SALESGRP}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>CPONO}" visible="{= ${VisibleFieldsData>/CPONO} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CPONO" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/CPONO}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>CPOREV}" visible="{= ${VisibleFieldsData>/CPOREV} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CPOREV" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/CPOREV}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            </f:formElements>
+                    </f:FormContainer> 
+                            <f:FormContainer ariaLabelledBy="Grp4">
+                        <f:formElements>
+                            <f:FormElement label="{i18n>CPODT}" visible="{= ${VisibleFieldsData>/CPODT} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CPODT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/CPODT}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>DLVDT}" visible="{= ${VisibleFieldsData>/DLVDT} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="DLVDT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/DLVDT}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>SEASONCD}" visible="{= ${VisibleFieldsData>/SEASONCD} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="SEASONCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"
+                                        value="{headerData>/SEASONCD}" 
+                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            <!-- <f:FormElement label="{i18n>STATUS}"  visible="{= ${VisibleFieldsData>/STATUS} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="STATUS" value="{headerData>/STATUS}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"/>
+                                </f:fields>
+                            </f:FormElement>      -->
+                            <f:FormElement label="{i18n>EDISOURCE}"  visible="{= ${VisibleFieldsData>/EDISOURCE} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="EDISOURCE" value="{headerData>/EDISOURCE}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"/>
+                                </f:fields>
+                            </f:FormElement> 
+                            <f:FormElement label="{i18n>REMARKS}"  visible="{= ${VisibleFieldsData>/REMARKS} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="REMARKS" value="{headerData>/REMARKS}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"/>
+                                </f:fields>
+                            </f:FormElement> 
+                            <f:FormElement label="{i18n>DELETED}"  visible="{= ${VisibleFieldsData>/DELETED} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="DELETED" value="{headerData>/DELETED}" editable="{HeaderEditModeModel>/editMode}" valueStateText="Required"/>
+                                </f:fields>
+                            </f:FormElement>
+                        </f:formElements>
+                    </f:FormContainer> 
+                </f:formContainers>
+            </f:Form>            
+            
+        </Panel>
+</core:FragmentDefinition>

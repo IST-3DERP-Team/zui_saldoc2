@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:Reference Uri="http://159.138.39.203:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="http://159.138.39.203:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="http://159.138.39.203:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="http://159.138.39.203:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="Org.OData.Aggregation.V1" Alias="Aggregation"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="http://159.138.39.203:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='')/$value" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+        <edmx:Include Namespace="com.sap.vocabularies.PersonalData.v1" Alias="PersonalData"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZVI_3DERP_STYLES_FILTER_CDS" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="ZVB_CUSTGRP_SHType" sap:label="3DERP: Customer Group" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="CUSTGRP"/>
+                </Key>
+                <Property Name="CUSTGRP" Type="Edm.String" Nullable="false" MaxLength="2" sap:display-format="UpperCase" sap:text="Description" sap:label="Customer Group"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="20" sap:label="Name"/>
+            </EntityType>
+            <EntityType Name="ZVB_PRODTYP_SHType" sap:label="3DERP: Product Types" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SBU"/>
+                    <PropertyRef Name="PRODTYP"/>
+                </Key>
+                <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="5" sap:display-format="UpperCase" sap:label="SBU" sap:quickinfo="ERP SBU"/>
+                <Property Name="PRODTYP" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:text="Description" sap:label="Production Type" sap:quickinfo="ERP Production Type"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="50" sap:label="Addtl Desc" sap:quickinfo="Addtional Description"/>
+            </EntityType>
+            <EntityType Name="ZVB_SALESGRP_SHType" sap:label="3DERP: Sales Group" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SALESGRP"/>
+                </Key>
+                <Property Name="SALESGRP" Type="Edm.String" Nullable="false" MaxLength="3" sap:display-format="UpperCase" sap:text="Description" sap:label="Sales group"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="20" sap:label="Description"/>
+            </EntityType>
+            <EntityType Name="ZVB_SBU_SHType" sap:label="3DERP: SBU" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SBU"/>
+                </Key>
+                <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="5" sap:display-format="UpperCase" sap:label="SBU" sap:quickinfo="ERP SBU"/>
+            </EntityType>
+            <EntityType Name="ZVB_SEASON_SHType" sap:label="3DERP: Season" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SBU"/>
+                    <PropertyRef Name="SEASONCD"/>
+                </Key>
+                <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="5" sap:display-format="UpperCase" sap:label="SBU" sap:quickinfo="ERP SBU"/>
+                <Property Name="SEASONCD" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:text="Description" sap:label="Season Code" sap:quickinfo="ERP Season Code"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="50" sap:label="Addtl Desc" sap:quickinfo="Addtional Description"/>
+            </EntityType>
+            <EntityType Name="ZVB_SIZEGRP_SHType" sap:label="3DERP: Size Group" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SIZEGRP"/>
+                </Key>
+                <Property Name="SIZEGRP" Type="Edm.String" Nullable="false" MaxLength="20"/>
+            </EntityType>
+            <EntityType Name="ZVB_SOLDTOCUST_SHType" sap:label="3DERP: Sold-to Customer" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SOLDTOCUST"/>
+                    <PropertyRef Name="CUSTGRP"/>
+                    <PropertyRef Name="SALESGRP"/>
+                </Key>
+                <Property Name="SOLDTOCUST" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Customer" sap:quickinfo="Customer Number"/>
+                <Property Name="CUSTGRP" Type="Edm.String" Nullable="false" MaxLength="2" sap:display-format="UpperCase" sap:label="Customer Group"/>
+                <Property Name="SALESGRP" Type="Edm.String" Nullable="false" MaxLength="3" sap:display-format="UpperCase" sap:label="Sales group"/>
+                <Property Name="Name" Type="Edm.String" MaxLength="35" sap:label="Name" sap:quickinfo="Name 1"/>
+            </EntityType>
+            <EntityType Name="ZVB_STATUSCD_SHType" sap:label="3DERP: Status Codes" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="STATUSCD"/>
+                </Key>
+                <Property Name="STATUSCD" Type="Edm.String" Nullable="false" MaxLength="3"/>
+            </EntityType>
+            <EntityType Name="ZVB_STYLECAT_SHType" sap:label="3DERP: Style Category" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="SBU"/>
+                    <PropertyRef Name="STYLECAT"/>
+                </Key>
+                <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="5" sap:display-format="UpperCase" sap:label="SBU" sap:quickinfo="ERP SBU"/>
+                <Property Name="STYLECAT" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:text="Description" sap:label="Style Cat" sap:quickinfo="ERP Style Category"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="50" sap:label="Addtl Desc" sap:quickinfo="Addtional Description"/>
+            </EntityType>
+            <EntityType Name="ZVB_STYLECD_SHType" sap:label="3DERP: Style Code" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="STYLENO"/>
+                    <PropertyRef Name="STYLECD"/>
+                </Key>
+                <Property Name="STYLENO" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Style No" sap:quickinfo="ERP Style Number"/>
+                <Property Name="STYLECD" Type="Edm.String" Nullable="false" MaxLength="40" sap:text="Description"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="256"/>
+            </EntityType>
+            <EntityType Name="ZVB_STYLENO_SHType" sap:label="3DERP: Style Numbers" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="STYLENO"/>
+                </Key>
+                <Property Name="STYLENO" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:text="Description" sap:label="Style No" sap:quickinfo="ERP Style Number"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="256"/>
+            </EntityType>
+            <EntityType Name="ZVI_3DERP_STYLES_FILTERType" sap:label="3DERP: Styles Filter" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="STYLENO"/>
+                </Key>
+                <Property Name="STYLENO" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Style No" sap:quickinfo="ERP Style Number" sap:value-list="standard"/>
+                <Property Name="SBU" Type="Edm.String" MaxLength="1" sap:display-format="UpperCase" sap:label="Production Type" sap:value-list="standard"/>
+                <Property Name="SALESGRP" Type="Edm.String" MaxLength="3" sap:display-format="UpperCase" sap:label="Sales group" sap:value-list="standard"/>
+                <Property Name="CUSTGRP" Type="Edm.String" MaxLength="2" sap:display-format="UpperCase" sap:label="Customer Group" sap:value-list="standard"/>
+                <Property Name="SEASONCD" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Season Code" sap:quickinfo="ERP Season Code" sap:value-list="standard"/>
+                <Property Name="PRODTYP" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Production Type" sap:quickinfo="ERP Production Type" sap:value-list="standard"/>
+                <Property Name="STYLECAT" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Style Cat" sap:quickinfo="ERP Style Category" sap:value-list="standard"/>
+                <Property Name="STYLECD" Type="Edm.String" MaxLength="40" sap:value-list="standard"/>
+                <Property Name="FTSTYLE" Type="Edm.String" MaxLength="40"/>
+                <Property Name="DESC1" Type="Edm.String" MaxLength="256" sap:display-format="UpperCase" sap:label="Description"/>
+                <Property Name="DESC2" Type="Edm.String" MaxLength="256" sap:display-format="UpperCase" sap:label="Description"/>
+                <Property Name="STATUSCD" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Status Code" sap:quickinfo="ERP Status Code" sap:value-list="standard"/>
+                <Property Name="SOLDTOCUST" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Sold-To-Cust" sap:quickinfo="Sold-To-Customer" sap:value-list="standard"/>
+                <Property Name="CUSTPRDTYP" Type="Edm.String" MaxLength="50"/>
+                <Property Name="PRODGRP" Type="Edm.String" MaxLength="10"/>
+                <Property Name="SIZEGRP" Type="Edm.String" MaxLength="10" sap:value-list="standard"/>
+                <Property Name="UOM" Type="Edm.String" MaxLength="3" sap:label="UOM" sap:quickinfo="Data Element of 3DERP UOM field" sap:semantics="unit-of-measure"/>
+                <Property Name="STYLEGRP" Type="Edm.String" MaxLength="10"/>
+                <Property Name="FABRCTN" Type="Edm.String" MaxLength="50"/>
+                <Property Name="VERNO" Type="Edm.String" MaxLength="3" sap:display-format="NonNegative" sap:label="Version" sap:quickinfo="ERP Version No"/>
+                <Property Name="CREATEDBY" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Created By"/>
+                <Property Name="CREATEDDT" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Created on"/>
+                <Property Name="UPDATEDBY" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:label="Updated By"/>
+                <Property Name="UPDATEDDT" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Last Change" sap:quickinfo="Date of Last Change"/>
+            </EntityType>
+            <EntityContainer Name="ZVI_3DERP_STYLES_FILTER_CDS_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ZVB_CUSTGRP_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_CUSTGRP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_PRODTYP_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_PRODTYP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_SALESGRP_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_SALESGRP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_SBU_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_SBU_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_SEASON_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_SEASON_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_SIZEGRP_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_SIZEGRP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_SOLDTOCUST_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_SOLDTOCUST_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_STATUSCD_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_STATUSCD_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_STYLECAT_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_STYLECAT_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_STYLECD_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_STYLECD_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVB_STYLENO_SH" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVB_STYLENO_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+                <EntitySet Name="ZVI_3DERP_STYLES_FILTER" EntityType="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+            </EntityContainer>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/STYLENO" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Style Numbers"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_STYLENO_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="STYLENO"/>
+                                    <PropertyValue Property="ValueListProperty" String="STYLENO"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/SBU" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: SBU"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_SBU_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SBU"/>
+                                    <PropertyValue Property="ValueListProperty" String="SBU"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/SALESGRP" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Sales Group"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_SALESGRP_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SALESGRP"/>
+                                    <PropertyValue Property="ValueListProperty" String="SALESGRP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/CUSTGRP" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Customer Group"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_CUSTGRP_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="CUSTGRP"/>
+                                    <PropertyValue Property="ValueListProperty" String="CUSTGRP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/SEASONCD" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Season"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_SEASON_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SEASONCD"/>
+                                    <PropertyValue Property="ValueListProperty" String="SEASONCD"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="SBU"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/PRODTYP" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Product Types"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_PRODTYP_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="PRODTYP"/>
+                                    <PropertyValue Property="ValueListProperty" String="PRODTYP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="SBU"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/STYLECAT" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Style Category"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_STYLECAT_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="STYLECAT"/>
+                                    <PropertyValue Property="ValueListProperty" String="STYLECAT"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="SBU"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/STYLECD" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Style Code"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_STYLECD_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="STYLECD"/>
+                                    <PropertyValue Property="ValueListProperty" String="STYLECD"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="STYLENO"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/STATUSCD" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Status Codes"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_STATUSCD_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="STATUSCD"/>
+                                    <PropertyValue Property="ValueListProperty" String="STATUSCD"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/SOLDTOCUST" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Sold-to Customer"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_SOLDTOCUST_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SOLDTOCUST"/>
+                                    <PropertyValue Property="ValueListProperty" String="SOLDTOCUST"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="CUSTGRP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="SALESGRP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Name"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTERType/SIZEGRP" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP: Size Group"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_SIZEGRP_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SIZEGRP"/>
+                                    <PropertyValue Property="ValueListProperty" String="SIZEGRP"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVI_3DERP_STYLES_FILTER_CDS.ZVI_3DERP_STYLES_FILTER_CDS_Entities" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Aggregation.ApplySupported">
+                    <Record>
+                        <PropertyValue Property="Transformations">
+                            <Collection>
+                                <String>aggregate</String>
+                                <String>groupby</String>
+                                <String>filter</String>
+                            </Collection>
+                        </PropertyValue>
+                        <PropertyValue Property="Rollup" EnumMember="None"/>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <atom:link rel="self" href="http://159.138.39.203:8000/sap/opu/odata/sap/ZVI_3DERP_STYLES_FILTER_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://159.138.39.203:8000/sap/opu/odata/sap/ZVI_3DERP_STYLES_FILTER_CDS/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

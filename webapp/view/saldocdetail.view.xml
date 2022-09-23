@@ -1,0 +1,35 @@
+<mvc:View controllerName="zuisaldoc2.zuisaldoc2.controller.saldocdetail"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m" xmlns:cards="sap.f.cards"
+    xmlns:core="sap.ui.core" 
+    xmlns:c="zuisaldoc2.zuisaldoc2.control"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:sv="sap.ui.comp.smartvariants"
+    xmlns:layout="sap.ui.layout"
+    xmlns:t="sap.ui.table" xmlns:plugins="sap.ui.table.plugins" xmlns:fb="sap.ui.comp.filterbar" 
+    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
+	height="100%">
+    <Page id="pageSALDOCDET" title="{i18n>title_saldocdet}" showHeader="false"
+		titleLevel="H3"
+        showNavButton="true"  navButtonPress="onNavBack">
+    
+    <!-- OBJECT HEADER -->
+    <!--intro="{i18n>CurrentVersion}: {headerData>/Verno}" -->
+        <ObjectHeader id="objectHeader" responsive="true" fullScreenOptimized="true"  backgroundDesign="Solid" icon="sap-icon://blank-tag-2"
+		        title="{headerData>/SALESDOCTYP} ({headerData>/SALESDOCNO})" number="{headerData>/STATUS}" numberUnit="{i18n>Status}" numberState="{= ${headerData>/Statuscd} === 'CMP' ? 'Success' : ${headerData>/Statuscd} === 'CRT' ? 'Error' : 'Warning'}">
+            <attributes>
+                <ObjectAttribute title="{i18n>CREATEDBY}" text="{headerData>/CREATEDBY}"/>
+                <ObjectAttribute title="{i18n>CREATEDDT}" text="{headerData>/CREATEDDT}"/>
+                <ObjectAttribute title="{i18n>UPDATEDBY}" text="{headerData>/UPDATEDBY}"/>
+                <ObjectAttribute title="{i18n>UPDATEDDT}" text="{headerData>/UPDATEDDT}"/>
+            </attributes>
+        </ObjectHeader>
+
+    <!-- HEADER -->
+        <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Header" type="XML"/>
+
+    <!-- DETAILS -->
+        <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Detail" type="XML"/>
+    </Page>
+</mvc:View>
