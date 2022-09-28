@@ -17,6 +17,8 @@ sap.ui.define([
         var that;
         var salDocNotxt;
 
+        var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "MM/dd/yyyy" });
+
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocinit", {
             onInit: function (oEvent) {
                 that = this; 
@@ -147,29 +149,6 @@ sap.ui.define([
                 var me = this;
                 var oModel = this.getOwnerComponent().getModel();
 
-                // var selectString = "";
-                // var lv1 = "Col";
-                // var i = 1;
-                // var statusColNo;
-
-                // //build select columns
-                // var oColCount = columns.length;
-                // columns.forEach((column) => {
-                //     // console.log(columns);
-                //     if (column.ColumnName === "STATUS")
-                //         statusColNo = i;
-
-                //     if (column.ColumnName === "SALESDOCNO")
-                //         this._StyleNoColNo = i;
-
-                //     var lv2 = this.pad(i, 3);
-                //     i++;
-
-                //     var colString = lv1 + lv2;
-                //     selectString += colString + ",";
-                // })
-                // selectString = selectString.slice(0, -1);
-
                 //get dynamic data
                 var oJSONDataModel = new sap.ui.model.json.JSONModel();
                 // oModel.setHeaders({
@@ -180,14 +159,21 @@ sap.ui.define([
                 //     prodtyp: '1000',
                 //     type: 'STYLINIT'
                 // });
-                // var aFilters = this.getView().byId("SmartFilterBar").getFilters();
+                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+
                 var oText = this.getView().byId("SalesDocCount");
 
                 // this.addDateFilters(aFilters); //date not automatically added to filters
 
-                oModel.read("/SALDOCHDRSet", {
-                    // filters: aFilters,
+                oModel.read("/SALDOCHDRINITSet", {
+                    filters: aFilters,
                     success: function (oData, oResponse) {
+                        oData.results.forEach(item => {
+                            item.DLVDT = dateFormat.format(item.DLVDT);
+                            item.DOCDT = dateFormat.format(item.DOCDT);
+                            item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                            item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                        })
                         oText.setText(oData.results.length + "");
                         oJSONDataModel.setData(oData);
                         me.getView().setModel(oJSONDataModel, "DataModel");
@@ -290,7 +276,7 @@ sap.ui.define([
                         id: sColumnId,
                         label: sColumnLabel, //"{i18n>" + sColumnId + "}",
                         template: me.columnTemplate(sColumnId, sColumnType),
-                        width: me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'rem',
+                        width: me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'px',
                         sortProperty: sColumnId,
                         filterProperty: sColumnId,
                         autoResizable: true,
@@ -348,17 +334,17 @@ sap.ui.define([
 
             getColumnSize: function (sColumnId, sColumnType) {
                 //column width of fields
-                var mSize = '7';
+                var mSize = '100';
                 if (sColumnType === "SEL") {
-                    mSize = '3.5';
+                    mSize = '50';
                 } else if (sColumnType === "COPY") {
-                    mSize = '3.5';
+                    mSize = '50';
                 } else if (sColumnId === "STYLECD") {
-                    mSize = '25';
+                    mSize = '100';
                 } else if (sColumnId === "DESC1" || sColumnId === "PRODTYP") {
-                    mSize = '15';
+                    mSize = '200';
                 } else if (sColumnId === "DLVDT" || sColumnId === "DOCDT" || sColumnId === "CREATEDDT" || sColumnId === "UPDATEDDT") {
-                    mSize = '30';
+                    mSize = '100';
                 }
                 return mSize;
             },
@@ -367,9 +353,9 @@ sap.ui.define([
                 //column width of fields
                 var mSize = sColumnSize;
                 if (sColumnType === "SEL") {
-                    mSize = '3.5';
+                    mSize = '50';
                 } else if (sColumnType === "COPY") {
-                    mSize = '3.5';
+                    mSize = '50';
                 } 
                 // else if (sColumnId === "STYLECD") {
                 //     mSize = '25';

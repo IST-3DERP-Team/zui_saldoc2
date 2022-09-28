@@ -19,6 +19,8 @@ sap.ui.define([
         
         var Core = sap.ui.getCore();
 
+        var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "MM/dd/yyyy" });
+
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocdetail", {
             onInit: function () {
                 that = this;
@@ -30,6 +32,7 @@ sap.ui.define([
                 })
 
                 this._Model = this.getOwnerComponent().getModel();
+                this._Model2 = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
 
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
@@ -60,9 +63,11 @@ sap.ui.define([
                 //Load header
                 this.getHeaderConfig(); //get visible header fields
                 this.getHeaderData(); //get header data
-
-                //Load details
-                this.getDynamicTableColumns();
+                
+                // build Dynamic table for Sales Document Details
+                setTimeout(() => {
+                    this.getDynamicTableColumns(); 
+                },100);
             },
 
             getDynamicTableColumns: function () {
@@ -81,7 +86,7 @@ sap.ui.define([
                     // userid: this._userid
                     // userid: 'BAS_CONN'
                 });
-                this._Model.read("/ColumnsDetSet", {
+                this._Model.read("/ColumnsSet", {
                     success: function (oData, oResponse) { 
                         oJSONColumnsModel.setData(oData);
                         me.oJSONModel.setData(oData);
@@ -106,6 +111,12 @@ sap.ui.define([
                         "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                     },
                     success: function (oData, oResponse) { 
+                        oData.results.forEach(item => {
+                            item.CPODT = dateFormat.format(item.CPODT);
+                            item.DLVDT = dateFormat.format(item.DLVDT);
+                            item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                            item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                        })
                         // oText.setText(oData.Results.length + "");
                         oJSONDataModel.setData(oData);
                         me.getView().setModel(oJSONDataModel, "DetDataModel");
@@ -152,25 +163,24 @@ sap.ui.define([
                 
                 //bind the dynamic column to the table
                 oDetTable.bindColumns("/columns", function (index, context) {
-                    
                     var sColumnId = context.getObject().ColumnName;
+                    var sColumnLabel = context.getObject().ColumnLabel;
                     var sColumnType = context.getObject().ColumnType;
+                    var sColumnWidth = context.getObject().ColumnWidth;
                     var sColumnVisible = context.getObject().Visible;
                     var sColumnSorted = context.getObject().Sorted;
                     var sColumnSortOrder = context.getObject().SortOrder;
-                    var sColumnToolTip = context.getObject().Tooltip;
-                    //alert(sColumnId.);
                     return new sap.ui.table.Column({
-                        // id: sColumnId,
-                        label: "{i18n>" + sColumnId + "}",
-                        template: me.columnTemplate(sColumnId, sColumnType),
-                        width: me.getColumnSize(sColumnId, sColumnType),
-                        sortProperty: sColumnId,
-                        filterProperty: sColumnId,
-                        autoResizable: true,
-                        visible: sColumnVisible,
-                        sorted: sColumnSorted,
-                        sortOrder: ((sColumnSorted === true) ? sColumnSortOrder : "Ascending" )
+                         // id: sColumnId,
+                         label: sColumnLabel, //"{i18n>" + sColumnId + "}",
+                         template: me.columnTemplate(sColumnId, sColumnType,"Stat"),
+                         width: me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'px',
+                         sortProperty: sColumnId,
+                         filterProperty: sColumnId,
+                         autoResizable: true,
+                         visible: sColumnVisible ,
+                         sorted: sColumnSorted,
+                         sortOrder: ((sColumnSorted === true) ? sColumnSortOrder : "Ascending" )
                     });
                 });
 
@@ -208,18 +218,36 @@ sap.ui.define([
 
             getColumnSize: function (sColumnId, sColumnType) {
                 //column width of fields
-                var mSize = '7rem';
+                var mSize = '100';
                 if (sColumnType === "SEL") {
-                    mSize = '3.5rem';
+                    mSize = '50';
                 } else if (sColumnType === "COPY") {
-                    mSize = '3.5rem';
+                    mSize = '50';
                 } else if (sColumnId === "STYLECD") {
-                    mSize = '25rem';
+                    mSize = '100';
                 } else if (sColumnId === "DESC1" || sColumnId === "PRODTYP") {
-                    mSize = '15rem';
+                    mSize = '200';
                 } else if (sColumnId === "DLVDT" || sColumnId === "DOCDT" || sColumnId === "CREATEDDT" || sColumnId === "UPDATEDDT") {
-                    mSize = '30rem';
+                    mSize = '100';
                 }
+                return mSize;
+            },
+
+            getFormatColumnSize: function (sColumnId, sColumnType, sColumnSize) {
+                //column width of fields
+                var mSize = sColumnSize;
+                if (sColumnType === "SEL") {
+                    mSize = '50';
+                } else if (sColumnType === "COPY") {
+                    mSize = '50';
+                } 
+                // else if (sColumnId === "STYLECD") {
+                //     mSize = '25';
+                // } else if (sColumnId === "DESC1" || sColumnId === "PRODTYP") {
+                //     mSize = '15';
+                // } else if (sColumnId === "DLVDT" || sColumnId === "DOCDT" || sColumnId === "CREATEDDT" || sColumnId === "UPDATEDDT") {
+                //     mSize = '30';
+                // }
                 return mSize;
             },
 
@@ -265,16 +293,40 @@ sap.ui.define([
                 var salesDocNo = this._salesDocNo;
                 var oModel = this.getOwnerComponent().getModel();
                 var oJSONModel = new JSONModel();
+                // var oJSONDataModel = new sap.ui.model.json.JSONModel();
+                
                 var oView = this.getView();
 
                 Common.openLoadingDialog(that);
 
                 //read Style header data
-                var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
-                oModel.read(entitySet, {
+                // var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
+                // oModel.read(entitySet, {
+
+                // console.log(salesDocNo);
+
+                //     oModel.read("/SALDOCHDRSet", {
+                //         urlParameters: {
+                //             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
+                //         },
+
+                    // read Style header data
+                    var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
+                    oModel.read(entitySet, {
                     success: function (oData, oResponse) {
+                        // console.log(oData);
+                        // oData.results.forEach(item => {
+                        //     item.CPODT = dateFormat.format(item.CPODT);
+                        //     item.DLVDT = dateFormat.format(item.DLVDT);
+                        //     item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                        //     item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                        // })
                         oJSONModel.setData(oData);
                         oView.setModel(oJSONModel, "headerData");
+
+                        // oJSONDataModel.setData(oData);
+                        // oView.setModel(oJSONDataModel, "headerData");
+
                         Common.closeLoadingDialog(that);
                         me.setChangeStatus(false);
                     },

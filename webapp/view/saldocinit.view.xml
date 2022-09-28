@@ -20,15 +20,31 @@
         <VBox fitContainer="true"> 
         <!-- #### Smart Filter Bar #### -->
         <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" persistencyKey="3DERP_StylesPKey" filterContainerWidth="15rem" useToolbar="false" useDateRangeType="true">
+                    
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SBU" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false" />
                     </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="CUSTGRP" groupId="_BASIC" label="{i18n>CUSTGRP}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SALESORG" groupId="_BASIC" label="{i18n>SALESORG}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false" />
+                    </smartfilterbar:controlConfiguration>
+
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SALESDOCTYP" groupId="_BASIC" label="{i18n>SALESDOCTYP}" preventInitialDataFetchInValueHelpDialog="false" />
-                    </smartfilterbar:controlConfiguration>
-                    <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SEASON" groupId="_BASIC" label="{i18n>SEASON}" preventInitialDataFetchInValueHelpDialog="false" />
-                    </smartfilterbar:controlConfiguration>
+                    </smartfilterbar:controlConfiguration>                    
+
                     <smartfilterbar:layoutData>
                         <FlexItemData growFactor="0"/>
                     </smartfilterbar:layoutData>

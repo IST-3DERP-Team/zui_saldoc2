@@ -17,6 +17,13 @@
     </edmx:Reference>
     <edmx:DataServices m:DataServiceVersion="2.0">
         <Schema Namespace="ZVB_3DERP_SALDOC_FILTERS_CDS" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="ZVB_3DERP_CUSTGRP_SHType" sap:label="3DERP : Customer Group Search Help" sap:value-list="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="CUSTGRP"/>
+                </Key>
+                <Property Name="CUSTGRP" Type="Edm.String" Nullable="false" MaxLength="2" sap:display-format="UpperCase" sap:text="Description" sap:label="Customer Group"/>
+                <Property Name="Description" Type="Edm.String" MaxLength="20" sap:label="Name"/>
+            </EntityType>
             <EntityType Name="ZVB_3DERP_SALDOCTYP_SHType" sap:label="Sales Document Type" sap:value-list="true" sap:content-version="1">
                 <Key>
                     <PropertyRef Name="Salesdoctyp"/>
@@ -29,7 +36,8 @@
                     <PropertyRef Name="SBU"/>
                 </Key>
                 <Property Name="SBU" Type="Edm.String" Nullable="false" MaxLength="1" sap:value-list="standard"/>
-                <Property Name="SEASON" Type="Edm.String" MaxLength="10" sap:value-list="standard"/>
+                <Property Name="CUSTGRP" Type="Edm.String" MaxLength="10" sap:value-list="standard"/>
+                <Property Name="SEASONCD" Type="Edm.String" MaxLength="10" sap:value-list="standard"/>
                 <Property Name="SALESDOCTYP" Type="Edm.String" MaxLength="10" sap:display-format="UpperCase" sap:label="Sales Doc Type" sap:quickinfo="ERP Sales Doc Type" sap:value-list="standard"/>
             </EntityType>
             <EntityType Name="ZVB_3DERP_SBU_SHType" sap:label="3DERP: SBU" sap:value-list="true" sap:content-version="1">
@@ -46,6 +54,7 @@
                 <Property Name="Description" Type="Edm.String" MaxLength="50" sap:label="Description"/>
             </EntityType>
             <EntityContainer Name="ZVB_3DERP_SALDOC_FILTERS_CDS_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="ZVB_3DERP_CUSTGRP_SH" EntityType="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_CUSTGRP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
                 <EntitySet Name="ZVB_3DERP_SALDOCTYP_SH" EntityType="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SALDOCTYP_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
                 <EntitySet Name="ZVB_3DERP_SALDOC_FILTERS" EntityType="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SALDOC_FILTERSType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
                 <EntitySet Name="ZVB_3DERP_SBU_SH" EntityType="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SBU_SHType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
@@ -68,7 +77,27 @@
                     </Record>
                 </Annotation>
             </Annotations>
-            <Annotations Target="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SALDOC_FILTERSType/SEASON" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Annotations Target="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SALDOC_FILTERSType/CUSTGRP" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                <Annotation Term="Common.ValueList">
+                    <Record>
+                        <PropertyValue Property="Label" String="3DERP : Customer Group Search Help"/>
+                        <PropertyValue Property="CollectionPath" String="ZVB_3DERP_CUSTGRP_SH"/>
+                        <PropertyValue Property="SearchSupported" Bool="false"/>
+                        <PropertyValue Property="Parameters">
+                            <Collection>
+                                <Record Type="Common.ValueListParameterInOut">
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="CUSTGRP"/>
+                                    <PropertyValue Property="ValueListProperty" String="CUSTGRP"/>
+                                </Record>
+                                <Record Type="Common.ValueListParameterDisplayOnly">
+                                    <PropertyValue Property="ValueListProperty" String="Description"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="ZVB_3DERP_SALDOC_FILTERS_CDS.ZVB_3DERP_SALDOC_FILTERSType/SEASONCD" xmlns="http://docs.oasis-open.org/odata/ns/edm">
                 <Annotation Term="Common.ValueList">
                     <Record>
                         <PropertyValue Property="Label" String="3DERP: Season"/>
@@ -77,7 +106,7 @@
                         <PropertyValue Property="Parameters">
                             <Collection>
                                 <Record Type="Common.ValueListParameterInOut">
-                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SEASON"/>
+                                    <PropertyValue Property="LocalDataProperty" PropertyPath="SEASONCD"/>
                                     <PropertyValue Property="ValueListProperty" String="Season"/>
                                 </Record>
                                 <Record Type="Common.ValueListParameterDisplayOnly">
