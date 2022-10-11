@@ -37,6 +37,19 @@ sap.ui.define([
                 this.setSmartFilterModel();                  
                 // this.onSearch();
             },
+
+            onAfterRendering:function(){
+                 //double click event
+                var oModel = new JSONModel();
+                var oTable = this.getView().byId("salDocDynTable");
+                oTable.setModel(oModel);
+                oTable.attachBrowserEvent('dblclick', function (e) {
+                    e.preventDefault();
+                    that.setChangeStatus(false); //remove change flag
+                    that.navToDetail(salDocNotxt); //navigate to detail page
+
+                });
+            },
             setSmartFilterModel: function () {
                 //Model StyleHeaderFilters is for the smartfilterbar
                 var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
@@ -76,21 +89,28 @@ sap.ui.define([
                 alert("Double Clicked!");
             },
             
-            onRowChange: function() {
+            onRowChange: function(oEvent) {
+                var sPath = oEvent.getParameter("rowContext").getPath();
                 var oTable = this.getView().byId("salDocDynTable");
-                var aSelRows = oTable.getSelectedIndices();
-                console.log(oTable);
-                if (aSelRows.length > 0) 
-                aSelRows.forEach(rec => {
-                    var oContext = oTable.getContextByIndex(rec);
-                    var vSALDOCNO = oContext.getObject().SALESDOCNO;
-                    salDocNotxt = vSALDOCNO;
-                    // var oEntitySet = "/GMCSet('" + vGmc + "')";
-                    // var oParam = {
-                    //     "Deleted": "X"
-                    });
+                var model = oTable.getModel();
+                //get the selected  data from the model and set to variable style
+                var data = model.getProperty(sPath);
+                salDocNotxt = data['SALESDOCNO'];
 
-                    this.goToDetailClick(salDocNotxt);
+                // var oTable = this.getView().byId("salDocDynTable");
+                // var aSelRows = oTable.getSelectedIndices();
+                // console.log(oTable);
+                // if (aSelRows.length > 0) 
+                // aSelRows.forEach(rec => {
+                //     var oContext = oTable.getContextByIndex(rec);
+                //     var vSALDOCNO = oContext.getObject().SALESDOCNO;
+                //     salDocNotxt = vSALDOCNO;
+                //     // var oEntitySet = "/GMCSet('" + vGmc + "')";
+                //     // var oParam = {
+                //     //     "Deleted": "X"
+                //     });
+
+                //     this.goToDetailClick(salDocNotxt);
             },
 
             setChangeStatus: function(changed) {
@@ -246,7 +266,8 @@ sap.ui.define([
                 //add column for manage button
                 oColumnsData.unshift({
                     "ColumnName": "Manage",
-                    "ColumnType": "SEL"
+                    "ColumnType": "SEL",
+                    "Visible": false
                 });
 
                 //set the column and data model
@@ -255,6 +276,18 @@ sap.ui.define([
                     columns: oColumnsData,
                     rows: oData
                 });
+
+                var oDelegateKeyUp = {
+                    onkeyup: function (oEvent) {
+                        that.onKeyUp(oEvent);
+                    },
+
+                    onsapenter: function (oEvent) {
+                        that.onSapEnter(oEvent);
+                    }
+                };
+
+                this.byId("salDocDynTable").addEventDelegate(oDelegateKeyUp);
 
                 var oTable = this.getView().byId("salDocDynTable");
                 oTable.setModel(oModel);
@@ -311,7 +344,8 @@ sap.ui.define([
                         icon: "sap-icon://detail-view",
                         type: "Ghost",
                         press: this.goToDetail,
-                        tooltip: "Manage this Sales Doc"
+                        tooltip: "Manage this Sales Doc",
+                        visible: false
                         // ,
                         // visible: "false"
                     });
@@ -365,6 +399,36 @@ sap.ui.define([
                 //     mSize = '30';
                 // }
                 return mSize;
+            },
+
+            onKeyUp(oEvent) {
+                //console.log("onKeyUp!");
+
+                // var _dataMode = this.getView().getModel("undefined").getData().dataMode;
+                // _dataMode = _dataMode === undefined ? "READ" : _dataMode;
+
+                // if ((oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") && oEvent.srcControl.sParentAggregationName === "rows" && _dataMode === "READ") {
+                if ((oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") && oEvent.srcControl.sParentAggregationName === "rows") {
+                    var oTable = this.getView().byId("salDocDynTable");
+                    var model = oTable.getModel();
+
+                    var sRowPath = this.byId(oEvent.srcControl.sId).oBindingContexts["undefined"].sPath;
+                    var index = sRowPath.split("/");
+                    oTable.setSelectedIndex(parseInt(index[2]));
+                    //var data = model.getProperty(sRowPath);
+                    // var oRow = this.getView().getModel("DataModel").getProperty(sRowPath);
+                    // console.log(sRowPath)
+                    // console.log(data)
+                    //console.log(oRow)
+                    // this.getView().getModel("ui").setProperty("/activeGmc", oRow.GMC);
+
+                }
+            },
+
+            onSapEnter(oEvent) {
+                // var salesDocNo = oButton.data("SALESDOCNO").SALESDOCNO; //get the styleno binded to manage button
+                that.setChangeStatus(false); //remove change flag
+                that.navToDetail(salDocNotxt); //navigate to detail page
             },
 
             goToDetail: function (oEvent) {

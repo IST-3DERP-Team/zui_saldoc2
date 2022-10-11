@@ -1,48 +1,116 @@
 <mvc:View controllerName="zuisaldoc2.zuisaldoc2.controller.saldocinit"
     xmlns:mvc="sap.ui.core.mvc" 
-    xmlns="sap.m" 
-    xmlns:cards="sap.f.cards"
-    xmlns:core="sap.ui.core" 
     xmlns:c="zuisaldoc2.zuisaldoc2.control"
-    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
-    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:core="sap.ui.core" 
+    xmlns:uiL="sap.ui.layout"
+    xmlns:uiT="sap.ui.table"
+    xmlns="sap.m" 
+    xmlns:f="sap.f"
     xmlns:semantic="sap.m.semantic"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
+    xmlns:cards="sap.f.cards"
+    xmlns:smartTable="sap.ui.comp.smarttable"
     xmlns:sv="sap.ui.comp.smartvariants"
     xmlns:layout="sap.ui.layout"
     xmlns:t="sap.ui.table" 
     xmlns:plugins="sap.ui.table.plugins" 
-    xmlns:fb="sap.ui.comp.filterbar" 
-    xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
+    xmlns:fb="sap.ui.comp.filterbar"     
 	displayBlock="true">
     <Page id="_IDGenPage1" title="{i18n>title}" showHeader="false">
         <content>
 
         <VBox fitContainer="true"> 
         <!-- #### Smart Filter Bar #### -->
-        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" persistencyKey="3DERP_StylesPKey" filterContainerWidth="15rem" useToolbar="false" useDateRangeType="true">
-                    
+        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" persistencyKey="3DERP_StylesPKey" filterContainerWidth="7rem" useToolbar="false" useDateRangeType="true">
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SBU" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false" />
+                        <smartfilterbar:ControlConfiguration key="SBU" mandatory="mandatory" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxSBU"
+                                    selectedKey="{ui>/sbu}"
+                                    change="onSBUChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SBU_SH'
+                                    }">
+                                    <core:Item key="{SBU}" text="{SBU}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
+                            
+                        </smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxSALESGRP"
+                                    selectedKey="{ui>/salesgrp}"
+                                    change="onSALESGRPChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SALESGRP_SH'
+                                    }">
+                                    <core:Item key="{SALESGRP}" text="{SALESGRP} - {DESCRIPTION}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false" />
+                        <smartfilterbar:ControlConfiguration key="CUSTGRP" groupId="_BASIC" label="{i18n>CUSTGRP}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxCUSTRP"
+                                    selectedKey="{ui>/custgrp}"
+                                    change="onCUSTGRPChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_CUSTGRP_SH'
+                                    }">
+                                    <core:Item key="{CUSTGRP}" text="{CUSTGRP} - {DESCRIPTION}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="CUSTGRP" groupId="_BASIC" label="{i18n>CUSTGRP}" preventInitialDataFetchInValueHelpDialog="false" />
+                        <smartfilterbar:ControlConfiguration key="SALESORG" groupId="_BASIC" label="{i18n>SALESORG}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxSALESORG"
+                                    selectedKey="{ui>/salesorg}"
+                                    change="onSALESORGChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SALESORG_SH'
+                                    }">
+                                    <core:Item key="{SALESORG}" text="{SALESORG} - {DESCRIPTION}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SALESORG" groupId="_BASIC" label="{i18n>SALESORG}" preventInitialDataFetchInValueHelpDialog="false" />
+                        <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxSEASON"
+                                    selectedKey="{ui>/Season}"
+                                    change="onSALESORGChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SEASON_SH'
+                                    }">
+                                    <core:Item key="{Season}" text="{Season} - {Description}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false" />
-                    </smartfilterbar:controlConfiguration>
-
-                    <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SALESDOCTYP" groupId="_BASIC" label="{i18n>SALESDOCTYP}" preventInitialDataFetchInValueHelpDialog="false" />
+                        <smartfilterbar:ControlConfiguration key="SALESDOCTYP" groupId="_BASIC" label="{i18n>SALESDOCTYP}" preventInitialDataFetchInValueHelpDialog="false">
+                        <smartfilterbar:customControl>
+                                <ComboBox id="cboxSALESDOCTYP"
+                                    selectedKey="{ui>/SALESDOCTYP}"
+                                    change="onSALESDOCTYPChange"
+                                    items="{
+                                        path: '/ZVB_3DERP_SALDOCTYP_SH'
+                                    }">
+                                    <core:Item key="{SALESDOCTYP}" text="{SALESDOCTYP} - {DESCRIPTION}" />
+                                </ComboBox>       
+                            </smartfilterbar:customControl>
+                            </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>                    
 
                     <smartfilterbar:layoutData>
@@ -114,14 +182,16 @@
         </Panel> -->
 
             <t:Table id="salDocDynTable" 
-                class="sapUiSizeCompact sidePadding" 
                 visibleRowCountMode="Auto"
+                class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
                 showColumnVisibilityMenu="true" 
                 enableColumnFreeze="true"
                 enableCellFilter="true"
                 selectionMode="Single" 
                 selectionBehavior="RowOnly"
-                rowSelectionChange="onRowChange">
+                rowSelectionChange="onRowChange"
+                alternateRowColors="true"
+                sort="onSorted">
 
                 <t:layoutData>
                     <FlexItemData growFactor="1" baseSize="0%"/>
