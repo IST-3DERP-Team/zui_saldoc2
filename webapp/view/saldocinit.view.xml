@@ -58,15 +58,15 @@
             <!-- <OverflowToolbar id="otb10" height="2.5rem"> -->
             <Toolbar>
                 <GenericTag id="_IDGenGenericTag1" text="Forecast" design="StatusIconHidden" status="Warning">
-					<ObjectNumber id="_IDGenObjectNumber1" state="Warning" emphasized="false" number="5000" />
+					<ObjectNumber id="forecastNumber" state="Warning" emphasized="false"/>
 				</GenericTag>
 
 				<GenericTag id="_IDGenGenericTag3" text="Order"  design="StatusIconHidden" status="Error">
-					<ObjectNumber id="_IDGenObjectNumber3" state="Error" emphasized="false" number="4500" />
+					<ObjectNumber id="orderNumber" state="Error" emphasized="false"/>
 				</GenericTag>
 
 				<GenericTag id="_IDGenGenericTag4" text="Shipped"  design="StatusIconHidden" status="Success">
-					<ObjectNumber id="_IDGenObjectNumber4" state="Success" emphasized="false" number="2000" />
+					<ObjectNumber id="shippedNumber" state="Success" emphasized="false"/>
 				</GenericTag>	
                 <!-- <layoutData>
                     <OverflowToolbarLayoutData shrinkable="true" group="2" minWidth="70px"/>

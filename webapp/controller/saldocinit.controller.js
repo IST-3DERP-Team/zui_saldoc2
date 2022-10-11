@@ -110,7 +110,7 @@ sap.ui.define([
                 //   });
 
                 this.getDynamicTableColumns();
-                // this.getStyleStats(); //style statistics
+                this.getSalDocStats(); //style statistics
 
                 // oTable.placeAt('scTable');
             },
@@ -295,7 +295,7 @@ sap.ui.define([
                 
                 //different component based on field
                 if (sColumnId === "STATUS") { //display infolabel for Status Code
-                    console.log(sColumnId);
+                    // console.log(sColumnId);
                     oColumnTemplate = new sap.tnt.InfoLabel({
                         text: "{" + sColumnId + "}",
                         colorScheme: "{= ${" + sColumnId + "} === 'New' ? 8 : ${" + sColumnId + "} === 'CRT' ? 3 : 1}"
@@ -395,14 +395,40 @@ sap.ui.define([
                 var oOrder = this.getView().byId("orderNumber");
                 var oShipped = this.getView().byId("shippedNumber");
 
-                var aFilters = this.getView().byId("SmartFilterBar").getFilters();
+                var aFilters = this.getView().byId("smartFilterBar").getFilters();
 
-                oModel.read("/StyleStatsSet", {
+                this._Model.read("/SalDocStatsSet", {
                     filters: aFilters,
                     success: function (oData) {
                         oForecast.setNumber(oData.results[0].FORECAST);
                         oOrder.setNumber(oData.results[0].ORDER);
                         oShipped.setNumber(oData.results[0].SHIPPED);
+                    },
+                    error: function (err) { }
+                });
+            },
+            
+            getSalDocStats: function () {
+                //select the style statistics
+                var oModel = this.getOwnerComponent().getModel();
+                var oForecast = this.getView().byId("forecastNumber");
+                var oOrder = this.getView().byId("orderNumber");
+                var oShipped = this.getView().byId("shippedNumber");
+
+                //get the smartfilterbar filters for odata filter
+                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                // this.addDateFilters(aFilters);
+
+                console.log(aFilters);
+
+                this._Model.read("/SalDocStatSet", {
+                    filters: aFilters,
+                    success: function (oData) {
+                        console.log("Statistics oData");
+                        console.log(oData);
+                        oForecast.setNumber(oData.results[0].FORECASTQTY);
+                        oOrder.setNumber(oData.results[0].ORDERQTY);
+                        oShipped.setNumber(oData.results[0].SHIPQTY);
                     },
                     error: function (err) { }
                 });

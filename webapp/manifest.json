@@ -20,9 +20,9 @@
                 "uri": "/sap/opu/odata/sap/ZGW_3DERP_SALDOC_SRV/",
                 "type": "OData",
                 "settings": {
+                    "odataVersion": "2.0",
                     "annotations": [],
-                    "localUri": "localService/mainService/metadata.xml",
-                    "odataVersion": "2.0"
+                    "localUri": "localService/mainService/metadata.xml"
                 }
             },
             "ZGW_3DERP_COMMON_SRV": {
