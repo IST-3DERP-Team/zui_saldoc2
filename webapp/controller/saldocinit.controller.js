@@ -130,7 +130,7 @@ sap.ui.define([
                 //   });
 
                 this.getDynamicTableColumns();
-                this.getSalDocStats(); //style statistics
+                this.getStatistics("/SalDocStatSet"); //style statistics
 
                 // oTable.placeAt('scTable');
             },
@@ -143,7 +143,9 @@ sap.ui.define([
                 this.oJSONModel = new sap.ui.model.json.JSONModel();
                                 
                 // this._SBU = this.getView().byId("SmartFilterBar").getFilterData().SBU;  //get selected SBU
-                this._sbu = 'VER'
+                // this._sbu = 'VER'
+                this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
+                
                 this._Model.setHeaders({
                     sbu: this._sbu,
                     type: 'SALDOCINIT',
@@ -472,9 +474,8 @@ sap.ui.define([
                 });
             },
             
-            getSalDocStats: function () {
+            getStatistics: function (EntitySet) {
                 //select the style statistics
-                var oModel = this.getOwnerComponent().getModel();
                 var oForecast = this.getView().byId("forecastNumber");
                 var oOrder = this.getView().byId("orderNumber");
                 var oShipped = this.getView().byId("shippedNumber");
@@ -483,13 +484,13 @@ sap.ui.define([
                 var aFilters = this.getView().byId("smartFilterBar").getFilters();
                 // this.addDateFilters(aFilters);
 
-                console.log(aFilters);
+                // console.log(aFilters);
 
-                this._Model.read("/SalDocStatSet", {
+                var vEntitySet = EntitySet;
+
+                this._Model.read(vEntitySet, {
                     filters: aFilters,
                     success: function (oData) {
-                        console.log("Statistics oData");
-                        console.log(oData);
                         oForecast.setNumber(oData.results[0].FORECASTQTY);
                         oOrder.setNumber(oData.results[0].ORDERQTY);
                         oShipped.setNumber(oData.results[0].SHIPQTY);
