@@ -81,7 +81,7 @@ sap.ui.define([
                     //     "Deleted": "X"
                     });
 
-                    alert(salDocNotxt);
+                    // alert(salDocNotxt);
             },
 
             ondblClick: function(oEvent) {
@@ -121,13 +121,9 @@ sap.ui.define([
             },
 
             onSearch: function () {
-
-                // var oTable = new TableEvents({
-                //     selectionMode: sap.ui.table.SelectionMode.Single,
-                //     dblClick: function(e) {
-                //        sap.m.MessageToast.show(JSON.stringify(e.getParameter('rowContext').getObject()));
-                //     }
-                //   });
+                // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
+                this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
+                // console.log(this._sbu);
 
                 this.getDynamicTableColumns();
                 this.getStatistics("/SalDocStatSet"); //style statistics
@@ -142,12 +138,13 @@ sap.ui.define([
                 var oJSONColumnsModel = new sap.ui.model.json.JSONModel();
                 this.oJSONModel = new sap.ui.model.json.JSONModel();
                                 
-                // this._SBU = this.getView().byId("SmartFilterBar").getFilterData().SBU;  //get selected SBU
-                // this._sbu = 'VER'
-                this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
+                // this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
+                
+                console.log(this._sbu);
                 
                 this._Model.setHeaders({
                     sbu: this._sbu,
+                    // sbu: 'VER',
                     type: 'SALDOCINIT',
                     tabname: 'ZERP_SALDOCHDR'
                     // ,
@@ -181,8 +178,9 @@ sap.ui.define([
                 //     prodtyp: '1000',
                 //     type: 'STYLINIT'
                 // });
-                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                // var aFilters1 = this.getView().byId("smartFilterBar").getFilters();
 
+                var aFilters = this.getView().byId("smartFilterBar").getFilters();
                 var oText = this.getView().byId("SalesDocCount");
 
                 // this.addDateFilters(aFilters); //date not automatically added to filters
@@ -430,7 +428,8 @@ sap.ui.define([
             onSapEnter(oEvent) {
                 // var salesDocNo = oButton.data("SALESDOCNO").SALESDOCNO; //get the styleno binded to manage button
                 that.setChangeStatus(false); //remove change flag
-                that.navToDetail(salDocNotxt); //navigate to detail page
+                console.log(this._aSBU);
+                that.navToDetail(salDocNotxt, this._aSBU); //navigate to detail page
             },
 
             goToDetail: function (oEvent) {
@@ -451,7 +450,7 @@ sap.ui.define([
                 //route to detail page
                 that._router.navTo("RouteSalesDocDetail", {
                     salesdocno: salesDocNo,
-                    sbu: that._sbu
+                    sbu: this._sbu
                 });
             },
 
@@ -480,17 +479,22 @@ sap.ui.define([
                 var oOrder = this.getView().byId("orderNumber");
                 var oShipped = this.getView().byId("shippedNumber");
 
-                //get the smartfilterbar filters for odata filter
                 var aFilters = this.getView().byId("smartFilterBar").getFilters();
-                // this.addDateFilters(aFilters);
+                // var lv_updatedDateFilter = new sap.ui.model.Filter({
+                //     path: "SBU",
+                //     operator: sap.ui.model.FilterOperator.EQ,
+                //     value1: this._sbu
+                // });
+                // aFilters.push(lv_updatedDateFilter);
 
-                // console.log(aFilters);
-
+                console.log(aFilters);
+                
                 var vEntitySet = EntitySet;
 
                 this._Model.read(vEntitySet, {
                     filters: aFilters,
                     success: function (oData) {
+                        console.log(oData);
                         oForecast.setNumber(oData.results[0].FORECASTQTY);
                         oOrder.setNumber(oData.results[0].ORDERQTY);
                         oShipped.setNumber(oData.results[0].SHIPQTY);

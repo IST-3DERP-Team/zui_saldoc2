@@ -40,7 +40,7 @@
                         </smartfilterbar:controlConfiguration>
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false">
-                        <smartfilterbar:customControl>
+                        <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxSALESGRP"
                                     selectedKey="{ui>/salesgrp}"
                                     change="onSALESGRPChange"
@@ -49,13 +49,13 @@
                                     }">
                                     <core:Item key="{SALESGRP}" text="{SALESGRP} - {DESCRIPTION}" />
                                 </ComboBox>       
-                            </smartfilterbar:customControl>
+                            </smartfilterbar:customControl> -->
                             </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="CUSTGRP" groupId="_BASIC" label="{i18n>CUSTGRP}" preventInitialDataFetchInValueHelpDialog="false">
-                        <smartfilterbar:customControl>
+                        <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxCUSTRP"
                                     selectedKey="{ui>/custgrp}"
                                     change="onCUSTGRPChange"
@@ -64,13 +64,13 @@
                                     }">
                                     <core:Item key="{CUSTGRP}" text="{CUSTGRP} - {DESCRIPTION}" />
                                 </ComboBox>       
-                            </smartfilterbar:customControl>
+                            </smartfilterbar:customControl> -->
                             </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SALESORG" groupId="_BASIC" label="{i18n>SALESORG}" preventInitialDataFetchInValueHelpDialog="false">
-                        <smartfilterbar:customControl>
+                        <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxSALESORG"
                                     selectedKey="{ui>/salesorg}"
                                     change="onSALESORGChange"
@@ -79,13 +79,13 @@
                                     }">
                                     <core:Item key="{SALESORG}" text="{SALESORG} - {DESCRIPTION}" />
                                 </ComboBox>       
-                            </smartfilterbar:customControl>
+                            </smartfilterbar:customControl> -->
                             </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false">
-                        <smartfilterbar:customControl>
+                        <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxSEASON"
                                     selectedKey="{ui>/Season}"
                                     change="onSALESORGChange"
@@ -94,13 +94,13 @@
                                     }">
                                     <core:Item key="{Season}" text="{Season} - {Description}" />
                                 </ComboBox>       
-                            </smartfilterbar:customControl>
+                            </smartfilterbar:customControl> -->
                             </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SALESDOCTYP" groupId="_BASIC" label="{i18n>SALESDOCTYP}" preventInitialDataFetchInValueHelpDialog="false">
-                        <smartfilterbar:customControl>
+                        <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxSALESDOCTYP"
                                     selectedKey="{ui>/SALESDOCTYP}"
                                     change="onSALESDOCTYPChange"
@@ -109,7 +109,7 @@
                                     }">
                                     <core:Item key="{SALESDOCTYP}" text="{SALESDOCTYP} - {DESCRIPTION}" />
                                 </ComboBox>       
-                            </smartfilterbar:customControl>
+                            </smartfilterbar:customControl> -->
                             </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>                    
 
