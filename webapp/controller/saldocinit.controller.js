@@ -292,6 +292,8 @@ sap.ui.define([
                 var oTable = this.getView().byId("salDocDynTable");
                 oTable.setModel(oModel);
 
+                console.log(oTable);
+
                 //bind the dynamic column to the table
                 oTable.bindColumns("/columns", function (index, context) {
                     var sColumnId = context.getObject().ColumnName;
