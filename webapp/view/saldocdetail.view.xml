@@ -7,29 +7,84 @@
     xmlns:smartTable="sap.ui.comp.smarttable"
     xmlns:sv="sap.ui.comp.smartvariants"
     xmlns:layout="sap.ui.layout"
-    xmlns:t="sap.ui.table" xmlns:plugins="sap.ui.table.plugins" xmlns:fb="sap.ui.comp.filterbar" 
+    xmlns:uiT="sap.ui.table" xmlns:plugins="sap.ui.table.plugins" xmlns:fb="sap.ui.comp.filterbar" 
     xmlns:smartfilterbar="sap.ui.comp.smartfilterbar"
 	height="100%">
     <Page id="pageSALDOCDET" title="{i18n>title_saldocdet}" showHeader="false"
 		titleLevel="H3"
         showNavButton="true"  navButtonPress="onNavBack">
+        <content>
     
-    <!-- OBJECT HEADER -->
-    <!--intro="{i18n>CurrentVersion}: {headerData>/Verno}" -->
-        <ObjectHeader id="objectHeader" responsive="true" fullScreenOptimized="true"  backgroundDesign="Solid" icon="sap-icon://blank-tag-2"
-		        title="{headerData>/SALESDOCTYP} ({headerData>/SALESDOCNO})" number="{headerData>/STATUS}" numberUnit="{i18n>Status}" numberState="{= ${headerData>/Statuscd} === 'CMP' ? 'Success' : ${headerData>/Statuscd} === 'CRT' ? 'Error' : 'Warning'}">
-            <attributes>
-                <ObjectAttribute title="{i18n>CREATEDBY}" text="{headerData>/CREATEDBY}"/>
-                <ObjectAttribute title="{i18n>CREATEDDT}" text="{headerData>/CREATEDDT}"/>
-                <ObjectAttribute title="{i18n>UPDATEDBY}" text="{headerData>/UPDATEDBY}"/>
-                <ObjectAttribute title="{i18n>UPDATEDDT}" text="{headerData>/UPDATEDDT}"/>
-            </attributes>
-        </ObjectHeader>
+            <!-- OBJECT HEADER -->
+            <!--intro="{i18n>CurrentVersion}: {headerData>/Verno}" -->
+            <ObjectHeader id="objectHeader" responsive="true" fullScreenOptimized="true"  backgroundDesign="Solid" icon="sap-icon://blank-tag-2"
+                    title="{headerData>/SALESDOCTYP} ({headerData>/SALESDOCNO})" number="{headerData>/STATUS}" numberUnit="{i18n>Status}" numberState="{= ${headerData>/Statuscd} === 'CMP' ? 'Success' : ${headerData>/Statuscd} === 'CRT' ? 'Error' : 'Warning'}">
+                <attributes>
+                    <ObjectAttribute title="{i18n>CREATEDBY}" text="{headerData>/CREATEDBY}"/>
+                    <ObjectAttribute title="{i18n>CREATEDDT}" text="{headerData>/CREATEDDT}"/>
+                    <ObjectAttribute title="{i18n>UPDATEDBY}" text="{headerData>/UPDATEDBY}"/>
+                    <ObjectAttribute title="{i18n>UPDATEDDT}" text="{headerData>/UPDATEDDT}"/>
+                </attributes>
+            </ObjectHeader>
 
-    <!-- HEADER -->
-        <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Header" type="XML"/>
+            <VBox id="_IDGenVBox1" fitContainer="true" class="sidePadding vBoxDetail">
+                <!-- HEADER -->
+                <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Header" type="XML"/>
 
-    <!-- DETAILS -->
-        <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Detail" type="XML"/>
+                <!-- DETAILS -->
+                <!-- <core:Fragment fragmentName="zuisaldoc2.zuisaldoc2.view.subviews.Detail" type="XML"/> -->
+                
+                <IconTabBar id="itbDetail"
+                    expanded="{device>/isNoPhone}" 
+                    stretchContentHeight="true" 
+                    applyContentPadding="false"
+                    expandable="false" 
+                    class="tableDetail" 
+                    select="onSelectTab"
+                    headerBackgroundDesign="Solid" 
+                    >
+                    <items>
+                        <IconTabFilter id="vpoDetailsIconTab" text="Details">
+                            <uiT:Table id="salDocDetDynTable"
+                                class="sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd"
+                                visibleRowCountMode="Auto"
+                                showColumnVisibilityMenu="true"
+                                enableColumnFreeze="true"
+                                selectionMode="MultiToggle"
+                                cellClick=".onCellClick"
+                                sort="onSorted">           
+                                <uiT:extension>
+                                    <OverflowToolbar>
+                                        <HBox>
+                                            <Title id="SalesDocDetCount"/>
+                                            <!-- <Title text="{i18n>salesDocDetail}" class="sapUiTinyMarginBegin"/> -->
+                                        </HBox>
+                                        <ToolbarSpacer/>
+                                            <Button type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd"/>
+                                            <Button type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit"/>
+                                            <Button type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete"/>
+                                            <Button type="Ghost"  icon="sap-icon://save" tooltip="Save" press="onSalDocDetSave"/>
+                                            <Button type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" press="onSalDocDetCancel"/>
+
+                                            <Button type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
+                                            <Button type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
+                                            <Button type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/>
+                                            <Button id="btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout"/>
+                                        
+                                    </OverflowToolbar>
+                                </uiT:extension>
+                                <uiT:layoutData>
+                                    <FlexItemData growFactor="1" baseSize="0%"/>
+                                </uiT:layoutData>        
+                            </uiT:Table> 
+                        </IconTabFilter>
+                    </items>
+                    <layoutData>
+                        <FlexItemData growFactor="1" baseSize="0%"/>
+                    </layoutData>
+                </IconTabBar>
+            </VBox>
+        </content>
+        
     </Page>
 </mvc:View>

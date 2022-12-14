@@ -134,6 +134,7 @@
             <EntityType Name="SALDOCDET" sap:content-version="1">
                 <Key>
                     <PropertyRef Name="SALESDOCNO"/>
+                    <PropertyRef Name="SALESDOCITEM"/>
                 </Key>
                 <Property Name="SALESDOCNO" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Sales Doc No" sap:filterable="false"/>
                 <Property Name="SALESDOCITEM" Type="Edm.Int16" Nullable="false" sap:unicode="false" sap:label="Sales Doc Item" sap:filterable="false"/>

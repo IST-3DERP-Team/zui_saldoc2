@@ -34,13 +34,22 @@
             <Button type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
             <Button type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
             <Button type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/>
+            <Button id="btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout"/>
     </OverflowToolbar>
 
     <!-- #### DYNAMIC TABLE #### --> 
     <Panel class="sapUiTinyMarginTop" height="auto"> 
         <!-- <ScrollContainer width="100%" horizontal="true" vertical="true" focusable="true"> -->
-            <c:DynamicTable id="salDocDetDynTable" class="sapUiSizeCompact" selectionMode="None" 
-                        showColumnVisibilityMenu="true">
+            <c:DynamicTable 
+                id="salDocDetDynTable" 
+                class="sapUiSizeCompact" 
+                showColumnVisibilityMenu="true" 
+                enableColumnFreeze="true"
+                selectionMode="MultiToggle"
+                selectionBehavior="RowSelector"
+                rowSelectionChange="onRowChange"
+                cellClick="onCellClick"
+                >
             </c:DynamicTable>
         <!-- </ScrollContainer> -->
     </Panel>  
