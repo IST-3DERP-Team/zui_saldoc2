@@ -1,12 +1,20 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core" class="sapUiSizeCompact" xmlns:tnt="sap.tnt"
     xmlns:c="zuisaldoc2.zuisaldoc2.control" xmlns:t="sap.ui.table">
-        <Panel id="headerPanel" expandable="true" expanded="true" width="auto" class="sapUiSizeCompact">
+        <Panel id="headerPanel" expandable="false" expanded="true" width="auto" class="sapUiSizeCompact">
 
             <headerToolbar>
-                <Toolbar id="TB1" height="2rem" style="Clear">
+                <Toolbar id="TB1" height="2rem">
                     <Title text="{i18n>Header}" />
                     <ToolbarSpacer />
-                    <Button type="Ghost" icon="sap-icon://add" tooltip="{i18n>Addsaldocheader}" press="setHeaderEditMode" visible="true"/>
+                    <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
+			        <menu>
+				        <Menu id="_IDGenMenu1">
+                            <MenuItem id="_IDGenMenuItem1" text="Style" press="onPress"/>
+                            <MenuItem id="_IDGenMenuItem2" text="IO" />
+					        <MenuItem id="_IDGenMenuItem3" text="Style/IO" />
+                        </Menu>
+			        </menu>                    
+		            </MenuButton>
                     <Button type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" press="setHeaderEditMode" visible="true"/>
                     <Button type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="true"/> 
                     <!-- <Button type="Ghost" icon="sap-icon://delete" text="{i18n>Deletesaldoc}" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="${HeaderEditModeModel>/editMode} === true ? false : true }"/>  -->
@@ -20,7 +28,7 @@
             
             <f:Form id="SalesDocHeaderForm1" editable="false" class="sapUiNoContentPadding">
                 <f:layout>
-                    <f:ResponsiveGridLayout columnsXL="4" columnsL="3" columnsM="3" singleContainerFullSize="false" />
+                    <f:ResponsiveGridLayout columnsXL="4" columnsL="2" columnsM="1" singleContainerFullSize="false" />
                 </f:layout>
                 <f:formContainers>
                     <f:FormContainer ariaLabelledBy="Grp1" class="sapUiNoContentPadding" >

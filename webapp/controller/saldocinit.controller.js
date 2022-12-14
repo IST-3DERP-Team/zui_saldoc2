@@ -16,8 +16,11 @@ sap.ui.define([
 
         var that;
         var salDocNotxt;
+        var _promiseResult;
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "MM/dd/yyyy" });
+        var timeFormat = sap.ui.core.format.DateFormat.getTimeInstance({pattern: "KK:mm:ss a"}); 
+        var TZOffsetMs = new Date(0).getTimezoneOffset()*60*1000;
 
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocinit", {
             onInit: function (oEvent) {
@@ -37,19 +40,6 @@ sap.ui.define([
                 this.setSmartFilterModel();                  
                 // this.onSearch();
             },
-
-            onAfterRendering:function(){
-                 //double click event
-                var oModel = new JSONModel();
-                var oTable = this.getView().byId("salDocDynTable");
-                oTable.setModel(oModel);
-                oTable.attachBrowserEvent('dblclick', function (e) {
-                    e.preventDefault();
-                    that.setChangeStatus(false); //remove change flag
-                    that.navToDetail(salDocNotxt); //navigate to detail page
-
-                });
-            },
             setSmartFilterModel: function () {
                 //Model StyleHeaderFilters is for the smartfilterbar
                 var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
@@ -67,35 +57,35 @@ sap.ui.define([
                 //     }
                 // });
             },
-            onCellClick: function() {
-                var oTable = this.getView().byId("salDocDynTable");
-                var aSelRows = oTable.getSelectedIndices();
-                console.log(aSelRows.Length);
-                if (aSelRows.length > 0) 
-                aSelRows.forEach(rec => {
-                    var oContext = oTable.getContextByIndex(rec);
-                    var vSALDOCNO = oContext.getObject().SALESDOCNO;
-                    salDocNotxt = vSALDOCNO;
-                    // var oEntitySet = "/GMCSet('" + vGmc + "')";
-                    // var oParam = {
-                    //     "Deleted": "X"
-                    });
-
-                    // alert(salDocNotxt);
-            },
-
-            ondblClick: function(oEvent) {
-                console.log(oEvent);
-                alert("Double Clicked!");
-            },
             
-            onRowChange: function(oEvent) {
-                var sPath = oEvent.getParameter("rowContext").getPath();
+            onRowChange: async function(oEvent) {
+                var me = this;
+                var sPath = oEvent.getParameter("rowContext");
+                sPath = "/results/"+ sPath.getPath().split("/")[2];
+                var selPath = this.byId(oEvent.getParameters().id).mProperties.selectedIndex;
+
                 var oTable = this.getView().byId("salDocDynTable");
                 var model = oTable.getModel();
+
+                var oRow = this.getView().getModel("DataModel").getProperty(sPath)
+
+                salDocNotxt = oRow.SALESDOCNO;
+                
+                console.log(salDocNotxt);
+                _promiseResult = new Promise((resolve, reject)=>{
+                    oTable.getRows().forEach(row => {
+                        if(row.getBindingContext().sPath.replace("/rows/", "") === sPath.split("/")[2]){
+                            resolve(row.addStyleClass("activeRow"));
+                            oTable.setSelectedIndex(selPath);
+                        }else{
+                            resolve(row.removeStyleClass("activeRow"));
+                        }
+                    });
+                });
+
                 //get the selected  data from the model and set to variable style
-                var data = model.getProperty(sPath);
-                salDocNotxt = data['SALESDOCNO'];
+                // var data = model.getProperty(sPath);
+                // salDocNotxt = data['SALESDOCNO'];
 
                 // var oTable = this.getView().byId("salDocDynTable");
                 // var aSelRows = oTable.getSelectedIndices();
@@ -112,6 +102,92 @@ sap.ui.define([
 
                 //     this.goToDetailClick(salDocNotxt);
             },
+            onCellClick: async function(oEvent){
+                var sRowPath = oEvent.getParameters().rowBindingContext.sPath;
+                sRowPath = "/results/"+ sRowPath.split("/")[2];
+                var oRow = this.getView().getModel("DataModel").getProperty(sRowPath)
+                var oTable = this.getView().byId("salDocDynTable");
+
+                salDocNotxt = oRow.SALESDOCNO;
+
+                _promiseResult = new Promise((resolve, reject)=>{
+                    oTable.getRows().forEach(row => {
+                        if(row.getBindingContext().sPath.replace("/rows/", "") === sRowPath.split("/")[2]){
+                            resolve(row.addStyleClass("activeRow"));
+                        }else{
+                            resolve(row.removeStyleClass("activeRow"));
+                        }
+                    });
+                });
+                await _promiseResult;
+
+            },
+            onSaveTableLayout: function(){
+                var type = "SALDOCINIT";
+                var tabName = "ZDV_3DERP_SALDOC";
+                var vSBU =  this._sbu;
+                
+                // saving of the layout of table
+                var ctr = 1;
+                var oTable = this.getView().byId("salDocDynTable");
+                var oColumns = oTable.getColumns();
+    
+                var oParam = {
+                    "SBU": vSBU,
+                    "TYPE": type,
+                    "TABNAME": tabName,
+                    "TableLayoutToItems": []
+                };
+                
+                //get information of columns, add to payload
+                oColumns.forEach((column) => {
+                    oParam.TableLayoutToItems.push({
+                        COLUMNNAME: column.sId,
+                        ORDER: ctr.toString(),
+                        SORTED: column.mProperties.sorted,
+                        SORTORDER: column.mProperties.sortOrder,
+                        SORTSEQ: "1",
+                        VISIBLE: column.mProperties.visible,
+                        WIDTH: column.mProperties.width.replace('rem','')
+                    });
+    
+                    ctr++;
+                });
+    
+                //call the layout save
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+
+                oModel.create("/TableLayoutSet", oParam, {
+                    method: "POST",
+                    success: function(data, oResponse) {
+                        sap.m.MessageBox.information("Layout saved.");
+                        //Common.showMessage(me._i18n.getText('t6'));
+                    },
+                    error: function(err) {
+                        sap.m.MessageBox.error(err);
+                    }
+                });                
+            },
+            // onDynamicSearch: async function(){
+            //     var oJSONModel = new JSONModel();
+            //     var extendPOData = {
+            //         Title: "Create Purchase Order: Extension Option",
+            //         Text: "PO of today's date already exists",
+            //         POLabel: "Purchase Order",
+            //         VendorLabel: "Vendor",
+            //         PurchGrpLabel: "Purchasing Group",
+            //         PONO: "resultPOExtend.at(0).PONO",
+            //         VENDOR: "resultPOExtend.at(0).VENDOR",
+            //         PURCHGRP: "resultPOExtend.at(0).PURCHGRP",
+            //     }
+                
+            //     oJSONModel.setData(extendPOData);
+
+            //     this.loadDynamicSearch = sap.ui.xmlfragment("zuisaldoc2.zuisaldoc2.view.fragments.dialog.DynamicSearchHelp", this);
+            //     this.loadDynamicSearch.setModel(oJSONModel);
+            //     this.getView().addDependent(this.loadDynamicSearch);
+            //     this.loadDynamicSearch.open();
+            // },
 
             setChangeStatus: function(changed) {
                 //Set change flag 
@@ -137,23 +213,20 @@ sap.ui.define([
                 //get dynamic columns based on saved layout or ZERP_CHECK
                 var oJSONColumnsModel = new sap.ui.model.json.JSONModel();
                 this.oJSONModel = new sap.ui.model.json.JSONModel();
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
                                 
                 // this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
                 
                 console.log(this._sbu);
                 
-                this._Model.setHeaders({
+                oModel.setHeaders({
                     sbu: this._sbu,
-                    // sbu: 'VER',
                     type: 'SALDOCINIT',
-                    tabname: 'ZERP_SALDOCHDR'
-                    // ,
-                    // userid: this._userid
-                    // userid: 'BAS_CONN'
+                    tabname: 'ZDV_3DERP_SALDOC'
                 });
                 
                 //DynamicColumnsSet
-                this._Model.read("/ColumnsSet", {
+                oModel.read("/ColumnsSet", {
                     success: function (oData, oResponse) {
                         oJSONColumnsModel.setData(oData);
                         me.oJSONModel.setData(oData);
@@ -188,11 +261,17 @@ sap.ui.define([
                 oModel.read("/SALDOCHDRINITSet", {
                     filters: aFilters,
                     success: function (oData, oResponse) {
+                        
+                        console.log(oData)
                         oData.results.forEach(item => {
-                            item.DLVDT = dateFormat.format(item.DLVDT);
-                            item.DOCDT = dateFormat.format(item.DOCDT);
-                            item.CREATEDDT = dateFormat.format(item.CREATEDDT);
-                            item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                            
+                            item.DLVDT = dateFormat.format(new Date(item.DLVDT));
+                            item.DOCDT = dateFormat.format(new Date(item.DOCDT));
+                            item.CPODT = dateFormat.format(new Date(item.CPODT));
+                            item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
+                            item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
+                            item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
+                            item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
                         })
                         oText.setText(oData.results.length + "");
                         oJSONDataModel.setData(oData);
@@ -264,11 +343,11 @@ sap.ui.define([
                 // });
 
                 //add column for manage button
-                oColumnsData.unshift({
-                    "ColumnName": "Manage",
-                    "ColumnType": "SEL",
-                    "Visible": false
-                });
+                // oColumnsData.unshift({
+                //     "ColumnName": "Manage",
+                //     "ColumnType": "SEL",
+                //     "Visible": false
+                // });
 
                 //set the column and data model
                 var oModel = new JSONModel();
@@ -292,10 +371,18 @@ sap.ui.define([
                 var oTable = this.getView().byId("salDocDynTable");
                 oTable.setModel(oModel);
 
+                oTable.attachBrowserEvent('dblclick', function (e) {
+                    e.preventDefault();
+                    me.setChangeStatus(false); //remove change flag
+                    me.navToDetail(salDocNotxt); //navigate to detail page
+
+                });
+
                 console.log(oTable);
 
                 //bind the dynamic column to the table
                 oTable.bindColumns("/columns", function (index, context) {
+                    console.log(context.getObject());
                     var sColumnId = context.getObject().ColumnName;
                     var sColumnLabel = context.getObject().ColumnLabel;
                     var sColumnType = context.getObject().ColumnType;
@@ -362,7 +449,7 @@ sap.ui.define([
                     });
                     oColumnTemplate.data("SALESDOCNO", "{}"); //custom data to hold style number
                 } else {
-                    oColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}" }); //default text
+                    oColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}", wrapping: false }); //default text
                 }
 
                 return oColumnTemplate;
@@ -403,27 +490,22 @@ sap.ui.define([
                 return mSize;
             },
 
-            onKeyUp(oEvent) {
-                //console.log("onKeyUp!");
-
-                // var _dataMode = this.getView().getModel("undefined").getData().dataMode;
-                // _dataMode = _dataMode === undefined ? "READ" : _dataMode;
-
-                // if ((oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") && oEvent.srcControl.sParentAggregationName === "rows" && _dataMode === "READ") {
+            onKeyUp: async function(oEvent) {
                 if ((oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") && oEvent.srcControl.sParentAggregationName === "rows") {
                     var oTable = this.getView().byId("salDocDynTable");
-                    var model = oTable.getModel();
 
                     var sRowPath = this.byId(oEvent.srcControl.sId).oBindingContexts["undefined"].sPath;
                     var index = sRowPath.split("/");
-                    oTable.setSelectedIndex(parseInt(index[2]));
-                    //var data = model.getProperty(sRowPath);
-                    // var oRow = this.getView().getModel("DataModel").getProperty(sRowPath);
-                    // console.log(sRowPath)
-                    // console.log(data)
-                    //console.log(oRow)
-                    // this.getView().getModel("ui").setProperty("/activeGmc", oRow.GMC);
-
+                    _promiseResult = new Promise((resolve,reject)=> {
+                        oTable.getRows().forEach(row => {
+                            if(row.getBindingContext().sPath.replace("/rows/", "") === index[2]){
+                                resolve(row.addStyleClass("activeRow"));
+                            }else{
+                                resolve(row.removeStyleClass("activeRow"));
+                            }
+                        });
+                    });
+                    await _promiseResult;
                 }
             },
 
@@ -450,7 +532,7 @@ sap.ui.define([
 
             navToDetail: function (salesDocNo, sbu) {
                 //route to detail page
-                that._router.navTo("RouteSalesDocDetail", {
+                this._router.navTo("RouteSalesDocDetail", {
                     salesdocno: salesDocNo,
                     sbu: this._sbu
                 });

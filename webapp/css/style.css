@@ -1,1 +1,48 @@
-/* Enter your custom styles here */
+/* On Click Cell and Arrow Key highlight */
+.activeRow {
+    background-color: #e1ebf3 !important;
+}
+.sapMILILabel {
+    width: 50% !important;
+    max-width: 50% !important;
+    min-width: 50% !important;
+}
+
+
+.sapUiRespGrid{
+
+    padding-top: 0.2rem !important;
+
+    padding-bottom: 0rem !important;
+
+    /*padding-right: 2rem;
+
+    padding-left: 2rem;*/
+
+}
+.sapUiFormResGrid>div {
+    padding: 0.5rem 0.5rem !important;
+    box-sizing: border-box !important;
+}
+.sapUiFormM:not(.sapUiFormEdit) .sapUiFormResGridCont>div {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    font-size: 1px !important;
+}
+
+.sapUiSizeCompact .sapMInputBaseHeightMargin {
+    margin: 0rem 0 !important;
+}
+
+.vBoxDetail{
+    height: 80%;
+    padding-left: 0rem;
+    padding-right: 0rem;
+}
+/* .tableDetail {
+    position: relative;
+} */
+.tableDetail > .sapMFlexItem {
+    height: 100%;
+}
+

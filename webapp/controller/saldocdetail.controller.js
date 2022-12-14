@@ -18,8 +18,11 @@ sap.ui.define([
         var that;
         
         var Core = sap.ui.getCore();
+        var _promiseResult;
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "MM/dd/yyyy" });
+        var timeFormat = sap.ui.core.format.DateFormat.getTimeInstance({pattern: "KK:mm:ss a"}); 
+        var TZOffsetMs = new Date(0).getTimezoneOffset()*60*1000;
 
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocdetail", {
             onInit: function () {
@@ -76,18 +79,17 @@ sap.ui.define([
                 //get dynamic columns based on saved layout or ZERP_CHECK
                 var oJSONColumnsModel = new sap.ui.model.json.JSONModel();
                 this.oJSONModel = new sap.ui.model.json.JSONModel();
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
                 
                 // this._SBU = this.getView().byId("SmartFilterBar").getFilterData().SBU;  //get selected SBU
                 this._sbu = 'VER'
-                this._Model.setHeaders({
+                oModel.setHeaders({
                     sbu: this._sbu,
                     type: 'SALDOCDET',
                     tabname: 'ZERP_SALDOCDET'
-                    // userid: this._userid
-                    // userid: 'BAS_CONN'
                 });
-                this._Model.read("/ColumnsSet", {
-                    success: function (oData, oResponse) { 
+                oModel.read("/ColumnsSet", {
+                    success: function (oData, oResponse) {
                         oJSONColumnsModel.setData(oData);
                         me.oJSONModel.setData(oData);
                         me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
@@ -111,11 +113,14 @@ sap.ui.define([
                         "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                     },
                     success: function (oData, oResponse) { 
+                        console.log(oData);
                         oData.results.forEach(item => {
-                            item.CPODT = dateFormat.format(item.CPODT);
-                            item.DLVDT = dateFormat.format(item.DLVDT);
-                            item.CREATEDDT = dateFormat.format(item.CREATEDDT);
-                            item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                            item.CPODT = dateFormat.format(new Date(item.CPODT));
+                            item.DLVDT = dateFormat.format(new Date(item.DLVDT));
+                            item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
+                            item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
+                            item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
+                            item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
                         })
                         // oText.setText(oData.Results.length + "");
                         oJSONDataModel.setData(oData);
@@ -146,10 +151,10 @@ sap.ui.define([
                 // });
  
                 //add column for manage button
-                oDetColumnsData.unshift({
-                    "ColumnName": "ManageDet",
-                    "ColumnType": "SEL"
-                });
+                // oDetColumnsData.unshift({
+                //     "ColumnName": "ManageDet",
+                //     "ColumnType": "SEL"
+                // });
 
                 //set the column and data model
                 var oModel2 = new JSONModel();
@@ -171,7 +176,7 @@ sap.ui.define([
                     var sColumnSorted = context.getObject().Sorted;
                     var sColumnSortOrder = context.getObject().SortOrder;
                     return new sap.ui.table.Column({
-                         // id: sColumnId,
+                         id: sColumnId + "-Det",
                          label: sColumnLabel, //"{i18n>" + sColumnId + "}",
                          template: me.columnTemplate(sColumnId, sColumnType,"Stat"),
                          width: me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'px',
@@ -192,27 +197,8 @@ sap.ui.define([
                 var oDetColumnTemplate;
                 
                 //different component based on field
-                // if (sColumnId === "STATUSCD") { //display infolabel for Status Code
-                //     oDetColumnTemplate = new sap.tnt.InfoLabel({
-                //         text: "{" + sColumnId + "}",
-                //         colorScheme: "{= ${" + sColumnId + "} === 'CMP' ? 8 : ${" + sColumnId + "} === 'CRT' ? 3 : 1}"
-                //     })
-                // } else 
-                if (sColumnType === "SEL") { //Manage button
-                    oDetColumnTemplate = new sap.m.Button({
-                        text: "",
-                        icon: "sap-icon://detail-view",
-                        type: "Ghost",
-                        // press: this.goToDetail,
-                        tooltip: "Manage this Sales Doc Item"
-                    });
-                    oDetColumnTemplate.data("SALESDOCITEM", "{}"); //custom data to hold style number
-                } 
-                else {
-                    oDetColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}" }); //default text
-                }
                 
-                oDetColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}" }); //default text
+                oDetColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}", wrapping: false }); //default text
                 return oDetColumnTemplate;
             },
 
@@ -310,9 +296,9 @@ sap.ui.define([
                 //             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                 //         },
 
-                    // read Style header data
-                    var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
-                    oModel.read(entitySet, {
+                // read Style header data
+                var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
+                oModel.read(entitySet, {
                     success: function (oData, oResponse) {
                         // console.log(oData);
                         // oData.results.forEach(item => {
@@ -381,6 +367,92 @@ sap.ui.define([
                 }
                 var oMsgStrip = that.getView().byId('HeaderMessageStrip');
                 oMsgStrip.setVisible(false);
-            }
+            },
+
+            onRowChange: async function(oEvent) {
+                var sPath = oEvent.getParameter("rowContext");
+                sPath = "/results/"+ sPath.getPath().split("/")[2];
+                var selPath = this.byId(oEvent.getParameters().id).mProperties.selectedIndex;
+
+                var oTable = this.getView().byId("salDocDetDynTable");
+
+                var oRow = this.getView().getModel("DetDataModel").getProperty(sPath)
+
+                _promiseResult = new Promise((resolve, reject)=>{
+                    oTable.getRows().forEach(row => {
+                        if(row.getBindingContext().sPath.replace("/rows/", "") === sPath.split("/")[2]){
+                            resolve(row.addStyleClass("activeRow"));
+                        }else{
+                            resolve(row.removeStyleClass("activeRow"));
+                        }
+                    });
+                });
+            },
+            onCellClick: async function(oEvent){
+                var sRowPath = oEvent.getParameters().rowBindingContext.sPath;
+                sRowPath = "/results/"+ sRowPath.split("/")[2];
+                var oRow = this.getView().getModel("DetDataModel").getProperty(sRowPath)
+                var oTable = this.getView().byId("salDocDetDynTable");
+
+                // salDocNotxt = oRow.SALESDOCNO;
+
+                _promiseResult = new Promise((resolve, reject)=>{
+                    oTable.getRows().forEach(row => {
+                        if(row.getBindingContext().sPath.replace("/rows/", "") === sRowPath.split("/")[2]){
+                            resolve(row.addStyleClass("activeRow"));
+                        }else{
+                            resolve(row.removeStyleClass("activeRow"));
+                        }
+                    });
+                });
+                await _promiseResult;
+
+            },
+            onSaveTableLayout: function(){
+                var type = "SALDOCDET";
+                var tabName = "ZERP_SALDOCDET";
+                var vSBU =  this._sbu;
+                
+                // saving of the layout of table
+                var ctr = 1;
+                var oTable = this.getView().byId("salDocDetDynTable");
+                var oColumns = oTable.getColumns();
+    
+                var oParam = {
+                    "SBU": vSBU,
+                    "TYPE": type,
+                    "TABNAME": tabName,
+                    "TableLayoutToItems": []
+                };
+                
+                //get information of columns, add to payload
+                oColumns.forEach((column) => {
+                    oParam.TableLayoutToItems.push({
+                        COLUMNNAME: column.sId.split("-")[0],
+                        ORDER: ctr.toString(),
+                        SORTED: column.mProperties.sorted,
+                        SORTORDER: column.mProperties.sortOrder,
+                        SORTSEQ: "1",
+                        VISIBLE: column.mProperties.visible,
+                        WIDTH: column.mProperties.width.replace('rem','')
+                    });
+    
+                    ctr++;
+                });
+    
+                //call the layout save
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+                
+                oModel.create("/TableLayoutSet", oParam, {
+                    method: "POST",
+                    success: function(data, oResponse) {
+                        sap.m.MessageBox.information("Layout saved.");
+                        //Common.showMessage(me._i18n.getText('t6'));
+                    },
+                    error: function(err) {
+                        sap.m.MessageBox.error(err);
+                    }
+                });                
+            },
         });
     });

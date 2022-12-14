@@ -118,7 +118,11 @@
             "": {
                 "dataSource": "mainService",
                 "preload": true,
-                "settings": {}
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false
+                }
             },
             "ZGW_3DERP_COMMON_SRV": {
                 "dataSource": "ZGW_3DERP_COMMON_SRV",
