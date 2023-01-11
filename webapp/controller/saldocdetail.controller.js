@@ -5,6 +5,7 @@ sap.ui.define([
     "../js/Utils",
     "sap/ui/model/json/JSONModel",
     'jquery.sap.global',
+    'sap/m/MessageBox',
     'sap/ui/core/routing/HashChanger',
     'sap/m/MessageStrip',
     "../control/DynamicTable"
@@ -12,7 +13,7 @@ sap.ui.define([
     /** 
      * @param {typeof sap.ui.core.mvc.Controller} Controller 
      */
-    function (Controller, Filter, Common, Utils, JSONModel, jQuery, HashChanger, MessageStrip, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, MessageStrip, control) {
         "use strict"; 
 
         var that;
@@ -21,6 +22,8 @@ sap.ui.define([
         var _promiseResult;
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "MM/dd/yyyy" });
+        var sapDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern : "yyyy-MM-dd" });
+
         var timeFormat = sap.ui.core.format.DateFormat.getTimeInstance({pattern: "KK:mm:ss a"}); 
         var TZOffsetMs = new Date(0).getTimezoneOffset()*60*1000;
 
@@ -37,13 +40,18 @@ sap.ui.define([
                 this._Model = this.getOwnerComponent().getModel();
                 this._Model2 = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
 
+                this._onBeforeDetailData = []
+                this._isEdited = false
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
                 this._router = oComponent.getRouter();
-                this._router.getRoute("RouteSalesDocDetail").attachPatternMatched(this._routePatternMatched, this);                
+                this._router.getRoute("RouteSalesDocDetail").attachPatternMatched(this._routePatternMatched, this);  
+                this.getView().setModel(new JSONModel({
+                    editMode: 'READ'
+                }), "ui");           
             },
 
-            _routePatternMatched: function (oEvent) {
+            _routePatternMatched: async function (oEvent) {
                 this._salesDocNo = oEvent.getParameter("arguments").salesdocno; //get Style from route pattern
                 this._sbu = oEvent.getParameter("arguments").sbu; //get SBU from route pattern
 
@@ -53,6 +61,12 @@ sap.ui.define([
                 //set Change Status    
                 this.setChangeStatus(false);
                 
+                //Load header
+                this.getHeaderConfig(); //get visible header fields
+                this.getHeaderData(); //get header data
+                
+                // build Dynamic table for Sales Document Details
+                await this.getDynamicTableColumns();
                 if (this._salesDocNo === "NEW") { 
                     //create new - only header is editable at first
                     this.setHeaderEditMode(); 
@@ -62,18 +76,9 @@ sap.ui.define([
                     this.cancelHeaderEdit(); 
                     // this.setDetailVisible(true); //make detail section visible
                 }
-                
-                //Load header
-                this.getHeaderConfig(); //get visible header fields
-                this.getHeaderData(); //get header data
-                
-                // build Dynamic table for Sales Document Details
-                setTimeout(() => {
-                    this.getDynamicTableColumns(); 
-                },100);
             },
 
-            getDynamicTableColumns: function () {
+            getDynamicTableColumns: async function () {
                 var me = this;
 
                 //get dynamic columns based on saved layout or ZERP_CHECK
@@ -88,18 +93,21 @@ sap.ui.define([
                     type: 'SALDOCDET',
                     tabname: 'ZERP_SALDOCDET'
                 });
-                oModel.read("/ColumnsSet", {
-                    success: function (oData, oResponse) {
-                        oJSONColumnsModel.setData(oData);
-                        me.oJSONModel.setData(oData);
-                        me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
-                        me.getDynamicTableData(oData.results);
-                    },
-                    error: function (err) { }
-                });
+                await new Promise((resolve, reject)=>{
+                    oModel.read("/ColumnsSet", {
+                        success: function (oData, oResponse) {
+                            oJSONColumnsModel.setData(oData);
+                            me.oJSONModel.setData(oData);
+                            me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
+                            me.getDynamicTableData(oData.results);
+                            resolve();
+                        },
+                        error: function (err) { }
+                    });
+                })
             },
 
-            getDynamicTableData: function (columns) {
+            getDynamicTableData: async function (columns) {
                 var me = this;
                 var oModel = this.getOwnerComponent().getModel();
                 var oJSONDataModel = new sap.ui.model.json.JSONModel();
@@ -108,27 +116,29 @@ sap.ui.define([
 
                 var oText = this.getView().byId("SalesDocDetCount");
                 
-                oModel.read("/SALDOCDETSet", {
-                    urlParameters: {
-                        "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
-                    },
-                    success: function (oData, oResponse) { 
-                        console.log(oData);
-                        oData.results.forEach(item => {
-                            item.CPODT = dateFormat.format(new Date(item.CPODT));
-                            item.DLVDT = dateFormat.format(new Date(item.DLVDT));
-                            item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
-                            item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
-                            item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
-                            item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
-                        })
-                        // oText.setText(oData.Results.length + "");
-                        oJSONDataModel.setData(oData);
-                        me.getView().setModel(oJSONDataModel, "DetDataModel");
-                        me.setTableData();
-                        me.setChangeStatus(false);
-                    },
-                    error: function (err) { }
+                await new Promise((resolve, reject)=>{
+                    oModel.read("/SALDOCDETSet", {
+                        urlParameters: {
+                            "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
+                        },
+                        success: function (oData, oResponse) { 
+                            console.log(oData);
+                            oData.results.forEach(item => {
+                                item.CPODT = dateFormat.format(new Date(item.CPODT));
+                                item.DLVDT = dateFormat.format(new Date(item.DLVDT));
+                                item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
+                                item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
+                                item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
+                                item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+                            })
+                            // oText.setText(oData.Results.length + "");
+                            oJSONDataModel.setData(oData);
+                            me.getView().setModel(oJSONDataModel, "DetDataModel");
+                            me.setTableData();
+                            me.setChangeStatus(false);
+                        },
+                        error: function (err) { }
+                    });
                 });
             },
             
@@ -162,6 +172,14 @@ sap.ui.define([
                     columns: oDetColumnsData,
                     rows: oDetData
                 });
+
+                var oDelegateKeyUp = {
+                    onkeyup: function(oEvent){
+                        that.onkeyup(oEvent);
+                    }
+                };
+    
+                this.byId("salDocDetDynTable").addEventDelegate(oDelegateKeyUp);
 
                 var oDetTable = this.getView().byId("salDocDetDynTable");
                 oDetTable.setModel(oModel2);
@@ -274,62 +292,78 @@ sap.ui.define([
 
             },
 
-            getHeaderData: function () {
+            getHeaderData: async function () {
                 var me = this;
                 var salesDocNo = this._salesDocNo;
                 var oModel = this.getOwnerComponent().getModel();
                 var oJSONModel = new JSONModel();
+                var oJSONEdit = new JSONModel();
                 // var oJSONDataModel = new sap.ui.model.json.JSONModel();
                 
                 var oView = this.getView();
-
-                Common.openLoadingDialog(that);
-
-                //read Style header data
-                // var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
-                // oModel.read(entitySet, {
-
-                // console.log(salesDocNo);
-
-                //     oModel.read("/SALDOCHDRSet", {
-                //         urlParameters: {
-                //             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
-                //         },
+                var edditableFields = [];
 
                 // read Style header data
                 var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
-                oModel.read(entitySet, {
-                    success: function (oData, oResponse) {
-                        // console.log(oData);
-                        // oData.results.forEach(item => {
-                        //     item.CPODT = dateFormat.format(item.CPODT);
-                        //     item.DLVDT = dateFormat.format(item.DLVDT);
-                        //     item.CREATEDDT = dateFormat.format(item.CREATEDDT);
-                        //     item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
-                        // })
-                        oJSONModel.setData(oData);
-                        oView.setModel(oJSONModel, "headerData");
-
-                        // oJSONDataModel.setData(oData);
-                        // oView.setModel(oJSONDataModel, "headerData");
-
-                        Common.closeLoadingDialog(that);
-                        me.setChangeStatus(false);
-                    },
-                    error: function () {
-                        Common.closeLoadingDialog(that);
-                    }
-                })
+                await new Promise((resolve, reject)=>{
+                    oModel.read(entitySet, {
+                        success: function (oData, oResponse) {
+                            // console.log(oData);
+                            // oData.results.forEach(item => {
+                            //     item.CPODT = dateFormat.format(item.CPODT);
+                            //     item.DLVDT = dateFormat.format(item.DLVDT);
+                            //     item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                            //     item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                            // })
+                            oJSONModel.setData(oData);
+                            oView.setModel(oJSONModel, "headerData");
+    
+                            for (var oDatas in oData) {
+                                //get only editable fields
+                                edditableFields[oDatas] = false;
+                            }
+                            oJSONEdit.setData(edditableFields);
+                            oView.setModel(oJSONEdit, "HeaderEditModeModel");
+                            // oJSONDataModel.setData(oData);
+                            // oView.setModel(oJSONDataModel, "headerData");
+                            me.setChangeStatus(false);
+                            resolve();
+                        },
+                        error: function () {
+                            resolve();
+                        }
+                    })
+                }) 
+                
             },
 
-            setHeaderEditMode: function () {
+            setHeaderEditMode: async function () {
                 //unlock editable fields of style header
                 var oJSONModel = new JSONModel();
-                var data = {};
                 this._headerChanged = false;
-                data.editMode = true;
-                oJSONModel.setData(data);
+                var oDataEDitModel = this.getView().getModel("HeaderEditModeModel"); 
+                var oDataEdit = oDataEDitModel.getProperty('/');
+                var edditableFields = []
+
+                for (var oDatas in oDataEdit) {
+                    //get only editable fields
+                    edditableFields[oDatas] = true;
+                }
+                edditableFields.SALESDOCNO = false
+                edditableFields.SALESDOCTYP = false
+
+                // console.log(oDataEdit);
+                // data.editMode = true;
+                oJSONModel.setData(edditableFields);
                 this.getView().setModel(oJSONModel, "HeaderEditModeModel"); 
+                // this.getView().setModel(oJSONModel, "headerData"); 
+
+                this.byId("btnHdrEdit").setVisible(false);
+                this.byId("btnHdrDelete").setVisible(false);
+                this.disableOtherTabs("itbDetail");
+
+                this.byId("btnHdrSave").setVisible(true);
+                this.byId("btnHdrCancel").setVisible(true);
             },
 
             // setDetailVisible: function(bool) {
@@ -337,7 +371,7 @@ sap.ui.define([
             //     detailPanel.setVisible(bool);
             // },
 
-            cancelHeaderEdit: function () {
+            cancelHeaderEdit: async function () {
                 //confirm cancel edit of style header
                 if (this._headerChanged) {
                     if (!this._DiscardHeaderChangesDialog) {
@@ -348,27 +382,258 @@ sap.ui.define([
                     this._DiscardHeaderChangesDialog.addStyleClass("sapUiSizeCompact");
                     this._DiscardHeaderChangesDialog.open();
                 } else {
+                    this.byId("btnHdrEdit").setVisible(true);
+                    this.byId("btnHdrDelete").setVisible(true);
+                    this.enableOtherTabs("itbDetail");
+                    
+                    this.byId("btnHdrSave").setVisible(false);
+                    this.byId("btnHdrCancel").setVisible(false);
+
                     this.closeHeaderEdit();
                 }
             },
 
-            closeHeaderEdit: function () {
+            closeHeaderEdit: async function () {
                 //on cancel confirmed - close edit mode and reselect backend data
                 var oJSONModel = new JSONModel();
-                var data = {};
                 that._headerChanged = false;
                 that.setChangeStatus(false);
-                data.editMode = false;
-                oJSONModel.setData(data);
+
+                var oDataEDitModel = this.getView().getModel("HeaderEditModeModel"); 
+                var oDataEdit = oDataEDitModel.getProperty('/');
+                var edditableFields = []
+
+                for (var oDatas in oDataEdit) {
+                    //get only editable fields
+                    edditableFields[oDatas] = false;
+                }
+
+                oJSONModel.setData(edditableFields);
                 that.getView().setModel(oJSONModel, "HeaderEditModeModel");
                 if (that._DiscardHeaderChangesDialog) {
                     that._DiscardHeaderChangesDialog.close();
-                    that.getHeaderData();
                 }
+                await that.getHeaderData();
                 var oMsgStrip = that.getView().byId('HeaderMessageStrip');
                 oMsgStrip.setVisible(false);
             },
 
+            onSalDocDetAdd: async function(){
+                var me = this;
+                var bProceed = true
+
+                var detailsItemArr = [];
+                var detailsItemLastCnt = 0;
+                var detailsItemObj = this._onBeforeDetailData;
+                var newInsertField = [];
+                
+                detailsItemObj = detailsItemObj.length === undefined ? [] : detailsItemObj;
+
+                for(var x = 0; x < detailsItemObj.length; x++){
+                    detailsItemArr.push(detailsItemObj[x]);
+                }
+                detailsItemArr.sort(function(a, b){return b - a});
+                detailsItemLastCnt = isNaN(Object.keys(detailsItemArr).pop()) ? 0 : Object.keys(detailsItemArr).pop();
+
+                detailsItemLastCnt = String(parseInt(detailsItemLastCnt) + 1);
+
+                // for(var x = 0; x < detailsItemObj.length; x++){
+                //     detailsItemArr.push(detailsItemObj[x].Tdformat);
+                // }
+                // detailsItemArr.sort(function(a, b){return b - a});
+                // detailsItemLastCnt = isNaN(detailsItemArr[0]) ? 0 : detailsItemArr[0];
+                
+                // detailsItemLastCnt = String(parseInt(detailsItemLastCnt) + 1);
+                for (var oDatas in detailsItemObj[0]) {
+                    //get only editable fields
+                    if(oDatas !== '__metadata')
+                        newInsertField[oDatas] = "";
+                }
+                detailsItemObj.push(newInsertField);
+                
+                this.getView().getModel("DetDataModel").setProperty("/results", detailsItemObj);
+                await this.setTableData();
+                this.byId("btnDetAdd").setVisible(true);
+                this.byId("btnDetEdit").setVisible(false);
+                this.byId("btnDetDelete").setVisible(false);
+                this.byId("btnDetSave").setVisible(true);
+                this.byId("btnDetCancel").setVisible(true);
+                // this.byId("btnDetCreateStyle").setVisible(false);
+                // this.byId("btnDetCreateIO").setVisible(false);
+                // this.byId("btnDetCreateStyleIO").setVisible(false);
+                this.byId("btnDetTabLayout").setVisible(false);
+                this.byId("TB1").setEnabled(false);
+                this.onRowEditPO('salDocDetDynTable', 'DetDynColumns');
+
+                //Set Edit Mode
+                console.log(this.getView().getModel("ui").getData().editMode)
+                this.getView().getModel("ui").setProperty("/editMode", 'NEW');
+                console.log(this.getView().getModel("ui").getData().editMode)
+                // this.getView().setModel(detailsJSONModel, "remarksTblData");
+            },
+
+            onSalDocDetEdit: async function(){
+                var me = this;
+                var salDocNo;
+                var salDocItem
+
+                var oModel = this.getOwnerComponent().getModel();
+                var oTable = this.byId("salDocDetDynTable");
+                var aSelIndices = oTable.getSelectedIndices();
+                var oTmpSelectedIndices = [];
+                var aData = this.getView().getModel("DetDataModel").getData().results;
+                var aDataToEdit = [];
+                var iCounter = 0;
+                var bProceed = true;
+
+                if (aSelIndices.length > 0) {
+                    aSelIndices.forEach(item => {
+                        oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                    });
+
+                    aSelIndices = oTmpSelectedIndices;
+                    aSelIndices.forEach((item, index) => {
+                        salDocNo = aData.at(item).SALESDOCNO;
+                        salDocItem = aData.at(item).SALESDOCITEM;
+                        oModel.read("/SALDOCDETSet", {
+                            urlParameters: {
+                                "$filter": "SALESDOCNO eq '" + salDocNo + "'"
+                            },
+                            success: async function (oData, oResponse) {
+                                oData.results.forEach(item1 => {
+                                    item1.CPODT = dateFormat.format(new Date(item1.CPODT));
+                                    item1.DLVDT = dateFormat.format(new Date(item1.DLVDT));
+                                    item1.CREATEDTM = timeFormat.format(new Date(item1.CREATEDTM.ms + TZOffsetMs));
+                                    item1.UPDATEDTM = timeFormat.format(new Date(item1.UPDATEDTM.ms + TZOffsetMs));
+                                    item1.CREATEDDT = dateFormat.format(new Date(item1.CREATEDDT));
+                                    item1.UPDATEDDT = dateFormat.format(new Date(item1.UPDATEDDT));
+                                    
+                                    if(salDocItem === item1.SALESDOCITEM){
+                                        iCounter++;
+                                        aDataToEdit.push(aData.at(item));
+                                        if(bProceed){
+                                            if (aSelIndices.length === iCounter) {
+                                                me.getView().getModel("DetDataModel").setProperty("/results", aDataToEdit);
+                                                me.setTableData();
+
+                                                me.byId("btnDetAdd").setVisible(false);
+                                                me.byId("btnDetEdit").setVisible(false);
+                                                me.byId("btnDetDelete").setVisible(false);
+                                                me.byId("btnDetSave").setVisible(true);
+                                                me.byId("btnDetCancel").setVisible(true);
+                                                // me.byId("btnDetCreateStyle").setVisible(false);
+                                                // me.byId("btnDetCreateIO").setVisible(false);
+                                                // me.byId("btnDetCreateStyleIO").setVisible(false);
+                                                me.byId("btnDetTabLayout").setVisible(false);
+                                                me.byId("TB1").setEnabled(false);
+
+                                                //Set Edit Mode
+                                                console.log(me.getView().getModel("ui").getData().editMode)
+                                                me.getView().getModel("ui").setProperty("/editMode", 'UPDATE');
+                                                console.log(me.getView().getModel("ui").getData().editMode)
+
+                                                me.onRowEditPO('salDocDetDynTable', 'DetDynColumns');
+                                            }
+                                        }
+                                    }
+                                })
+                            },
+                            error: function (err) { }
+                        });
+                    });
+                }else{
+                    MessageBox.error("No data to edit.");
+                }
+            },
+            onRowEditPO: async function(table, model){
+                var me = this;
+                // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
+                var oTable = this.byId(table);
+
+                var oColumnsModel = this.getView().getModel(model);
+                var oColumnsData = oColumnsModel.getProperty('/results');
+                
+                oTable.getColumns().forEach((col, idx) => {
+                    oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[0])
+                        .forEach(ci => {
+                            var sColumnType = ci.DataType;
+                            if (ci.Editable) {
+                                if (ci.ColumnName === "UNLIMITED") {
+                                    col.setTemplate(new sap.m.CheckBox({
+                                        selected: "{" + ci.ColumnName + "}",
+                                        editable: true,
+                                        // liveChange: this.onInputLiveChange.bind(this)
+                                    }));
+                                }else if (sColumnType === "STRING") {
+                                    col.setTemplate(new sap.m.Input({
+                                        // id: "ipt" + ci.name,
+                                        type: "Text",
+                                        value: "{path: '" + ci.ColumnName + "', mandatory: '"+ ci.Mandatory +"'}",
+                                        maxLength: +ci.Length,
+                                        liveChange: this.onInputLiveChange.bind(this)
+                                    }));
+                                }else if (sColumnType === "DATETIME"){
+                                    col.setTemplate(new sap.m.DatePicker({
+                                        // id: "ipt" + ci.name,
+                                        value: "{path: '" + ci.ColumnName + "', mandatory: '"+ ci.Mandatory +"'}",
+                                        displayFormat:"short",
+                                        change:"handleChange",
+                                    
+                                        liveChange: this.onInputLiveChange.bind(this)
+                                    }));
+                                }else if (sColumnType === "NUMBER"){
+                                    col.setTemplate(new sap.m.Input({
+                                        // id: "ipt" + ci.name,
+                                        type: sap.m.InputType.Number,
+                                        value: "{path:'" + ci.ColumnName + "', mandatory: '"+ ci.Mandatory +"', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
+                                        
+                                        maxLength: +ci.Length,
+                                    
+                                        liveChange: this.onNumberLiveChange.bind(this)
+                                    }));
+                                }
+                            }
+                        });
+                });
+            },
+            onInputLiveChange: function(oEvent){
+                if(oEvent.getSource().getBindingInfo("value").mandatory){
+                    if(oEvent.getParameters().value === ""){
+                        oEvent.getSource().setValueState("Error");
+                        oEvent.getSource().setValueStateText("Required Field");
+                        this.validationErrors.push(oEvent.getSource().getId());
+                    }else{
+                        oEvent.getSource().setValueState("None");
+                        this.validationErrors.forEach((item, index) => {
+                            if (item === oEvent.getSource().getId()) {
+                                this.validationErrors.splice(index, 1)
+                            }
+                        })
+                    }
+                }
+                if(oEvent.getParameters().value === oEvent.getSource().getBindingInfo("value").binding.oValue){
+                    this._isEdited = false;
+                }else{
+                    this._isEdited = true;
+                }
+
+            },
+            onNumberLiveChange: function(oEvent){
+                if(oEvent.getSource().getBindingInfo("value").mandatory){
+                    if(oEvent.getParameters().value === ""){
+                        oEvent.getSource().setValueState("Error");
+                        oEvent.getSource().setValueStateText("Required Field");
+                        this.validationErrors.push(oEvent.getSource().getId());
+                    }else{
+                        oEvent.getSource().setValueState("None");
+                        this.validationErrors.forEach((item, index) => {
+                            if (item === oEvent.getSource().getId()) {
+                                this.validationErrors.splice(index, 1)
+                            }
+                        })
+                    }
+                }
+            },
             onRowChange: async function(oEvent) {
                 var sPath = oEvent.getParameter("rowContext");
                 sPath = "/results/"+ sPath.getPath().split("/")[2];
@@ -408,6 +673,163 @@ sap.ui.define([
                 await _promiseResult;
 
             },
+            onkeyup: async function(oEvent){
+                if((oEvent.key === "ArrowUp" || oEvent.key === "ArrowDown") && oEvent.srcControl.sParentAggregationName === "rows"){
+                    var sRowPath = this.byId(oEvent.srcControl.sId).oBindingContexts["undefined"].sPath;
+                    sRowPath = "/results/"+ sRowPath.split("/")[2];
+                    var index = sRowPath.split("/");
+                    var oTable = this.byId("salDocDetDynTable");
+                    var oRow = this.getView().getModel("DetDataModel").getProperty(sRowPath);
+
+                    _promiseResult = new Promise((resolve, reject)=>{
+                        oTable.getRows().forEach(row => {
+                            if(row.getBindingContext().sPath.replace("/rows/", "") === index[2]){
+                                resolve(row.addStyleClass("activeRow"));
+                            }else{
+                                resolve(row.removeStyleClass("activeRow"));
+                            }
+                        });
+                    });
+                    await _promiseResult;
+                }
+            },
+
+            onSalDocDetSave: async function(){
+                var me = this;
+
+                //Get Edit Mode
+                console.log(this.getView().getModel("ui").getData().editMode)
+                var type = this.getView().getModel("ui").getData().editMode;
+
+
+                var oModel = this.getOwnerComponent().getModel();
+                oModel.setUseBatch(true);
+                oModel.setDeferredGroups(["update"]);
+                var insertModelParameter = {
+                    "groupId": "insert"
+                };
+                var updateModelParameter = {
+                    "groupId": "update"
+                };
+
+                var oTable = this.byId("salDocDetDynTable");
+                var oSelectedIndices = oTable.getBinding("rows").aIndices;
+                var oTmpSelectedIndices = [];
+                var aData = oTable.getModel().getData().rows;
+
+                var oParamData = []
+                
+                var bProceed = true;
+                Common.openLoadingDialog(that);
+                if(bProceed){
+                    if(type === "UPDATE"){
+                        oSelectedIndices.forEach(item => {
+                            oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                        })
+                        
+                        oSelectedIndices = oTmpSelectedIndices;
+
+                        oSelectedIndices.forEach(async (item, index) => {
+
+                            oParamData = {
+                                SALESDOCNO      : aData.at(item).SALESDOCNO,
+                                SALESDOCITEM    : aData.at(item).SALESDOCITEM,
+                                ITEMCAT         : aData.at(item).ITEMCAT,
+                                ITEMDESC        : aData.at(item).ITEMDESC,
+                                QTY             : aData.at(item).QTY,
+                                UOM             : aData.at(item).UOM,
+                                UNITPRICE       : aData.at(item).UNITPRICE,
+                                CPONO           : aData.at(item).CPONO,
+                                CPOREV          : aData.at(item).CPOREV,
+                                CPOITEM         : aData.at(item).CPOITEM,
+                                CPODT           : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
+                                DLVDT           : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
+                                CUSTSTYLE       : aData.at(item).CUSTSTYLE,
+                                CUSSTYLEDESC    : aData.at(item).CUSSTYLEDESC,
+                                CUSTSHIPTO      : aData.at(item).CUSTSHIPTO,
+                                PRODUCTCD       : aData.at(item).PRODUCTCD,
+                                PRODUCTGRP      : aData.at(item).PRODUCTGRP,
+                                PRODUCTTYP      : aData.at(item).PRODUCTTYP,
+                                STYLETYP        : aData.at(item).STYLETYP,
+                                STYLEDESC       : aData.at(item).STYLEDESC,
+                                STYLENO         : aData.at(item).STYLENO,
+                                CUSTCOLOR       : aData.at(item).CUSTCOLOR,
+                                CUSTDEST        : aData.at(item).CUSTDEST,
+                                CUSTSIZE        : aData.at(item).CUSTSIZE,
+                                GENDER          : aData.at(item).GENDER,
+                                SALESCOLLECTION : aData.at(item).SALESCOLLECTION,
+                                SHIPMODE        : aData.at(item).SHIPMODE,
+                                REFDOCNO        : aData.at(item).REFDOCNO,
+                                REMARKS         : aData.at(item).REMARKS,
+                                SAMPLEQTY       : aData.at(item).SAMPLEQTY,
+                                IONO            : aData.at(item).IONO,
+                                ITEMSTATUS      : aData.at(item).ITEMSTATUS,
+                                DELETED         : aData.at(item).DELETED
+                            }
+                            console.log(oParamData);
+                            // _promiseResult = new Promise((resolve, reject)=>{
+                            //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
+                            //         method: "PUT",
+                            //         success: function(oData, oResponse){
+                            //             console.log(oData);
+                            //             resolve();
+                            //         },error: function(error){
+                            //             MessageBox.error(error);
+                            //             resolve();
+                            //         }
+                            //     })
+                            // });
+                            // await _promiseResult;
+                            oModel.update("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, updateModelParameter);
+                        });
+
+                        
+                        _promiseResult = new Promise((resolve, reject)=>{
+                            oModel.submitChanges({
+                                groupId: "update",
+                                success: function(oData, oResponse){
+                                    console.log(oData);
+                                    //Success
+                                    resolve();
+                                },error: function(error){
+                                    MessageBox.error(error);
+                                    resolve();
+                                }
+                            })
+                        });
+                        await _promiseResult;
+                        this.byId("btnDetAdd").setVisible(true);
+                        this.byId("btnDetEdit").setVisible(true);
+                        this.byId("btnDetDelete").setVisible(true);
+                        this.byId("btnDetSave").setVisible(false);
+                        this.byId("btnDetCancel").setVisible(false);
+                        this.byId("btnDetTabLayout").setVisible(true);
+                        this.byId("TB1").setEnabled(true);
+                        await this.getDynamicTableColumns(); 
+
+                        
+                        //Set Edit Mode
+                        this.getView().getModel("ui").setProperty("/editMode", 'READ');
+                        console.log(this.getView().getModel("ui").getData().editMode)
+                    }else if(type === "NEW"){
+                        console.log("NEW");
+                        this.byId("btnDetAdd").setVisible(true);
+                        this.byId("btnDetEdit").setVisible(true);
+                        this.byId("btnDetDelete").setVisible(true);
+                        this.byId("btnDetSave").setVisible(false);
+                        this.byId("btnDetCancel").setVisible(false);
+                        this.byId("btnDetTabLayout").setVisible(true);
+                        this.byId("TB1").setEnabled(true);
+                        await this.getDynamicTableColumns(); 
+
+                        //Set Edit Mode
+                        this.getView().getModel("ui").setProperty("/editMode", 'READ');
+                        console.log(this.getView().getModel("ui").getData().editMode)
+                    }
+                }
+                Common.closeLoadingDialog(that);
+            },
+
             onSaveTableLayout: function(){
                 var type = "SALDOCDET";
                 var tabName = "ZERP_SALDOCDET";
@@ -454,5 +876,53 @@ sap.ui.define([
                     }
                 });                
             },
+
+            onSalDocDetCancelEdit: async function(){
+                var me = this;
+                if (this._isEdited) {
+                }else{
+                    Common.openLoadingDialog(that);
+                    this.byId("btnDetAdd").setVisible(true);
+                    this.byId("btnDetEdit").setVisible(true);
+                    this.byId("btnDetDelete").setVisible(true);
+                    this.byId("btnDetSave").setVisible(false);
+                    this.byId("btnDetCancel").setVisible(false);
+                    // this.byId("btnDetCreateStyle").setVisible(true);
+                    // this.byId("btnDetCreateIO").setVisible(true);
+                    // this.byId("btnDetCreateStyleIO").setVisible(true);
+                    this.byId("btnDetTabLayout").setVisible(true);
+                    this.byId("TB1").setEnabled(true);
+                    this._onBeforeDetailData = [];
+                    await this.getDynamicTableColumns(); 
+                    //Set Edit Mode
+                    console.log(this.getView().getModel("ui").getData().editMode)
+                    this.getView().getModel("ui").setProperty("/editMode", 'READ');
+                    console.log(this.getView().getModel("ui").getData().editMode)
+                    Common.closeLoadingDialog(that);
+                }
+            },
+
+            disableOtherTabs: function (tabName) {
+                var oIconTabBar = this.byId(tabName);
+                oIconTabBar.getItems().filter(item => item.getProperty("key") !== oIconTabBar.getSelectedKey())
+                    .forEach(item => item.setProperty("enabled", false));
+
+            },
+            disableOtherTabsChild: function (tabName) {
+                var oIconTabBar = this.byId(tabName);
+                oIconTabBar.getItems().filter(item => item.getProperty("key"))
+                .forEach(item => item.setProperty("enabled", false));
+
+            },
+            enableOtherTabs: function (tabName) {
+                var oIconTabBar = this.byId(tabName);
+                oIconTabBar.getItems().forEach(item => item.setProperty("enabled", true));
+            },
+            enableOtherTabsChild: function (tabName) {
+                var oIconTabBar = this.byId(tabName);
+                oIconTabBar.getItems().filter(item => item.getProperty("key"))
+                .forEach(item => item.setProperty("enabled", true));
+
+            }
         });
     });

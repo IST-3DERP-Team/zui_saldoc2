@@ -60,16 +60,15 @@
                                             <!-- <Title text="{i18n>salesDocDetail}" class="sapUiTinyMarginBegin"/> -->
                                         </HBox>
                                         <ToolbarSpacer/>
-                                            <Button type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd"/>
-                                            <Button type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit"/>
-                                            <Button type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete"/>
-                                            <Button type="Ghost"  icon="sap-icon://save" tooltip="Save" press="onSalDocDetSave"/>
-                                            <Button type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" press="onSalDocDetCancel"/>
-
-                                            <Button type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
-                                            <Button type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
-                                            <Button type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/>
-                                            <Button id="btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout"/>
+                                            <Button id = "btnDetAdd" type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd"/>
+                                            <Button id = "btnDetEdit" type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit"/>
+                                            <Button id = "btnDetDelete" type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete"/>
+                                            <Button id = "btnDetSave" type="Ghost"  icon="sap-icon://save" tooltip="Save" visible="false"  press="onSalDocDetSave"/>
+                                            <Button id = "btnDetCancel" type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" visible="false"  press="onSalDocDetCancelEdit"/>
+                                            <!-- <Button id = "btnDetCreateStyle" type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
+                                            <Button id = "btnDetCreateIO" type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
+                                            <Button id = "btnDetCreateStyleIO" type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/> -->
+                                            <Button id = "btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout"/>
                                         
                                     </OverflowToolbar>
                                 </uiT:extension>
