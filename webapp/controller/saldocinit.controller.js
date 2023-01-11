@@ -523,6 +523,12 @@ sap.ui.define([
                 // alert(salesDocNo);
                 that.navToDetail(salesDocNo); //navigate to detail page
             },
+            addNewDetail: async function(){
+                that.setChangeStatus(false); //remove change flag
+                var salesDocNo = 'NEW'
+                // alert(salesDocNo);
+                that.navToDetail(salesDocNo); //navigate to detail page
+            },
 
             goToDetailClick: function (salesdocno) {
                 var salesDocNo = salesdocno;
