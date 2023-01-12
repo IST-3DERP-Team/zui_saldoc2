@@ -26,7 +26,8 @@
                         <f:formElements>
                             <f:FormElement label="{i18n>SALESDOCNO}" visible="{= ${VisibleFieldsData>/SALESDOCTYP} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESDOCTYP" value="{headerData>/SALESDOCTYP}" editable="{HeaderEditModeModel>/SALESDOCTYP}" valueStateText="Required">
+                                    <Input id="SALESDOCTYP" value="{headerData>/SALESDOCTYP}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESDOCTYP}" valueStateText="Required"
+                                    change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                     <Input id="SALESDOCNO" value="{headerData>/SALESDOCNO}" editable="{HeaderEditModeModel>/SALESDOCNO}" valueStateText="Required">
                                     </Input>
@@ -34,15 +35,16 @@
                             </f:FormElement>  
                             <f:FormElement label="{i18n>SALESORG}" visible="{= ${VisibleFieldsData>/SALESORG} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESORG" value="{headerData>/CUSTGRP}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTGRP}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange">
+                                    <Input id="SALESORG" value="{headerData>/SALESORG}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTGRP}" valueStateText="Required"
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>   
                             <f:FormElement label="{i18n>CUSTGRP}" visible="{= ${VisibleFieldsData>/CUSTGRP} === true ? true : false }">
                                 <f:fields>
                                     <Input id="CUSTGRP" value="{headerData>/CUSTGRP}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTGRP}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>CUSTSOLDTO}" visible="{= ${VisibleFieldsData>/CUSTSOLDTO} === true ? true : false }">
@@ -132,7 +134,7 @@
                                 <f:fields>
                                     <Input id="SALESGRP" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESGRP}" valueStateText="Required"
                                         value="{headerData>/SALESGRP}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                        change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -176,7 +178,7 @@
                                 <f:fields>
                                     <Input id="SEASONCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SEASONCD}" valueStateText="Required"
                                         value="{headerData>/SEASONCD}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                        change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
