@@ -66,9 +66,9 @@
                         <f:formElements>
                             <f:FormElement label="{i18n>DOCDT}" visible="{= ${VisibleFieldsData>/DOCDT} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="DOCDT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DOCDT}" valueStateText="Required" value="{headerData>/DOCDT}"
-                                        change="onHeaderChange" liveChange="onHeaderChange">                                        
-                                    </Input>
+                                    <DatePicker id="DOCDT" displayFormat="short" editable="{HeaderEditModeModel>/DOCDT}" valueStateText="Required" value="{headerData>/DOCDT}"
+                                        change="onHeaderChange">                                        
+                                    </DatePicker>
                                 </f:fields>
                             </f:FormElement>    
                             <f:FormElement label="{i18n>PAYMETHODCD}" visible="{= ${VisibleFieldsData>/PAYMETHODCD} === true ? true : false }">
@@ -160,18 +160,18 @@
                         <f:formElements>
                             <f:FormElement label="{i18n>CPODT}" visible="{= ${VisibleFieldsData>/CPODT} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CPODT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CPODT}" valueStateText="Required"
+                                    <DatePicker id="CPODT" displayFormat="short" editable="{HeaderEditModeModel>/CPODT}" valueStateText="Required"
                                         value="{headerData>/CPODT}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
-                                    </Input>
+                                        change="onHeaderChange">
+                                    </DatePicker>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>DLVDT}" visible="{= ${VisibleFieldsData>/DLVDT} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="DLVDT" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DLVDT}" valueStateText="Required"
+                                    <DatePicker id="DLVDT" displayFormat="short" editable="{HeaderEditModeModel>/DLVDT}" valueStateText="Required"
                                         value="{headerData>/DLVDT}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
-                                    </Input>
+                                        change="onHeaderChange">
+                                    </DatePicker>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SEASONCD}" visible="{= ${VisibleFieldsData>/SEASONCD} === true ? true : false }">
