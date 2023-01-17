@@ -50,13 +50,15 @@
                             <f:FormElement label="{i18n>CUSTSOLDTO}" visible="{= ${VisibleFieldsData>/CUSTSOLDTO} === true ? true : false }">
                                 <f:fields>
                                     <Input id="CUSTSOLDTO" value="{headerData>/CUSTSOLDTO}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTSOLDTO}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>CUSTBILLTO}" visible="{= ${VisibleFieldsData>/CUSTBILLTO} === true ? true : false }">
                                 <f:fields>
                                     <Input id="CUSTBILLTO" value="{headerData>/CUSTBILLTO}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTBILLTO}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange" ></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                                                   
@@ -74,31 +76,36 @@
                             <f:FormElement label="{i18n>PAYMETHODCD}" visible="{= ${VisibleFieldsData>/PAYMETHODCD} === true ? true : false }">
                                 <f:fields>
                                     <Input id="PAYMETHODCD" value="{headerData>/PAYMETHODCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYMENTHODCD}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>PAYTERMTEXT}" visible="{= ${VisibleFieldsData>/PAYTERMTEXT} === true ? true : false }">
                                 <f:fields>
                                     <Input id="PAYTERMTEXT" value="{headerData>/PAYTERMTEXT}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYTERMTEXT}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>PURTAXCD}" visible="{= ${VisibleFieldsData>/PURTAXCD} === true ? true : false }">
                                 <f:fields>
                                     <Input id="PURTAXCD" value="{headerData>/PURTAXCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PURTAXCD}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SALESTERM}" visible="{= ${VisibleFieldsData>/SALESTERM} === true ? true : false }">
                                 <f:fields>
                                     <Input id="SALESTERM" value="{headerData>/SALESTERM}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESTERM}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SALESTERMTEXT}" visible="{= ${VisibleFieldsData>/SALESTERMTEXT} === true ? true : false }">
                                 <f:fields>
                                     <Input id="SALESTERMTEXT" value="{headerData>/SALESTERMTEXT}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESTERMTEXT}" valueStateText="Required"
-                                         change="onHeaderChange" liveChange="onHeaderChange"></Input>
+                                         change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
+                                    </Input>
                                 </f:fields>
                             </f:FormElement> 
                                                    
@@ -110,7 +117,7 @@
                                 <f:fields>
                                     <Input id="CURRENCYCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CURRENCYCD}" valueStateText="Required"
                                         value="{headerData>/CURRENCYCD}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                        change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -118,7 +125,7 @@
                                 <f:fields>
                                     <Input id="DSTCHAN" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DSTCHAN}" valueStateText="Required"
                                         value="{headerData>/DSTCHAN}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                        change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -126,7 +133,7 @@
                                 <f:fields>
                                     <Input id="DIVISION" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DIVISION}" valueStateText="Required"
                                         value="{headerData>/DIVISION}" 
-                                        change="onHeaderChange" liveChange="onHeaderChange">
+                                        change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -140,7 +147,7 @@
                             </f:FormElement>
                             <f:FormElement label="{i18n>CPONO}" visible="{= ${VisibleFieldsData>/CPONO} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CPONO" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CPONO}" valueStateText="Required"
+                                    <Input id="CPONO" type="Text" showSuggestion="true" showValueHelp="false" editable="{HeaderEditModeModel>/CPONO}" valueStateText="Required"
                                         value="{headerData>/CPONO}" 
                                         change="onHeaderChange" liveChange="onHeaderChange">
                                     </Input>
@@ -148,7 +155,7 @@
                             </f:FormElement>
                             <f:FormElement label="{i18n>CPOREV}" visible="{= ${VisibleFieldsData>/CPOREV} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CPOREV" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CPOREV}" valueStateText="Required"
+                                    <Input id="CPOREV" type="Text" showSuggestion="true" showValueHelp="false" editable="{HeaderEditModeModel>/CPOREV}" valueStateText="Required"
                                         value="{headerData>/CPOREV}" 
                                         change="onHeaderChange" liveChange="onHeaderChange">
                                     </Input>
@@ -189,7 +196,7 @@
                             </f:FormElement>      -->
                             <f:FormElement label="{i18n>EDISOURCE}"  visible="{= ${VisibleFieldsData>/EDISOURCE} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="EDISOURCE" value="{headerData>/EDISOURCE}" editable="{HeaderEditModeModel>/EDISOURCE}" valueStateText="Required"/>
+                                    <CheckBox id="EDISOURCE" selected="{headerData>/EDISOURCE}" editable="{HeaderEditModeModel>/EDISOURCE}"/>
                                 </f:fields>
                             </f:FormElement> 
                             <f:FormElement label="{i18n>REMARKS}"  visible="{= ${VisibleFieldsData>/REMARKS} === true ? true : false }">

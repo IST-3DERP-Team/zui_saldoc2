@@ -191,6 +191,175 @@ sap.ui.define([
                             }
                         });
                     });
+                }else if(fieldName === 'CUSTSOLDTO'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3D_CSHPTO_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Kunnr;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sold-to Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CUSTBILLTO'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3D_CSHPTO_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Kunnr;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Bill-to Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CURRENCYCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3DERP_CURRSH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Waers;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Currency Code"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'DSTCHAN'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZBV_3D_DSTCHN_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Vtweg;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Destination Channel"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'DIVISION'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZBV_3D_DIV_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Spart;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Division"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PAYMETHODCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3D_PYMTHDSH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Zlsch;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Payment Method"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PURTAXCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZBV_3D_PURTAX_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Zolla;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Purchasing Tax"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESTERM'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3D_INCTRM_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Inco1;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Term"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESTERMTEXT'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/ZVB_3D_INCTRM_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.DESCRIPTION;
+                                    item.Desc = item.Inco1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Term Desc."
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
                 }
 
                 var oVHModel = new JSONModel({
@@ -775,6 +944,84 @@ sap.ui.define([
                 oMsgStrip.setVisible(false);
             },
 
+            onDeleteSalDoc: async function() {
+                var me = this;
+                var oDataEDitModel = this.getView().getModel("headerData");
+                var oDataEdit = oDataEDitModel.getProperty('/');
+
+                var oParamData = [];
+
+                var oModel = this.getOwnerComponent().getModel();
+
+                var actionSel;
+                var bCompact = !!this.getView().$().closest(".sapUiSizeCompact").length;
+                _promiseResult = new Promise((resolve, reject) => {
+                    MessageBox.information(
+                        "Are you sure you want to delete Sales Document No.: "+ oDataEdit.SALESDOCNO +"?",
+                        {
+                            actions: ["Yes", "No"],
+                            styleClass: bCompact ? "sapUiSizeCompact" : "",
+                            onClose: function(sAction) {
+                                actionSel = sAction;
+                                resolve(actionSel);
+                            }
+                        }
+                    );
+                })
+                await _promiseResult;
+                if(actionSel === "Yes"){
+                    Common.openLoadingDialog(that);
+                    oParamData = {
+                        SALESDOCNO      : oDataEdit.SALESDOCNO,
+                        SALESDOCTYP     : oDataEdit.SALESDOCTYP,
+                        DOCDT           : oDataEdit.DOCDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00": null,
+                        SALESORG        : oDataEdit.SALESORG,
+                        CUSTGRP         : oDataEdit.CUSTGRP,
+                        CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
+                        CUSTBILLTO      : oDataEdit.CUSTBILLTO,
+                        DSTCHAN         : oDataEdit.DSTCHAN,
+                        DIVISION        : oDataEdit.DIVISION,
+                        SALESGRP        : oDataEdit.SALESGRP,
+                        PAYMENTHODCD    : oDataEdit.PAYMENTHODCD,
+                        PAYTERMCD       : oDataEdit.PAYTERMCD,
+                        PURTAXCD        : oDataEdit.PURTAXCD,
+                        SALESTERM       : oDataEdit.SALESTERM,
+                        SALESTERMTEXT   : oDataEdit.SALESTERMTEXT,
+                        CURRENCYCD      : oDataEdit.CURRENCYCD,
+                        CPONO           : oDataEdit.CPONO,
+                        CPOREV          : oDataEdit.CPOREV,
+                        CPODT           : oDataEdit.CPODT !== "" ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00": null,
+                        DLVDT           : oDataEdit.DLVDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00": null,
+                        SEASONCD        : oDataEdit.SEASONCD,
+                        STATUS          : oDataEdit.STATUS,
+                        REMARKS         : oDataEdit.REMARKS,
+                        EDISOURCE       : oDataEdit.EDISOURCE,
+                        DELETED         : true
+                    }
+                    console.log(oParamData);
+                    _promiseResult = new Promise((resolve, reject)=>{
+                        oModel.update("/SALDOCHDRSet(SALESDOCNO='"+ oDataEdit.SALESDOCNO +"')", oParamData, {
+                            method: "PUT",
+                            success: function(oData, oResponse){
+                                console.log(oData);
+                                resolve();
+                            },error: function(error){
+                                MessageBox.error(error);
+                                resolve()
+                            }
+                        })
+                    });
+                    await _promiseResult;
+                    await this.closeHeaderEdit();
+                    Common.closeLoadingDialog(that);
+                }else if(actionSel === "Cancel"){
+                    MessageBox.Action.CLOSE
+                }
+
+                
+                
+            },
+
             onSalDocDetAdd: async function(){
                 var me = this;
                 var bProceed = true
@@ -820,7 +1067,7 @@ sap.ui.define([
                 // this.byId("btnDetCreateStyleIO").setVisible(false);
                 this.byId("btnDetTabLayout").setVisible(false);
                 this.byId("TB1").setEnabled(false);
-                this.onRowEditPO('salDocDetDynTable', 'DetDynColumns');
+                this.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
 
                 //Set Edit Mode
                 console.log(this.getView().getModel("ui").getData().editMode)
@@ -889,7 +1136,7 @@ sap.ui.define([
                                                 me.getView().getModel("ui").setProperty("/editMode", 'UPDATE');
                                                 console.log(me.getView().getModel("ui").getData().editMode)
 
-                                                me.onRowEditPO('salDocDetDynTable', 'DetDynColumns');
+                                                me.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
                                             }
                                         }
                                     }
@@ -902,7 +1149,7 @@ sap.ui.define([
                     MessageBox.error("No data to edit.");
                 }
             },
-            onRowEditPO: async function(table, model){
+            onRowEditSalDoc: async function(table, model){
                 var me = this;
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
@@ -927,6 +1174,8 @@ sap.ui.define([
                                         type: "Text",
                                         value: "{path: '" + ci.ColumnName + "', mandatory: '"+ ci.Mandatory +"'}",
                                         maxLength: +ci.Length,
+                                        showValueHelp: true,
+                                        valueHelpRequest: this.handleValueHelp.bind(this),
                                         liveChange: this.onInputLiveChange.bind(this)
                                     }));
                                 }else if (sColumnType === "DATETIME"){
@@ -1312,6 +1561,69 @@ sap.ui.define([
                         sap.m.MessageBox.error(err);
                     }
                 });                
+            },
+
+            onSalDocDetDelete: async function(){
+                var me = this;
+
+                var oModel = this.getOwnerComponent().getModel();
+                var oTable = this.byId("salDocDetDynTable");
+                var aSelIndices = oTable.getSelectedIndices();
+                var oTmpSelectedIndices = [];
+                var aData = this.getView().getModel("DetDataModel").getData().results;
+                var actionSel;
+
+                
+
+                if (aSelIndices.length > 0) {
+                    var bCompact = !!this.getView().$().closest(".sapUiSizeCompact").length;
+                    _promiseResult = new Promise((resolve, reject) => {
+                        MessageBox.information(
+                            "Are you sure you want to delete selected items?",
+                            {
+                                actions: ["Yes", "No"],
+                                styleClass: bCompact ? "sapUiSizeCompact" : "",
+                                onClose: function(sAction) {
+                                    actionSel = sAction;
+                                    resolve(actionSel);
+                                }
+                            }
+                        );
+                    })
+                    await _promiseResult;
+
+                    if(actionSel === "Yes"){
+                        Common.openLoadingDialog(that);
+                        this.getView().getModel("ui").setProperty("/editMode", 'DELETE');
+                        aSelIndices.forEach(item => {
+                            oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                        });
+    
+                        aSelIndices = oTmpSelectedIndices;
+                        _promiseResult = new Promise((resolve, reject) => {
+                            aSelIndices.forEach((item, index) => {
+                                oModel.remove("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", {
+                                    success: async function (oData, oResponse) {
+                                        await me.getDynamicTableColumns(); 
+                                        resolve();
+                                    },
+                                    error: function (err) { 
+                                        resolve();
+                                    }
+                                });
+                            });
+                        })
+                        await _promiseResult;
+                        this.getView().getModel("ui").setProperty("/editMode", 'READ');
+                        Common.closeLoadingDialog(that);
+                        
+
+                    }else if(actionSel === "Cancel"){
+                        MessageBox.Action.CLOSE
+                    }
+                }else{
+                    MessageBox.error("No data to delete.");
+                }
             },
 
             onSalDocDetCancelEdit: async function(){

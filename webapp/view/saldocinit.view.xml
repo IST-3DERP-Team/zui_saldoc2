@@ -164,9 +164,9 @@
                 <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
 			        <menu>
 				        <Menu id="_IDGenMenu1">
-                            <MenuItem id="btnHdrCStyle" text="Style" press="onPress"/>
-                            <MenuItem id="btnHdrCIO" text="IO" />
-					        <MenuItem id="btnHdrCSIO" text="Style/IO" />
+                            <MenuItem id="btnHdrCStyle" text="Style" press="onSaldocCreateStyleIO('CrtStyle')"/>
+                            <MenuItem id="btnHdrCIO" text="IO" press="onSaldocCreateStyleIO('CrtIO')"/>
+					        <MenuItem id="btnHdrCSIO" text="Style/IO" press="onSaldocCreateStyleIO('CrtStyleIO')"/>
                         </Menu>
 			        </menu>                    
                 </MenuButton>                 
