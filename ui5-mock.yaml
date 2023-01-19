@@ -44,3 +44,7 @@ server:
             metadataXmlPath: ./webapp/localService/ZVB_3DERP_SALDOC_FILTERS_CDS/metadata.xml
             mockdataRootPath: ./webapp/localService/ZVB_3DERP_SALDOC_FILTERS_CDS/mockdata
             generateMockData: true
+          - urlPath: /sap/opu/odata/sap/ZGW_3DERP_SH_SRV/
+            metadataXmlPath: ./webapp/localService/ZGW_3DERP_SH_SRV/metadata.xml
+            mockdataRootPath: ./webapp/localService/ZGW_3DERP_SH_SRV/mockdata
+            generateMockData: true

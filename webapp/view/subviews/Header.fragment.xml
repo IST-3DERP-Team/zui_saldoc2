@@ -206,7 +206,7 @@
                             </f:FormElement> 
                             <f:FormElement label="{i18n>DELETED}"  visible="{= ${VisibleFieldsData>/DELETED} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="DELETED" value="{headerData>/DELETED}" editable="{HeaderEditModeModel>/DELETED}" valueStateText="Required"/>
+                                    <CheckBox id="DELETED" selected="{headerData>/DELETED}" editable="{HeaderEditModeModel>/DELETED}"/>
                                 </f:fields>
                             </f:FormElement>
                         </f:formElements>

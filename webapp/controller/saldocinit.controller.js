@@ -795,6 +795,8 @@ sap.ui.define([
                                         type: "Text",
                                         value: "{path: '" + ci.ColumnName + "', mandatory: '"+ ci.Mandatory +"'}",
                                         maxLength: +ci.Length,
+                                        showValueHelp: true,
+                                        valueHelpRequest: this.handleValueHelp.bind(this),
                                         liveChange: this.onInputLiveChange.bind(this)
                                     }));
                                 }else if (sColumnType === "DATETIME"){
@@ -904,6 +906,356 @@ sap.ui.define([
                     },
                     error: function (err) { }
                 });
+            },
+
+            handleValueHelp: async function(oEvent){
+                var me = this;
+
+                var oModel = this.getOwnerComponent().getModel();
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                var oModel3DERP = this.getOwnerComponent().getModel('ZGW_3DERP_SH_SRV');
+                var oSource = oEvent.getSource();
+
+                var fieldName = oSource.getBindingInfo("value").parts[0].path.replace("/", "");
+
+                this._inputId = oSource.getId();
+                this._inputValue = oSource.getValue();
+                this._inputSource = oSource;
+                console.log(fieldName);
+                
+                var valueHelpObjects = [];
+                var title = "";
+
+                if(fieldName === 'SALESGRP'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_SALESGRP_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.SALESGRP;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Group"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CUSTGRP'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.CUSTGRP;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Customer Group"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESORG'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_SALESORG_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.SALESORG;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Org."
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SEASONCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_SEASON_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.SEASON;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Season"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESDOCTYP'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_SALDOCTYP_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Salesdoctyp;
+                                    item.Desc = item.Description;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Doc. Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CUSTSOLDTO'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Kunnr;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sold-to Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CUSTBILLTO'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Kunnr;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Bill-to Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'CURRENCYCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3DERP_CURRSH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Waers;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Currency Code"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'DSTCHAN'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZBV_3D_DSTCHN_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Vtweg;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Destination Channel"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'DIVISION'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZBV_3D_DIV_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Spart;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Division"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PAYMETHODCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_PYMTHDSH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Zlsch;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Payment Method"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PURTAXCD'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZBV_3D_PURTAX_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Zolla;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Purchasing Tax"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESTERM'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_INCTRM_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Inco1;
+                                    item.Desc = item.DESCRIPTION;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Term"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SALESTERMTEXT'){
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_INCTRM_SH',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.DESCRIPTION;
+                                    item.Desc = item.Inco1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Sales Term Desc."
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'UOM'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/UOMvhSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.MSEHI;
+                                    item.Desc = item.MSEHL;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select UOM"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }
+
+                var oVHModel = new JSONModel({
+                    items: valueHelpObjects,
+                    title: title
+                });  
+                console.log(oVHModel)
+                // create value help dialog
+                if (!this._valueHelpDialog) {
+                    this._valueHelpDialog = sap.ui.xmlfragment(
+                        "zuisaldoc2.zuisaldoc2.view.fragments.valuehelp.ValueHelpDialog",
+                        this
+                    );
+                    
+                    this._valueHelpDialog.setModel(oVHModel);
+                    this.getView().addDependent(this._valueHelpDialog);
+                }
+                else {
+                    this._valueHelpDialog.setModel(oVHModel);
+                }      
+                this._valueHelpDialog.open();        
+            },
+            handleValueHelpClose: async function(oEvent){
+                if (oEvent.sId === "confirm") {
+                    var oSelectedItem = oEvent.getParameter("selectedItem");
+                    // var sTable = this._valueHelpDialog.getModel().getData().table;
+    
+                    if (oSelectedItem) {
+                        this._inputSource.setValue(oSelectedItem.getTitle());
+    
+                        // var sRowPath = this._inputSource.getBindingInfo("value").binding.oContext.sPath;
+    
+                        if (this._inputValue !== oSelectedItem.getTitle()) {                                
+                            // this.getView().getModel("mainTab").setProperty(sRowPath + '/Edited', true);
+    
+                            this._bHeaderChanged = true;
+                        }
+                    }
+    
+                    this._inputSource.setValueState("None");
+                }
+                else if (oEvent.sId === "cancel") {
+    
+                }
+            },
+            handleValueHelpSearch: async function(){
+                console.log("CLICKED!");
             },
 
             pad: Common.pad

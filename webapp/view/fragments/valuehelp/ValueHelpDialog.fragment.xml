@@ -2,7 +2,6 @@
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core">
 	<SelectDialog
-		id="valueHelpSelectDialog"
 		class="sapUiPopupWithPadding"
         items="{
             path: '/items',
