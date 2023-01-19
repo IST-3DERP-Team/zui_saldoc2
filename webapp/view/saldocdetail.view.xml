@@ -63,6 +63,7 @@
                                             <Button id = "btnDetAdd" type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd"/>
                                             <Button id = "btnDetEdit" type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit"/>
                                             <Button id = "btnDetDelete" type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete"/>
+                                            <!-- <Button id = "btnDetPurge" type="Ghost"  icon="sap-icon://delete" tooltip="Purge Detail" press="onSalDocDetPurge"/> -->
                                             <Button id = "btnDetSave" type="Ghost"  icon="sap-icon://save" tooltip="Save" visible="false"  press="onSalDocDetSave"/>
                                             <Button id = "btnDetCancel" type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" visible="false"  press="onSalDocDetCancelEdit"/>
                                             <!-- <Button id = "btnDetCreateStyle" type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
