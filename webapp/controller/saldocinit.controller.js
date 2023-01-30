@@ -36,6 +36,10 @@ sap.ui.define([
                 this._router = oComponent.getRouter();
                 // this._router.getRoute("RouteSalesDocHdr").attachPatternMatched(this._routePatternMatched, this);
 
+                this.getView().setModel(new JSONModel({
+                    crtStyleIOMode: ''
+                }), "ui"); 
+
                 this._Model = this.getOwnerComponent().getModel();
                 this.setSmartFilterModel();                  
                 // this.onSearch();
@@ -237,6 +241,7 @@ sap.ui.define([
                                 me.getDynamicTableData(model);
                                 resolve();
                             }else if (model === 'SALDOCCRTSTYLEIO') {
+                                console.log(oData)
                                 oJSONColumnsModel.setData(oData);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "SALDOCCRTSTYLEIOCOL");  //set the view model
@@ -583,6 +588,9 @@ sap.ui.define([
 
             onSaldocCreateStyleIO: async function (type){
                 var me = this;
+
+                this.getView().getModel("ui").setProperty("/crtStyleIOMode", '');
+
                 var oModel = this.getOwnerComponent().getModel();
                 var oTable = this.byId("salDocDynTable");
                 var aSelIndices = oTable.getSelectedIndices();
@@ -664,13 +672,14 @@ sap.ui.define([
                                     oColumnsData = oColumnsModel.getProperty('/results');
                                     oData = oDataModel === undefined ? [] :oDataModel;
 
-                                    
+                                    me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtStyle');
+
                                     oColumnsData.forEach(item =>{
-                                        if(item.ColumnName === "IOTYPE"){
+                                        if(item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN"){
                                             item.Visible = false;
                                         }
-                                        if(item.ColumnName === "PRODSCEN"){
-                                            item.Visible = false;
+                                        if(item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
+                                            item.Length = 50;
                                         }
                                     })
 
@@ -688,14 +697,14 @@ sap.ui.define([
                                 };
                                 crtIOListObj.forEach(item2 =>{
                                     if(item2.SALESDOCNO === aData.at(item).SALESDOCNO){
-                                        matchedDataObj.push(aData.at(item));
+                                        matchedDataObj.push(item2);
                                         resolve();
                                     }
                                 });
                                 if (aSelIndices.length === iCounter) {
                                     oJSONModel.setData(matchedDataObj);
                                     me.getView().setModel(oJSONModel, "CrtStyleIOData");
-                                    await me.getDynamicTableColumns('SALDOCCRTSTYLEIO', 'ZDV_SDCRT_STY');
+                                    await me.getDynamicTableColumns('SALDOCCRTSTYLEIO', 'ZDV_SDCRT_IO');
 
                                     oColumnsModel = me.getView().getModel("SALDOCCRTSTYLEIOCOL");  
                                     oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
@@ -703,14 +712,24 @@ sap.ui.define([
                                     oColumnsData = oColumnsModel.getProperty('/results');
                                     oData = oDataModel === undefined ? [] :oDataModel;
 
+                                    me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtIO');
                                     
                                     oColumnsData.forEach(item =>{
-                                        console.log(item);
                                         if(item.ColumnName === "STYLECAT"){
                                             item.Visible = false;
                                         }
                                         if(item.ColumnName === "CUSTSOLDTO"){
                                             item.Visible = false;
+                                        }
+                                        if(item.ColumnName === "PLANMONTH"){
+                                            item.Visible = false;
+                                        }
+
+                                        if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"){
+                                            item.Editable = true;
+                                            item.Length = 50;
+                                        }else{
+                                            item.Editable = false;
                                         }
                                     })
 
@@ -743,6 +762,8 @@ sap.ui.define([
                                     oColumnsData = oColumnsModel.getProperty('/results');
                                     oData = oDataModel === undefined ? [] :oDataModel;
 
+                                    me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtStyleIO');
+
                                     await me.setTableData(oColumnsData, oData, 'createStyleIOTbl');
                                     await me.onRowEditSalDoc('createStyleIOTbl', oColumnsData);
                                     me.setChangeStatus(false);
@@ -767,6 +788,87 @@ sap.ui.define([
                 }
                 
             },
+            onSaveSaldocCreateStyleIO: async function(){
+                var me = this;
+                var vSBU = this._sbu;
+
+                console.log(this.getView().getModel("ui").getData().crtStyleIOMode)
+
+                var oTable = this.byId("createStyleIOTbl");
+                var oSelectedIndices = oTable.getBinding("rows").aIndices;
+                var oTmpSelectedIndices = [];
+                var aData = oTable.getModel().getData().rows;
+                
+                var oModel = this.getOwnerComponent().getModel();
+
+                var oParam = {};
+                var oParamHdr = {};
+                var oParamData = [];
+                var sdProcessCd = "";
+
+                if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
+                    sdProcessCd = "CRT_STY";
+                }else if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtIO"){
+                    sdProcessCd = "CRT_IO";
+                }else if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyleIO"){
+                    sdProcessCd = "CRT_STYIO";
+                }
+
+                oSelectedIndices.forEach(item => {
+                    oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                })
+
+                Common.openLoadingDialog(that);
+                
+                oSelectedIndices = oTmpSelectedIndices;
+                oSelectedIndices.forEach((item, index) => {
+                    oParamHdr = {
+                        SDPROCESS: sdProcessCd,
+                        SBU: vSBU,
+                    }
+                    oParamData.push({
+                        SALESDOCNO:      aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                        STYLECD   :      aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
+                        STYLEDESC1:      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                        SEASONCD  :      aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
+                        DESC1     :      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                        WVTYP     :      aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
+                        PRODTYP   :      aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
+                        SIZEGRP   :      aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
+                        SALESGRP  :      aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
+                        CUSTGRP   :      aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
+                        CUSTSOLDTO:      aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
+                        UOM       :      aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
+                        STYLECAT  :      aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
+                        STYLENO   :      aData.at(item).STYLENO === undefined ? "" : aData.at(item).STYLENO,
+                        VERNO     :      aData.at(item).VERNO === undefined ? "0" : aData.at(item).VERNO,
+                        IONO      :      "NEW",
+                        IOTYPE    :      aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
+                        PRODSCEN  :      aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                    })
+                })
+                oParam = oParamHdr;
+                oParam['CrtIOStylData'] = oParamData;
+                oParam['CrtIOStylRetMsg'] = []
+                
+                console.log(oParam);
+                _promiseResult = new Promise((resolve, reject)=>{
+                    oModel.create("/CrtIOStylHdrSet", oParam, {
+                        method: "POST",
+                        success: function(oData, oResponse){
+                            console.log(oData)
+                            resolve();
+                        },error: function(error){
+                            MessageBox.error(error);
+                            resolve();
+                        }
+                    })
+                })
+
+                await _promiseResult;
+                Common.closeLoadingDialog(that);
+
+            },
             onCancelSaldocCreateStyleIO: async function(){
                 this.onCreateStyleIO.destroy(true);
             },
@@ -776,8 +878,6 @@ sap.ui.define([
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
                 var oColumnsData = model;
-                console.log(table);
-                console.log(model)
                 oTable.getColumns().forEach((col, idx) => {
                     oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                         .forEach(ci => {
@@ -910,6 +1010,7 @@ sap.ui.define([
 
             handleValueHelp: async function(oEvent){
                 var me = this;
+                var vSBU = this._sbu;
 
                 var oModel = this.getOwnerComponent().getModel();
                 var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
@@ -1202,6 +1303,107 @@ sap.ui.define([
 
                                 valueHelpObjects = data.results;
                                 title = "Select UOM"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'IOTYPE'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/IOTYPvhSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.IOTYPE;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select IO Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PRODSCEN'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/PRODSCENvhSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.PRODSCEN;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Prod. Scenario"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PRODUCTTYP'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/PRODUCTTYPvhSet',{
+                            urlParameters: {
+                                "$filter": "SBU eq '" + vSBU + "'"
+                            },
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.PRODTYP;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Prod. Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'STYLECAT'){
+                    await new Promise((resolve, reject) => { 
+                        oModel3DERP.setHeaders({
+                            sbu: this._sbu
+                        });
+                        oModel3DERP.read('/StyleCatSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Stylcat;
+                                    item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Style Category"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SIZEGRP'){
+                    await new Promise((resolve, reject) => {
+                        oModel3DERP.read('/SizeGrpSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.AttribGrp;
+                                    // item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Size Group"
                                 resolve();
                             },
                             error: function (err) {

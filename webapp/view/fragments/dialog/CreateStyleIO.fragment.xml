@@ -14,18 +14,19 @@ xmlns:f="sap.ui.layout.form" xmlns:uiT="sap.ui.table">
 					<Text text="" class="selHdrKeyFontStyle" />
 					<ToolbarSpacer/>
 					<Button id="vpoAddPRToPOSaveBtn" 
-						text = "{/SaveButton}"
+						tooltip = "{/SaveButton}"
 						icon="sap-icon://save"
-						press=".onSaveAddPRtoPO" 
+						press="onSaveSaldocCreateStyleIO" 
 						visible="true" />
 					<Button id="vpoAddPRToPOCancelBtn" 
+						tooltip = "Cancel"
 						icon="sap-icon://sys-cancel"
-						press=".onCancelSaldocCreateStyleIO" 
+						press="onCancelSaldocCreateStyleIO" 
 						visible="true" />
 					<Button id="vpoAddPRToPOSaveLayoutBtn" 
 						icon="sap-icon://table-column"
-						press=".onSaveTableLayout('SALDOCCRTSTYLEIO')"
-						tooltip="Columns"
+						press="onSaveTableLayout('SALDOCCRTSTYLEIO')"
+						tooltip="Save Table Layout"
 						visible="true" />
 				</Toolbar>
 			</uiT:extension>

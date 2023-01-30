@@ -83,6 +83,7 @@ sap.ui.define([
             },
             handleValueHelp: async function(oEvent){
                 var me = this;
+                var vSBU = this._sbu;
 
                 var oModel = this.getOwnerComponent().getModel();
                 var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
@@ -375,6 +376,107 @@ sap.ui.define([
 
                                 valueHelpObjects = data.results;
                                 title = "Select UOM"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'IOTYPE'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/IOTYPvhSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.IOTYPE;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select IO Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PRODSCEN'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/PRODSCENvhSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.PRODSCEN;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Prod. Scenario"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'PRODUCTTYP'){
+                    await new Promise((resolve, reject) => { 
+                        oModel.read('/PRODUCTTYPvhSet',{
+                            urlParameters: {
+                                "$filter": "SBU eq '" + vSBU + "'"
+                            },
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.PRODTYP;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Prod. Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'STYLECAT'){
+                    await new Promise((resolve, reject) => { 
+                        oModel3DERP.setHeaders({
+                            sbu: this._sbu
+                        });
+                        oModel3DERP.read('/StyleCatSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Stylcat;
+                                    item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Style Category"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }else if(fieldName === 'SIZEGRP'){
+                    await new Promise((resolve, reject) => {
+                        oModel3DERP.read('/SizeGrpSet',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.AttribGrp;
+                                    // item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Size Group"
                                 resolve();
                             },
                             error: function (err) {
