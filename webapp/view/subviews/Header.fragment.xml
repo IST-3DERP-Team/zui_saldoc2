@@ -73,9 +73,9 @@
                                     </DatePicker>
                                 </f:fields>
                             </f:FormElement>    
-                            <f:FormElement label="{i18n>PAYMETHODCD}" visible="{= ${VisibleFieldsData>/PAYMETHODCD} === true ? true : false }">
+                            <f:FormElement label="{i18n>PAYMENTHODCD}" visible="{= ${VisibleFieldsData>/PAYMENTHODCD} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="PAYMETHODCD" value="{headerData>/PAYMETHODCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYMENTHODCD}" valueStateText="Required"
+                                    <Input id="PAYMENTHODCD" value="{headerData>/PAYMENTHODCD}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYMENTHODCD}" valueStateText="Required"
                                          change="onHeaderChange" valueHelpRequest="handleValueHelp" liveChange="onHeaderChange">
                                     </Input>
                                 </f:fields>

@@ -484,6 +484,28 @@ sap.ui.define([
                             }
                         });
                     });
+                }else if(fieldName === 'WEAVETYP'){
+                    await new Promise((resolve, reject) => {
+                        oModel3DERP.setHeaders({
+                            attribtyp: "WVTYP"
+                        });
+                        oModel3DERP.read('/AttribCode2Set',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Attribcd;
+                                    item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Weave Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
                 }
 
                 var oVHModel = new JSONModel({
@@ -529,8 +551,18 @@ sap.ui.define([
     
                 }
             },
-            handleValueHelpSearch: async function(){
-                console.log("CLICKED!");
+            handleValueHelpSearch: async function(oEvent){
+                var sValue = oEvent.getParameter("value");
+
+                var oFilter = new sap.ui.model.Filter({
+                    filters: [
+                        new sap.ui.model.Filter("Item", sap.ui.model.FilterOperator.Contains, sValue),
+                        new sap.ui.model.Filter("Desc", sap.ui.model.FilterOperator.Contains, sValue)
+                    ],
+                    and: false
+                });
+
+                oEvent.getSource().getBinding("items").filter([oFilter]);
             },
 
             getDynamicTableColumns: async function () {
@@ -817,6 +849,8 @@ sap.ui.define([
                         edditableFields[oDatas] = true;
                     }
                     edditableFields.SALESDOCNO = false
+                    edditableFields.DELETED = false
+                    edditableFields.EDISOURCE = false
                     // edditableFields.SALESDOCTYP = false
     
                     // console.log(oDataEdit);
@@ -940,6 +974,7 @@ sap.ui.define([
                 if(bProceed){
                     Common.openLoadingDialog(that);
                     if(this.getView().getModel("ui").getData().Mode === "UPDATE"){
+                        console.log(oDataEdit);
                         oParamData = {
                             SALESDOCNO      : oDataEdit.SALESDOCNO,
                             SALESDOCTYP     : oDataEdit.SALESDOCTYP,
@@ -1338,7 +1373,8 @@ sap.ui.define([
                                         // liveChange: this.onInputLiveChange.bind(this)
                                     }));
                                 }else if (sColumnType === "STRING") {
-                                    if(sColumnName === "CUSTSTYLE" || sColumnName === "CUSTSTYLEDESC" || sColumnName === "CPONO"){
+                                    if(sColumnName === "CUSTSTYLE" || sColumnName === "CUSTSTYLEDESC" || sColumnName === "CPONO" || sColumnName === "CUSTCOLOR"
+                                     || sColumnName === "CUSTSIZE" || sColumnName === "PRODUCTCD" || sColumnName === "PRODUCTGRP"){
                                         col.setTemplate(new sap.m.Input({
                                             // id: "ipt" + ci.name,
                                             type: "Text",
@@ -1516,7 +1552,7 @@ sap.ui.define([
                         oSelectedIndices = oTmpSelectedIndices;
 
                         oSelectedIndices.forEach(async (item, index) => {
-
+                            console.log(aData.at(item));
                             oParamData = {
                                 SALESDOCNO      : aData.at(item).SALESDOCNO,
                                 SALESDOCITEM    : aData.at(item).SALESDOCITEM,
@@ -1531,7 +1567,7 @@ sap.ui.define([
                                 CPODT           : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
                                 DLVDT           : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
                                 CUSTSTYLE       : aData.at(item).CUSTSTYLE,
-                                CUSSTYLEDESC    : aData.at(item).CUSSTYLEDESC,
+                                CUSSTYLEDESC    : aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO      : aData.at(item).CUSTSHIPTO,
                                 PRODUCTCD       : aData.at(item).PRODUCTCD,
                                 PRODUCTGRP      : aData.at(item).PRODUCTGRP,
