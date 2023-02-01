@@ -23,11 +23,11 @@ xmlns:f="sap.ui.layout.form" xmlns:uiT="sap.ui.table">
 						icon="sap-icon://sys-cancel"
 						press="onCancelSaldocCreateStyleIO" 
 						visible="true" />
-					<Button id="vpoAddPRToPOSaveLayoutBtn" 
+					<!-- <Button id="vpoAddPRToPOSaveLayoutBtn" 
 						icon="sap-icon://table-column"
-						press="onSaveTableLayout('SALDOCCRTSTYLEIO')"
+						press="onSaveTableLayout"
 						tooltip="Save Table Layout"
-						visible="true" />
+						visible="true" /> -->
 				</Toolbar>
 			</uiT:extension>
 			<uiT:layoutData>

@@ -4,6 +4,7 @@ sap.ui.define([
     "../js/Common",
     "../js/Utils",
     "sap/ui/model/json/JSONModel",
+    'sap/m/MessageBox',
     "sap/ui/export/Spreadsheet",
     "../control/TableEvents"
     // "../control/DynamicTable"
@@ -11,7 +12,7 @@ sap.ui.define([
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, Spreadsheet, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, Spreadsheet, control) {
         "use strict"; 
 
         var that;
@@ -657,7 +658,7 @@ sap.ui.define([
                                 };
                                 crtStyleListObj.forEach(item2 =>{
                                     if(item2.SALESDOCNO === aData.at(item).SALESDOCNO){
-                                        matchedDataObj.push(aData.at(item));
+                                        matchedDataObj.push(item2);
                                         resolve();
                                     }
                                 });
@@ -747,7 +748,7 @@ sap.ui.define([
                                 };
                                 crtStyleListObj.forEach(item2 =>{
                                     if(item2.SALESDOCNO === aData.at(item).SALESDOCNO){
-                                        matchedDataObj.push(aData.at(item));
+                                        matchedDataObj.push(item2);
                                         resolve();
                                     }
                                 });
@@ -805,6 +806,8 @@ sap.ui.define([
                 var oParamHdr = {};
                 var oParamData = [];
                 var sdProcessCd = "";
+                var ioNo = "";
+                var styleNo = "";
 
                 if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
                     sdProcessCd = "CRT_STY";
@@ -822,6 +825,13 @@ sap.ui.define([
                 
                 oSelectedIndices = oTmpSelectedIndices;
                 oSelectedIndices.forEach((item, index) => {
+                    if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
+                        ioNo = "";
+                        styleNo = "NEW";
+                    }else if(sdProcessCd === "CRT_IO"){
+                        ioNo = "NEW";
+                        styleNo = "";
+                    }
                     oParamHdr = {
                         SDPROCESS: sdProcessCd,
                         SBU: vSBU,
@@ -840,9 +850,9 @@ sap.ui.define([
                         CUSTSOLDTO:      aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
                         UOM       :      aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
                         STYLECAT  :      aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
-                        STYLENO   :      aData.at(item).STYLENO === undefined ? "" : aData.at(item).STYLENO,
-                        VERNO     :      aData.at(item).VERNO === undefined ? "0" : aData.at(item).VERNO,
-                        IONO      :      "NEW",
+                        STYLENO   :      styleNo,
+                        VERNO     :      aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
+                        IONO      :      ioNo,
                         IOTYPE    :      aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
                         PRODSCEN  :      aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
                     })
@@ -859,7 +869,8 @@ sap.ui.define([
                             console.log(oData)
                             resolve();
                         },error: function(error){
-                            MessageBox.error(error);
+                            Common.closeLoadingDialog(that);
+                            MessageBox.error("Error Encountered in Process!");
                             resolve();
                         }
                     })
@@ -1411,6 +1422,28 @@ sap.ui.define([
                             }
                         });
                     });
+                }else if(fieldName === 'WEAVETYP'){
+                    await new Promise((resolve, reject) => {
+                        oModel3DERP.setHeaders({
+                            attribtyp: "WVTYP"
+                        });
+                        oModel3DERP.read('/AttribCode2Set',{
+                            success: function (data, response) {
+                                console.log(data);
+                                data.results.forEach(item=>{
+                                    item.Item = item.Attribcd;
+                                    item.Desc = item.Desc1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Select Weave Type"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
                 }
 
                 var oVHModel = new JSONModel({
@@ -1456,8 +1489,18 @@ sap.ui.define([
     
                 }
             },
-            handleValueHelpSearch: async function(){
-                console.log("CLICKED!");
+            handleValueHelpSearch: async function(oEvent){
+                var sValue = oEvent.getParameter("value");
+
+                var oFilter = new sap.ui.model.Filter({
+                    filters: [
+                        new sap.ui.model.Filter("Item", sap.ui.model.FilterOperator.Contains, sValue),
+                        new sap.ui.model.Filter("Desc", sap.ui.model.FilterOperator.Contains, sValue)
+                    ],
+                    and: false
+                });
+
+                oEvent.getSource().getBinding("items").filter([oFilter]);
             },
 
             pad: Common.pad
