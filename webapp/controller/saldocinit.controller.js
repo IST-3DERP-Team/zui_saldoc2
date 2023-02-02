@@ -5,6 +5,7 @@ sap.ui.define([
     "../js/Utils",
     "sap/ui/model/json/JSONModel",
     'sap/m/MessageBox',
+    "sap/ui/model/FilterOperator",
     "sap/ui/export/Spreadsheet",
     "../control/TableEvents"
     // "../control/DynamicTable"
@@ -12,7 +13,7 @@ sap.ui.define([
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, Spreadsheet, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, FilterOperator, Spreadsheet, control) {
         "use strict"; 
 
         var that;
@@ -585,6 +586,30 @@ sap.ui.define([
                     salesdocno: salesDocNo,
                     sbu: this._sbu
                 });
+            },
+
+            onSearchSaldoc: async function(oEvent){
+                var me = this;
+                var oTable = this.byId("salDocDynTable");
+                // var sTable = oTable.getBindingInfo("rows");
+                var sQuery = oEvent.getParameter("query");
+                var oFilter = null;
+                var aFilter = [];
+
+                if(sQuery && sQuery !== undefined) {
+                    var oColumnsModel = me.getView().getModel("DynColumns");
+                    var oColumnsData = oColumnsModel.getProperty('/results');
+                    oTable.getColumns().forEach((col, idx) => {
+                        var sDataType = oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])[0].ColumnName
+
+                        if(sDataType != "DELETED" && sDataType != "CLOSED")
+                            aFilter.push(new Filter(sDataType, FilterOperator.Contains, sQuery));
+                        else
+                            aFilter.push(new Filter(sDataType, FilterOperator.EQ, sQuery));
+                    })
+                    oFilter = new Filter(aFilter, false);
+                }
+                oTable.getBinding("rows").filter(oFilter, "Application");
             },
 
             onSaldocCreateStyleIO: async function (type){
