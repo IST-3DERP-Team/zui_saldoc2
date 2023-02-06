@@ -42,6 +42,7 @@ sap.ui.define([
 
                 this._onBeforeDetailData = []
                 this._isEdited = false
+                this.validationErrors = [];
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
                 this._router = oComponent.getRouter();
@@ -53,6 +54,7 @@ sap.ui.define([
             },
 
             _routePatternMatched: async function (oEvent) {
+                Common.openLoadingDialog(that);
                 this._salesDocNo = oEvent.getParameter("arguments").salesdocno; //get Style from route pattern
                 this._sbu = oEvent.getParameter("arguments").sbu; //get SBU from route pattern
 
@@ -80,6 +82,7 @@ sap.ui.define([
                 
                 // build Dynamic table for Sales Document Details
                 await this.getDynamicTableColumns();
+                Common.closeLoadingDialog(that);
             },
             handleValueHelp: async function(oEvent){
                 var me = this;
@@ -95,7 +98,6 @@ sap.ui.define([
                 this._inputId = oSource.getId();
                 this._inputValue = oSource.getValue();
                 this._inputSource = oSource;
-                console.log(fieldName);
                 
                 var valueHelpObjects = [];
                 var title = "";
@@ -104,7 +106,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALESGRP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SALESGRP;
                                     item.Desc = item.DESCRIPTION;
@@ -123,7 +124,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.CUSTGRP;
                                     item.Desc = item.DESCRIPTION;
@@ -142,7 +142,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALESORG_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SALESORG;
                                     item.Desc = item.DESCRIPTION;
@@ -161,7 +160,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SEASON;
                                     item.Desc = item.DESCRIPTION;
@@ -180,7 +178,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALDOCTYP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Salesdoctyp;
                                     item.Desc = item.Description;
@@ -199,7 +196,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Kunnr;
                                 })
@@ -217,7 +213,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Kunnr;
                                 })
@@ -235,7 +230,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_CURRSH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Waers;
                                     item.Desc = item.DESCRIPTION;
@@ -254,7 +248,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_DSTCHN_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Vtweg;
                                     item.Desc = item.DESCRIPTION;
@@ -273,7 +266,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_DIV_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Spart;
                                     item.Desc = item.DESCRIPTION;
@@ -292,7 +284,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_PYMTHDSH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Zlsch;
                                     item.Desc = item.DESCRIPTION;
@@ -311,7 +302,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_PURTAX_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Zolla;
                                     item.Desc = item.DESCRIPTION;
@@ -330,7 +320,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_INCTRM_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Inco1;
                                     item.Desc = item.DESCRIPTION;
@@ -349,7 +338,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_INCTRM_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.DESCRIPTION;
                                     item.Desc = item.Inco1;
@@ -368,7 +356,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/UOMvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.MSEHI;
                                     item.Desc = item.MSEHL;
@@ -387,7 +374,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/IOTYPvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.IOTYPE;
                                     item.Desc = item.DESC1;
@@ -406,7 +392,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/PRODSCENvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.PRODSCEN;
                                     item.Desc = item.DESC1;
@@ -428,7 +413,6 @@ sap.ui.define([
                                 "$filter": "SBU eq '" + vSBU + "'"
                             },
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.PRODTYP;
                                     item.Desc = item.DESC1;
@@ -450,7 +434,6 @@ sap.ui.define([
                         });
                         oModel3DERP.read('/StyleCatSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Stylcat;
                                     item.Desc = item.Desc1;
@@ -469,7 +452,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModel3DERP.read('/SizeGrpSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.AttribGrp;
                                     // item.Desc = item.Desc1;
@@ -491,7 +473,6 @@ sap.ui.define([
                         });
                         oModel3DERP.read('/AttribCode2Set',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Attribcd;
                                     item.Desc = item.Desc1;
@@ -512,7 +493,6 @@ sap.ui.define([
                     items: valueHelpObjects,
                     title: title
                 });  
-                console.log(oVHModel)
                 // create value help dialog
                 if (!this._valueHelpDialog) {
                     this._valueHelpDialog = sap.ui.xmlfragment(
@@ -535,6 +515,29 @@ sap.ui.define([
     
                     if (oSelectedItem) {
                         this._inputSource.setValue(oSelectedItem.getTitle());
+                        var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                        var resultData = "";
+                        if(this._inputSource.getId().includes("SALESTERM")){
+                            var salesTermVal = this.getView().byId("SALESTERM").getValue();
+                            var salesTermTxtLbl = this.getView().byId("SALESTERMTEXT");
+                            await new Promise((resolve, reject) => { 
+                                oModelFilter.read('/ZVB_3D_INCTRM_SH',{
+                                    success: function (data, response) {
+                                        data.results.forEach(item=>{
+                                            if(item.Inco1 === salesTermVal){
+                                                resultData = item.DESCRIPTION;
+                                            }
+                                        })
+                                        
+                                        salesTermTxtLbl.setValue(resultData);
+                                        resolve();
+                                    },
+                                    error: function (err) {
+                                        resolve();
+                                    }
+                                });
+                            });
+                        }
     
                         // var sRowPath = this._inputSource.getBindingInfo("value").binding.oContext.sPath;
     
@@ -608,8 +611,7 @@ sap.ui.define([
                         urlParameters: {
                             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                         },
-                        success: function (oData, oResponse) { 
-                            console.log(oData);
+                        success: function (oData, oResponse) {
                             oData.results.forEach(item => {
                                 item.CPODT = dateFormat.format(new Date(item.CPODT));
                                 item.DLVDT = dateFormat.format(new Date(item.DLVDT));
@@ -705,8 +707,7 @@ sap.ui.define([
                 
                 oDetColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}", wrapping: false }); //default text
 
-                if (sColumnId === "DELETED") { 
-                    console.log(sColumnType)
+                if (sColumnId === "DELETED") {
                     //Manage button
                     oDetColumnTemplate = new sap.m.CheckBox({
                         selected: "{" + sColumnId + "}",
@@ -774,7 +775,6 @@ sap.ui.define([
                     success: function (oData, oResponse) {
                         var visibleFields = new JSONModel();
                         var visibleFields = {};
-                        console.log(oData)
                         //get only visible fields
                         for (var i = 0; i < oData.results.length; i++) {
                             visibleFields[oData.results[i].ColumnName] = oData.results[i].Visible;
@@ -805,7 +805,6 @@ sap.ui.define([
                 await new Promise((resolve, reject)=>{
                     oModel.read(entitySet, {
                         success: function (oData, oResponse) {
-                            console.log(oData);
                             // oData.forEach(item => {
                             oData.DOCDT = dateFormat.format(oData.DOCDT);
                             oData.CPODT = dateFormat.format(oData.CPODT);
@@ -851,9 +850,9 @@ sap.ui.define([
                     edditableFields.SALESDOCNO = false
                     edditableFields.DELETED = false
                     edditableFields.EDISOURCE = false
+                    edditableFields.SALESTERMTEXT = false
                     // edditableFields.SALESDOCTYP = false
     
-                    // console.log(oDataEdit);
                     // data.editMode = true;
                     oJSONModel.setData(edditableFields);
                     this.getView().setModel(oJSONModel, "HeaderEditModeModel"); 
@@ -925,9 +924,9 @@ sap.ui.define([
                 edditableFields.SALESDOCNO = false
                 edditableFields.DELETED = false
                 edditableFields.EDISOURCE = false
+                edditableFields.SALESTERMTEXT = false
                 // edditableFields.SALESDOCTYP = false
 
-                // console.log(oDataEdit);
                 // data.editMode = true;
                 oJSONModel.setData(edditableFields);
                 this.getView().setModel(oJSONModel, "HeaderEditModeModel"); 
@@ -964,6 +963,7 @@ sap.ui.define([
 
                 var oParamData = [];
                 var bProceed = true;
+                var bError = false;
 
                 var oModel = this.getOwnerComponent().getModel();
                 if(oDataEdit.SALESDOCTYP === undefined || oDataEdit.SALESDOCTYP === ""){
@@ -974,7 +974,6 @@ sap.ui.define([
                 if(bProceed){
                     Common.openLoadingDialog(that);
                     if(this.getView().getModel("ui").getData().Mode === "UPDATE"){
-                        console.log(oDataEdit);
                         oParamData = {
                             SALESDOCNO      : oDataEdit.SALESDOCNO,
                             SALESDOCTYP     : oDataEdit.SALESDOCTYP,
@@ -1002,15 +1001,13 @@ sap.ui.define([
                             EDISOURCE       : oDataEdit.EDISOURCE,
                             DELETED         : oDataEdit.DELETED
                         }
-                        console.log(oParamData);
                         _promiseResult = new Promise((resolve, reject)=>{
                             oModel.update("/SALDOCHDRSet(SALESDOCNO='"+ oDataEdit.SALESDOCNO +"')", oParamData, {
                                 method: "PUT",
                                 success: function(oData, oResponse){
-                                    console.log(oData);
                                     resolve();
                                 },error: function(error){
-                                    MessageBox.error(error);
+                                    bError = true;
                                     resolve()
                                 }
                             })
@@ -1020,7 +1017,7 @@ sap.ui.define([
                         oParamData = {
                             SALESDOCNO      : "NEW",
                             SALESDOCTYP     : oDataEdit.SALESDOCTYP,
-                            DOCDT           : sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00",
+                            DOCDT           : oDataEdit.DOCDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00": null,
                             SALESORG        : oDataEdit.SALESORG,
                             CUSTGRP         : oDataEdit.CUSTGRP,
                             CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
@@ -1036,15 +1033,14 @@ sap.ui.define([
                             CURRENCYCD      : oDataEdit.CURRENCYCD,
                             CPONO           : oDataEdit.CPONO,
                             CPOREV          : oDataEdit.CPOREV,
-                            CPODT           : sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
-                            DLVDT           : sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
+                            CPODT           : oDataEdit.CPODT !== undefined ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00": null,
+                            DLVDT           : oDataEdit.DLVDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00": null,
                             SEASONCD        : oDataEdit.SEASONCD,
                             STATUS          : "NEW",//oDataEdit.STATUS,
                             REMARKS         : oDataEdit.REMARKS,
                             EDISOURCE       : oDataEdit.EDISOURCE,
                             DELETED         : oDataEdit.DELETED
                         }
-                        console.log(oParamData);
                         _promiseResult = new Promise((resolve, reject)=>{
                             oModel.setHeaders({
                                 SBU: me._sbu
@@ -1052,7 +1048,6 @@ sap.ui.define([
                             oModel.create("/SALDOCHDRSet", oParamData, {
                                 method: "POST",
                                 success: async function(oData, oResponse){
-                                    console.log(oData);
                                     me._salesDocNo = oData.SALESDOCNO;
                                      //Load header
                                     await me.getHeaderConfig(); //get visible header fields
@@ -1062,20 +1057,23 @@ sap.ui.define([
                                     await me.getDynamicTableColumns();
                                     resolve();
                                 },error: function(error){
-                                    MessageBox.error(error);
+                                    bError = true;
                                     resolve()
                                 }
                             })
                         });
                         await _promiseResult;
                     }
-                    this.byId("btnHdrEdit").setVisible(true);
-                    this.byId("btnHdrDelete").setVisible(true);
-                    this.enableOtherTabs("itbDetail");
-                    
-                    this.byId("btnHdrSave").setVisible(false);
-                    this.byId("btnHdrCancel").setVisible(false);
-                    await this.closeHeaderEdit();
+
+                    if(!bError){
+                        this.byId("btnHdrEdit").setVisible(true);
+                        this.byId("btnHdrDelete").setVisible(true);
+                        this.enableOtherTabs("itbDetail");
+                        
+                        this.byId("btnHdrSave").setVisible(false);
+                        this.byId("btnHdrCancel").setVisible(false);
+                        await this.closeHeaderEdit();
+                    }
                     
                     Common.closeLoadingDialog(that);
                 }
@@ -1185,12 +1183,10 @@ sap.ui.define([
                             EDISOURCE       : oDataEdit.EDISOURCE,
                             DELETED         : true
                         }
-                        console.log(oParamData);
                         _promiseResult = new Promise((resolve, reject)=>{
                             oModel.update("/SALDOCHDRSet(SALESDOCNO='"+ oDataEdit.SALESDOCNO +"')", oParamData, {
                                 method: "PUT",
                                 success: function(oData, oResponse){
-                                    console.log(oData);
                                     resolve();
                                 },error: function(error){
                                     MessageBox.error(error);
@@ -1258,9 +1254,7 @@ sap.ui.define([
                     this.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
 
                     //Set Edit Mode
-                    console.log(this.getView().getModel("ui").getData().editMode)
                     this.getView().getModel("ui").setProperty("/editMode", 'NEW');
-                    console.log(this.getView().getModel("ui").getData().editMode)
                     // this.getView().setModel(detailsJSONModel, "remarksTblData");
                 }else{
                     MessageBox.error("Sales Doc. is already Deleted!");
@@ -1330,9 +1324,7 @@ sap.ui.define([
                                                         me.byId("TB1").setEnabled(false);
 
                                                         //Set Edit Mode
-                                                        console.log(me.getView().getModel("ui").getData().editMode)
                                                         me.getView().getModel("ui").setProperty("/editMode", 'UPDATE');
-                                                        console.log(me.getView().getModel("ui").getData().editMode)
 
                                                         me.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
                                                     }
@@ -1362,7 +1354,6 @@ sap.ui.define([
                 oTable.getColumns().forEach((col, idx) => {
                     oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[0])
                         .forEach(ci => {
-                            console.log(ci);
                             var sColumnName = ci.ColumnName;
                             var sColumnType = ci.DataType;
                             if (ci.Editable) {
@@ -1418,6 +1409,52 @@ sap.ui.define([
                         });
                 });
             },
+            onHeaderChange: async function(oEvent){
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                var resultData = "";
+
+                if(oEvent.getSource().getId().includes("SALESTERM")){
+                    var salesTermVal = this.getView().byId("SALESTERM").getValue();
+                    var salesTermTxtLbl = this.getView().byId("SALESTERMTEXT");
+                    await new Promise((resolve, reject) => { 
+                        oModelFilter.read('/ZVB_3D_INCTRM_SH',{
+                            success: function (data, response) {
+                                data.results.forEach(item=>{
+                                    if(item.Inco1 === salesTermVal){
+                                        resultData = item.DESCRIPTION;
+                                    }
+                                })
+                                
+                                salesTermTxtLbl.setValue(resultData);
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }
+                if(oEvent.getSource().getBindingInfo("value").mandatory){
+                    if(oEvent.getParameters().value === ""){
+                        oEvent.getSource().setValueState("Error");
+                        oEvent.getSource().setValueStateText("Required Field");
+                        this.validationErrors.push(oEvent.getSource().getId());
+                    }else{
+                        oEvent.getSource().setValueState("None");
+                        this.validationErrors.forEach((item, index) => {
+                            if (item === oEvent.getSource().getId()) {
+                                this.validationErrors.splice(index, 1)
+                            }
+                        })
+                    }
+                }
+                if(oEvent.getParameters().value === oEvent.getSource().getBindingInfo("value").binding.oValue){
+                    this._isEdited = false;
+                }else{
+                    this._isEdited = true;
+                }
+            },
+
             onInputLiveChange: function(oEvent){
                 if(oEvent.getSource().getBindingInfo("value").mandatory){
                     if(oEvent.getParameters().value === ""){
@@ -1520,7 +1557,6 @@ sap.ui.define([
                 var me = this;
 
                 //Get Edit Mode
-                console.log(this.getView().getModel("ui").getData().editMode)
                 var type = this.getView().getModel("ui").getData().editMode;
 
 
@@ -1552,7 +1588,6 @@ sap.ui.define([
                         oSelectedIndices = oTmpSelectedIndices;
 
                         oSelectedIndices.forEach(async (item, index) => {
-                            console.log(aData.at(item));
                             oParamData = {
                                 SALESDOCNO      : aData.at(item).SALESDOCNO,
                                 SALESDOCITEM    : aData.at(item).SALESDOCITEM,
@@ -1588,12 +1623,10 @@ sap.ui.define([
                                 ITEMSTATUS      : aData.at(item).ITEMSTATUS,
                                 DELETED         : aData.at(item).DELETED
                             }
-                            console.log(oParamData);
                             // _promiseResult = new Promise((resolve, reject)=>{
                             //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
                             //         method: "PUT",
                             //         success: function(oData, oResponse){
-                            //             console.log(oData);
                             //             resolve();
                             //         },error: function(error){
                             //             MessageBox.error(error);
@@ -1610,7 +1643,6 @@ sap.ui.define([
                             oModel.submitChanges({
                                 groupId: "update",
                                 success: function(oData, oResponse){
-                                    console.log(oData);
                                     //Success
                                     resolve();
                                 },error: function(error){
@@ -1634,9 +1666,7 @@ sap.ui.define([
                         
                         //Set Edit Mode
                         this.getView().getModel("ui").setProperty("/editMode", 'READ');
-                        console.log(this.getView().getModel("ui").getData().editMode)
                     }else if(type === "NEW"){
-                        console.log("NEW");
 
                         oSelectedIndices.forEach(item => {
                             oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
@@ -1645,7 +1675,6 @@ sap.ui.define([
                         oSelectedIndices = oTmpSelectedIndices;
 
                         oSelectedIndices.forEach(async (item, index) => {
-
                             oParamData = {
                                 SALESDOCNO      : me._salesDocNo,
                                 // SALESDOCITEM    : aData.at(item).SALESDOCITEM,
@@ -1660,7 +1689,7 @@ sap.ui.define([
                                 CPODT           : aData.at(item).CPODT === undefined ? null :sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
                                 DLVDT           : aData.at(item).DLVDT === undefined ? null :sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
                                 CUSTSTYLE       : aData.at(item).CUSTSTYLE,
-                                CUSSTYLEDESC    : aData.at(item).CUSSTYLEDESC,
+                                CUSTSTYLEDESC    : aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO      : aData.at(item).CUSTSHIPTO,
                                 PRODUCTCD       : aData.at(item).PRODUCTCD,
                                 PRODUCTGRP      : aData.at(item).PRODUCTGRP,
@@ -1681,12 +1710,10 @@ sap.ui.define([
                                 ITEMSTATUS      : aData.at(item).ITEMSTATUS,
                                 DELETED         : aData.at(item).DELETED
                             }
-                            console.log(oParamData);
                             // _promiseResult = new Promise((resolve, reject)=>{
                             //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
                             //         method: "PUT",
                             //         success: function(oData, oResponse){
-                            //             console.log(oData);
                             //             resolve();
                             //         },error: function(error){
                             //             MessageBox.error(error);
@@ -1702,7 +1729,6 @@ sap.ui.define([
                         _promiseResult = new Promise((resolve, reject)=>{
                             oModel.submitChanges({
                                 success: function(oData, oResponse){
-                                    console.log(oData);
                                     //Success
                                     resolve();
                                 },error: function(error){
@@ -1726,7 +1752,6 @@ sap.ui.define([
 
                         //Set Edit Mode
                         this.getView().getModel("ui").setProperty("/editMode", 'READ');
-                        console.log(this.getView().getModel("ui").getData().editMode)
                     }
                 }
                 Common.closeLoadingDialog(that);
@@ -1841,7 +1866,6 @@ sap.ui.define([
                                 if(bProceed){
                                     //Set Edit Mode
                                     this.getView().getModel("ui").setProperty("/editMode", 'DELETE');
-                                    console.log(this.getView().getModel("ui").getData().editMode)
 
                                     aSelIndices.forEach(async (item, index) => {
                                         if (aData.at(item).DELETED === false) {
@@ -1899,12 +1923,10 @@ sap.ui.define([
                                                                 ITEMSTATUS      : aData.at(item).ITEMSTATUS,
                                                                 DELETED         : true
                                                             }
-                                                            console.log(oParamData);
                                                             // _promiseResult = new Promise((resolve, reject)=>{
                                                             //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
                                                             //         method: "PUT",
                                                             //         success: function(oData, oResponse){
-                                                            //             console.log(oData);
                                                             //             resolve();
                                                             //         },error: function(error){
                                                             //             MessageBox.error(error);
@@ -1919,7 +1941,6 @@ sap.ui.define([
                                                                     oModel.submitChanges({
                                                                         groupId: "update",
                                                                         success: function(oData, oResponse){
-                                                                            console.log(oData);
                                                                             //Success
                                                                             resolve();
                                                                         },error: function(error){
@@ -1945,7 +1966,6 @@ sap.ui.define([
                                     
                                     //Set Edit Mode
                                     this.getView().getModel("ui").setProperty("/editMode", 'READ');
-                                    console.log(this.getView().getModel("ui").getData().editMode)
                                 }
                             }else if(actionSel === "Cancel"){
                                 MessageBox.Action.CLOSE
@@ -2040,9 +2060,7 @@ sap.ui.define([
                     this._onBeforeDetailData = [];
                     await this.getDynamicTableColumns(); 
                     //Set Edit Mode
-                    console.log(this.getView().getModel("ui").getData().editMode)
                     this.getView().getModel("ui").setProperty("/editMode", 'READ');
-                    console.log(this.getView().getModel("ui").getData().editMode)
                     Common.closeLoadingDialog(that);
                 }
             },

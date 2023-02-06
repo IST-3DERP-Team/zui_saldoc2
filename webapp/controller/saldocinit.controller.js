@@ -46,6 +46,8 @@ sap.ui.define([
                 this.setSmartFilterModel();                  
                 // this.onSearch();
 
+                this.byId("_IDGenOverflowToolbars1").setEnabled(false);
+
 
                 this._isEdited = false;
                 this.validationErrors = [];
@@ -53,15 +55,11 @@ sap.ui.define([
             setSmartFilterModel: function () {
                 //Model StyleHeaderFilters is for the smartfilterbar
                 var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
-                // console.log(oModel)
                 var oSmartFilter = this.getView().byId("smartFilterBar");
                 oSmartFilter.setModel(oModel);
-                
-                // console.log(oModel)
 
                 // oModel.read("/ZVB_3DERP_VENDOR_SH", {
                 //     success: function (oData, oResponse) {
-                //         console.log(oData)
                 //     },
                 //     error: function (err) { 
                 //     }
@@ -98,7 +96,6 @@ sap.ui.define([
 
                 // var oTable = this.getView().byId("salDocDynTable");
                 // var aSelRows = oTable.getSelectedIndices();
-                // console.log(oTable);
                 // if (aSelRows.length > 0) 
                 // aSelRows.forEach(rec => {
                 //     var oContext = oTable.getContextByIndex(rec);
@@ -208,10 +205,10 @@ sap.ui.define([
             onSearch: function () {
                 // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
                 this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
-                // console.log(this._sbu);
 
                 this.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
                 this.getStatistics("/SalDocStatSet"); //style statistics
+                this.byId("_IDGenOverflowToolbars1").setEnabled(true);
 
                 // oTable.placeAt('scTable');
             },
@@ -243,7 +240,6 @@ sap.ui.define([
                                 me.getDynamicTableData(model);
                                 resolve();
                             }else if (model === 'SALDOCCRTSTYLEIO') {
-                                console.log(oData)
                                 oJSONColumnsModel.setData(oData);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "SALDOCCRTSTYLEIOCOL");  //set the view model
@@ -462,7 +458,6 @@ sap.ui.define([
                 
                 //different component based on field
                 if (sColumnId === "STATUS") { //display infolabel for Status Code
-                    // console.log(sColumnId);
                     oColumnTemplate = new sap.tnt.InfoLabel({
                         text: "{" + sColumnId + "}",
                         colorScheme: "{= ${" + sColumnId + "} === 'New' ? 8 : ${" + sColumnId + "} === 'CRT' ? 3 : 1}"
@@ -701,7 +696,7 @@ sap.ui.define([
                                     me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtStyle');
 
                                     oColumnsData.forEach(item =>{
-                                        if(item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN"){
+                                        if(item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN" || item.ColumnName === "PLANMONTH"){
                                             item.Visible = false;
                                         }
                                         if(item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
@@ -748,10 +743,10 @@ sap.ui.define([
                                             item.Visible = false;
                                         }
                                         if(item.ColumnName === "PLANMONTH"){
-                                            item.Visible = false;
+                                            item.Visible = true;
                                         }
 
-                                        if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"){
+                                        if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"||item.ColumnName === "PLANMONTH"){
                                             item.Editable = true;
                                             item.Length = 50;
                                         }else{
@@ -790,6 +785,14 @@ sap.ui.define([
 
                                     me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtStyleIO');
 
+                                    oColumnsData.forEach(item =>{
+                                        if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"||item.ColumnName === "PLANMONTH" || 
+                                           item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || 
+                                           item.ColumnName === "PLANMONTH"){
+                                            item.Length = 50;
+                                        }
+                                    })
+
                                     await me.setTableData(oColumnsData, oData, 'createStyleIOTbl');
                                     await me.onRowEditSalDoc('createStyleIOTbl', oColumnsData);
                                     me.setChangeStatus(false);
@@ -818,8 +821,6 @@ sap.ui.define([
                 var me = this;
                 var vSBU = this._sbu;
 
-                console.log(this.getView().getModel("ui").getData().crtStyleIOMode)
-
                 var oTable = this.byId("createStyleIOTbl");
                 var oSelectedIndices = oTable.getBinding("rows").aIndices;
                 var oTmpSelectedIndices = [];
@@ -833,6 +834,7 @@ sap.ui.define([
                 var sdProcessCd = "";
                 var ioNo = "";
                 var styleNo = "";
+                var createdStyleIONo = []
 
                 if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
                     sdProcessCd = "CRT_STY";
@@ -886,12 +888,20 @@ sap.ui.define([
                 oParam['CrtIOStylData'] = oParamData;
                 oParam['CrtIOStylRetMsg'] = []
                 
-                console.log(oParam);
                 _promiseResult = new Promise((resolve, reject)=>{
                     oModel.create("/CrtIOStylHdrSet", oParam, {
                         method: "POST",
                         success: function(oData, oResponse){
-                            console.log(oData)
+                            if(oData.CrtIOStylData.results !== undefined){
+                                oData.CrtIOStylData.results.forEach(iostyRes => {
+                                    if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
+                                        createdStyleIONo.push(iostyRes.STYLENO)
+
+                                    }else if(sdProcessCd === "CRT_IO"){
+                                        createdStyleIONo.push(iostyRes.IONO)
+                                    }
+                                });
+                            }
                             resolve();
                         },error: function(error){
                             Common.closeLoadingDialog(that);
@@ -902,6 +912,21 @@ sap.ui.define([
                 })
 
                 await _promiseResult;
+                
+                if(createdStyleIONo.length > 0){
+                    if(sdProcessCd === "CRT_STY"){
+                        MessageBox.information("Style Successfuly Created!");
+                        this.onCreateStyleIO.destroy(true);
+                    }else if(sdProcessCd === "CRT_IO"){
+                        MessageBox.information("IO Successfuly Created!");
+                        this.onCreateStyleIO.destroy(true);
+                    }else if(sdProcessCd === "CRT_STYIO"){
+                        MessageBox.information("IO/Style Successfuly Created!");
+                        this.onCreateStyleIO.destroy(true);
+                    }
+                }else{
+                    MessageBox.warning("Style/IO Creation Unsuccessful!");
+                }
                 Common.closeLoadingDialog(that);
 
             },
@@ -1058,7 +1083,6 @@ sap.ui.define([
                 this._inputId = oSource.getId();
                 this._inputValue = oSource.getValue();
                 this._inputSource = oSource;
-                console.log(fieldName);
                 
                 var valueHelpObjects = [];
                 var title = "";
@@ -1067,7 +1091,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALESGRP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SALESGRP;
                                     item.Desc = item.DESCRIPTION;
@@ -1086,7 +1109,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.CUSTGRP;
                                     item.Desc = item.DESCRIPTION;
@@ -1105,7 +1127,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALESORG_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SALESORG;
                                     item.Desc = item.DESCRIPTION;
@@ -1124,7 +1145,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.SEASON;
                                     item.Desc = item.DESCRIPTION;
@@ -1143,7 +1163,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_SALDOCTYP_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Salesdoctyp;
                                     item.Desc = item.Description;
@@ -1162,7 +1181,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Kunnr;
                                 })
@@ -1180,7 +1198,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Kunnr;
                                 })
@@ -1198,7 +1215,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3DERP_CURRSH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Waers;
                                     item.Desc = item.DESCRIPTION;
@@ -1217,7 +1233,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_DSTCHN_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Vtweg;
                                     item.Desc = item.DESCRIPTION;
@@ -1236,7 +1251,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_DIV_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Spart;
                                     item.Desc = item.DESCRIPTION;
@@ -1255,7 +1269,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_PYMTHDSH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Zlsch;
                                     item.Desc = item.DESCRIPTION;
@@ -1274,7 +1287,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZBV_3D_PURTAX_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Zolla;
                                     item.Desc = item.DESCRIPTION;
@@ -1293,7 +1305,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_INCTRM_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Inco1;
                                     item.Desc = item.DESCRIPTION;
@@ -1312,7 +1323,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModelFilter.read('/ZVB_3D_INCTRM_SH',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.DESCRIPTION;
                                     item.Desc = item.Inco1;
@@ -1331,7 +1341,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/UOMvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.MSEHI;
                                     item.Desc = item.MSEHL;
@@ -1350,7 +1359,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/IOTYPvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.IOTYPE;
                                     item.Desc = item.DESC1;
@@ -1369,7 +1377,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => { 
                         oModel.read('/PRODSCENvhSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.PRODSCEN;
                                     item.Desc = item.DESC1;
@@ -1391,7 +1398,6 @@ sap.ui.define([
                                 "$filter": "SBU eq '" + vSBU + "'"
                             },
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.PRODTYP;
                                     item.Desc = item.DESC1;
@@ -1413,7 +1419,6 @@ sap.ui.define([
                         });
                         oModel3DERP.read('/StyleCatSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Stylcat;
                                     item.Desc = item.Desc1;
@@ -1432,7 +1437,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModel3DERP.read('/SizeGrpSet',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.AttribGrp;
                                     // item.Desc = item.Desc1;
@@ -1454,7 +1458,6 @@ sap.ui.define([
                         });
                         oModel3DERP.read('/AttribCode2Set',{
                             success: function (data, response) {
-                                console.log(data);
                                 data.results.forEach(item=>{
                                     item.Item = item.Attribcd;
                                     item.Desc = item.Desc1;
@@ -1474,8 +1477,7 @@ sap.ui.define([
                 var oVHModel = new JSONModel({
                     items: valueHelpObjects,
                     title: title
-                });  
-                console.log(oVHModel)
+                });
                 // create value help dialog
                 if (!this._valueHelpDialog) {
                     this._valueHelpDialog = sap.ui.xmlfragment(
