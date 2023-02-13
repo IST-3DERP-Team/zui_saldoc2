@@ -640,6 +640,9 @@ sap.ui.define([
                 await new Promise((resolve, reject) => { 
                     oModel.read('/CRTIOLISTSet',{
                         success: function (data, response) {
+                            data.results.forEach(element => {
+                                while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
+                            });
                             crtIOListObj = data.results;
                             resolve();
                         },
@@ -652,6 +655,9 @@ sap.ui.define([
                 await new Promise((resolve, reject) => { 
                     oModel.read('/CRTSTYLISTSet',{
                         success: function (data, response) {
+                            data.results.forEach(element => {
+                                while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
+                            });
                             crtStyleListObj = data.results;
                             resolve();
                         },
@@ -852,8 +858,11 @@ sap.ui.define([
                 
                 oSelectedIndices = oTmpSelectedIndices;
                 oSelectedIndices.forEach((item, index) => {
-                    if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
+                    if(sdProcessCd === "CRT_STY"){
                         ioNo = "";
+                        styleNo = "NEW";
+                    }else if( sdProcessCd === "CRT_STYIO"){
+                        ioNo = "NEW";
                         styleNo = "NEW";
                     }else if(sdProcessCd === "CRT_IO"){
                         ioNo = "NEW";
@@ -887,11 +896,12 @@ sap.ui.define([
                 oParam = oParamHdr;
                 oParam['CrtIOStylData'] = oParamData;
                 oParam['CrtIOStylRetMsg'] = []
-                
+                console.log(oParam);
                 _promiseResult = new Promise((resolve, reject)=>{
                     oModel.create("/CrtIOStylHdrSet", oParam, {
                         method: "POST",
                         success: function(oData, oResponse){
+                            console.log(oData);
                             if(oData.CrtIOStylData.results !== undefined){
                                 oData.CrtIOStylData.results.forEach(iostyRes => {
                                     if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
@@ -1182,6 +1192,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH',{
                             success: function (data, response) {
                                 data.results.forEach(item=>{
+                                    while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
                                     item.Item = item.Kunnr;
                                 })
 
