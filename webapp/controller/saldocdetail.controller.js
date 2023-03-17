@@ -42,7 +42,7 @@ sap.ui.define([
 
                 this._onBeforeDetailData = []
                 this._isEdited = false
-                this.validationErrors = [];
+                this._validationErrors = [];
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
                 this._router = oComponent.getRouter();
@@ -65,12 +65,12 @@ sap.ui.define([
                 this.setChangeStatus(false);
                 
                 //Load header
-                this.getHeaderConfig(); //get visible header fields
+                await this.getHeaderConfig(); //get visible header fields
                 
                 if (this._salesDocNo === "NEW") { 
                     //create new - only header is editable at first
                     this.getView().getModel("ui").setProperty("/Mode", 'NEW');
-                    this.setNewHeaderEditMode(); 
+                    await this.setNewHeaderEditMode(); 
                     // this.setDetailVisible(false);
                 }else {
                     //existing style, get the style data
@@ -759,11 +759,10 @@ sap.ui.define([
                 } catch(err) {}
             },
 
-            getHeaderConfig: function () {
+            getHeaderConfig: async function () {
                 var me = this;
                 var oView = this.getView();
                 var oModel = this.getOwnerComponent().getModel();
-                var oJSONModel = new sap.ui.model.json.JSONModel();
 
                 //get header fields
                 oModel.setHeaders({
@@ -771,20 +770,41 @@ sap.ui.define([
                     type: 'SALDOCHDR',
                     userid: this._userid
                 });
-                oModel.read("/DynamicColumnsSet", {
-                    success: function (oData, oResponse) {
-                        var visibleFields = new JSONModel();
-                        var visibleFields = {};
-                        //get only visible fields
-                        for (var i = 0; i < oData.results.length; i++) {
-                            visibleFields[oData.results[i].ColumnName] = oData.results[i].Visible;
+                await new Promise((resolve, reject)=> {
+                    oModel.read("/DynamicColumnsSet", {
+                        success: function (oData, oResponse) {
+                            //Store List of Visible Fields
+                            var oJSONVisible = new JSONModel();
+                            var visibleFields = [];
+                            
+                            //store List of Editable Fields
+                            var oJSONEdit = new JSONModel();
+                            var edditableFields = [];
+
+                            //store List of Mandatory Fields
+                            var oJSONMandatory = new JSONModel();
+                            var mandatoryFields = [];
+                            
+                            for (var i = 0; i < oData.results.length; i++) {
+                                visibleFields[oData.results[i].ColumnName] = oData.results[i].Visible;
+                                edditableFields[oData.results[i].ColumnName] = false;
+                                mandatoryFields[oData.results[i].ColumnName] = oData.results[i].Mandatory;
+                            }
+                            
+                            oJSONVisible.setData(visibleFields);
+                            oView.setModel(oJSONVisible, "VisibleFieldsData");
+
+                            oJSONEdit.setData(edditableFields);
+                            oView.setModel(oJSONEdit, "HeaderEditModeModel");
+
+                            oJSONMandatory.setData(mandatoryFields);
+                            oView.setModel(oJSONMandatory, "MandatoryFieldsData");
+                            resolve();
+                        },
+                        error: function (err) { 
+                            resolve();
                         }
-                        var JSONdata = JSON.stringify(visibleFields);
-                        var JSONparse = JSON.parse(JSONdata);
-                        oJSONModel.setData(JSONparse);
-                        oView.setModel(oJSONModel, "VisibleFieldsData");
-                    },
-                    error: function (err) { }
+                    });
                 });
 
             },
@@ -794,11 +814,8 @@ sap.ui.define([
                 var salesDocNo = this._salesDocNo;
                 var oModel = this.getOwnerComponent().getModel();
                 var oJSONModel = new JSONModel();
-                var oJSONEdit = new JSONModel();
-                // var oJSONDataModel = new sap.ui.model.json.JSONModel();
                 
                 var oView = this.getView();
-                var edditableFields = [];
 
                 // read Style header data
                 var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
@@ -814,15 +831,6 @@ sap.ui.define([
                             // })
                             oJSONModel.setData(oData);
                             oView.setModel(oJSONModel, "headerData");
-    
-                            for (var oDatas in oData) {
-                                //get only editable fields
-                                edditableFields[oDatas] = false;
-                            }
-                            oJSONEdit.setData(edditableFields);
-                            oView.setModel(oJSONEdit, "HeaderEditModeModel");
-                            // oJSONDataModel.setData(oData);
-                            // oView.setModel(oJSONDataModel, "headerData");
                             me.setChangeStatus(false);
                             resolve();
                         },
@@ -873,44 +881,6 @@ sap.ui.define([
                 //unlock editable fields of style header
                 var oJSONModel = new JSONModel();
                 this._headerChanged = false;
-                var oDataEditField = {
-                    CPODT           : false,
-                    CPONO           : false,
-                    CPOREV          : false,
-                    CREATEDBY       : false,
-                    CREATEDDT       : false,
-                    CREATEDTM       : false,
-                    CURRENCYCD      : false,
-                    CUSTBILLTO      : false,
-                    CUSTGRP         : false,
-                    CUSTSOLDTO      : false,
-                    DELETED         : false,
-                    DIVISION        : false,
-                    DLVDT           : false,
-                    DOCDT           : false,
-                    DSTCHAN         : false,
-                    EDISOURCE       : false,
-                    PAYMENTHODCD    : false,
-                    PAYTERMCD       : false,
-                    PURTAXCD        : false,
-                    REMARKS         : false,
-                    SALESDOCNO      : false,
-                    SALESDOCTYP     : false,
-                    SALESGRP        : false,
-                    SALESORG        : false,
-                    SALESTERM       : false,
-                    SALESTERMTEXT   : false,
-                    SEASONCD        : false,
-                    STATUS          : false,
-                    UPDATEDBY       : false,
-                    UPDATEDDT       : false,
-                    UPDATEDTM       : false
-                }
-
-                var oDataEditFieldJSONModel = new JSONModel();
-                oDataEditFieldJSONModel.setData(oDataEditField);
-                this.getView().setModel(oDataEditFieldJSONModel, "HeaderEditModeModel");
-
 
                 var oDataEDitModel = this.getView().getModel("HeaderEditModeModel"); 
                 var oDataEdit = oDataEDitModel.getProperty('/');
@@ -957,7 +927,7 @@ sap.ui.define([
             // },
             onSaveHeader: async function() {
                 var me = this;
-                var oJSONEdit = new sap.ui.model.json.JSONModel();
+                var oView = this.getView();
                 var oDataEDitModel = this.getView().getModel("headerData");
                 var oDataEdit = oDataEDitModel.getProperty('/');
 
@@ -966,116 +936,181 @@ sap.ui.define([
                 var bError = false;
 
                 var oModel = this.getOwnerComponent().getModel();
-                if(oDataEdit.SALESDOCTYP === undefined || oDataEdit.SALESDOCTYP === ""){
-                    MessageBox.error("Sales Doc. Type cannot be empty!");
+
+                //Init Validation Errors Object
+                this._validationErrors = [];
+
+                var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
+                var formContainers = formView.getFormContainers(); // Form Container
+                var formElements = ""; //Form Elements
+                var formFields = ""; // Form Field
+                var formElementsIsVisible = false; //is Form Element Visible Boolean
+                var fieldIsEditable = false; // is Field Editable Boolean
+                var fieldMandatory = ""; // Field Mandatory variable
+                var fieldIsMandatory = false; // Is Field Mandatory Boolean
+                var oMandatoryModel = oView.getModel("MandatoryFieldsData").getProperty("/");
+
+                //Form Validations
+                //Iterate Form Containers
+                for(var index in formContainers){
+                    formElements = formContainers[index].getFormElements(); //get Form Elements
+
+                    //iterate Form Elements
+                    for(var elementIndex in formElements){
+                        formElementsIsVisible = formElements[elementIndex].getProperty("visible"); //get the property Visible of Element
+                        if(formElementsIsVisible){
+                            formFields = formElements[elementIndex].getFields(); //get FIelds in Form Element
+
+                            //Iterate Fields
+                            for(var formIndex in formFields){
+                                fieldMandatory = formFields[formIndex].getBindingInfo("value") === undefined ? "" : formFields[formIndex].getBindingInfo("value").mandatory;
+
+                                fieldIsMandatory = oMandatoryModel[fieldMandatory] === undefined ? false : oMandatoryModel[fieldMandatory];
+                                
+                                if(fieldIsMandatory){
+                                    fieldIsEditable = formFields[formIndex].getProperty("editable"); //get the property Editable of Fields
+                                    if(fieldIsEditable){
+                                        if(formFields[formIndex].getValue() === "" || formFields[formIndex].getValue() === null || formFields[formIndex].getValue() === undefined){
+                                            formFields[formIndex].setValueState("Error");
+                                            formFields[formIndex].setValueStateText("Required Field!");
+                                            me._validationErrors.push(formFields[formIndex].getId())
+                                            bProceed = false;
+                                        }else{
+                                            formFields[formIndex].setValueState("None");
+                                            me._validationErrors.forEach((item, index) => {
+                                                if (item === formFields[formIndex].getId()) {
+                                                    me._validationErrors.splice(index, 1)
+                                                }
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+                
+                if(this._validationErrors.length > 0){
+                    // MessageBox.error(this.getView().getModel("captionMsg").getData()["INFO_FILL_REQUIRED_FIELDS"]);
+                    MessageBox.error("Please Fill Required Fields!");
                     bProceed = false;
                 }
 
                 if(bProceed){
-                    Common.openLoadingDialog(that);
-                    if(this.getView().getModel("ui").getData().Mode === "UPDATE"){
-                        oParamData = {
-                            SALESDOCNO      : oDataEdit.SALESDOCNO,
-                            SALESDOCTYP     : oDataEdit.SALESDOCTYP,
-                            DOCDT           : sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00",
-                            SALESORG        : oDataEdit.SALESORG,
-                            CUSTGRP         : oDataEdit.CUSTGRP,
-                            CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
-                            CUSTBILLTO      : oDataEdit.CUSTBILLTO,
-                            DSTCHAN         : oDataEdit.DSTCHAN,
-                            DIVISION        : oDataEdit.DIVISION,
-                            SALESGRP        : oDataEdit.SALESGRP,
-                            PAYMENTHODCD    : oDataEdit.PAYMENTHODCD,
-                            PAYTERMCD       : oDataEdit.PAYTERMCD,
-                            PURTAXCD        : oDataEdit.PURTAXCD,
-                            SALESTERM       : oDataEdit.SALESTERM,
-                            SALESTERMTEXT   : oDataEdit.SALESTERMTEXT,
-                            CURRENCYCD      : oDataEdit.CURRENCYCD,
-                            CPONO           : oDataEdit.CPONO,
-                            CPOREV          : oDataEdit.CPOREV,
-                            CPODT           : sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
-                            DLVDT           : sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
-                            SEASONCD        : oDataEdit.SEASONCD,
-                            STATUS          : "NEW",//oDataEdit.STATUS,
-                            REMARKS         : oDataEdit.REMARKS,
-                            EDISOURCE       : oDataEdit.EDISOURCE,
-                            DELETED         : oDataEdit.DELETED
-                        }
-                        _promiseResult = new Promise((resolve, reject)=>{
-                            oModel.update("/SALDOCHDRSet(SALESDOCNO='"+ oDataEdit.SALESDOCNO +"')", oParamData, {
-                                method: "PUT",
-                                success: function(oData, oResponse){
-                                    resolve();
-                                },error: function(error){
-                                    bError = true;
-                                    resolve()
-                                }
-                            })
-                        });
-                        await _promiseResult;
-                    }else if(this.getView().getModel("ui").getData().Mode === "NEW"){
-                        oParamData = {
-                            SALESDOCNO      : "NEW",
-                            SALESDOCTYP     : oDataEdit.SALESDOCTYP,
-                            DOCDT           : oDataEdit.DOCDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00": null,
-                            SALESORG        : oDataEdit.SALESORG,
-                            CUSTGRP         : oDataEdit.CUSTGRP,
-                            CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
-                            CUSTBILLTO      : oDataEdit.CUSTBILLTO,
-                            DSTCHAN         : oDataEdit.DSTCHAN,
-                            DIVISION        : oDataEdit.DIVISION,
-                            SALESGRP        : oDataEdit.SALESGRP,
-                            PAYMENTHODCD    : oDataEdit.PAYMENTHODCD,
-                            PAYTERMCD       : oDataEdit.PAYTERMCD,
-                            PURTAXCD        : oDataEdit.PURTAXCD,
-                            SALESTERM       : oDataEdit.SALESTERM,
-                            SALESTERMTEXT   : oDataEdit.SALESTERMTEXT,
-                            CURRENCYCD      : oDataEdit.CURRENCYCD,
-                            CPONO           : oDataEdit.CPONO,
-                            CPOREV          : oDataEdit.CPOREV,
-                            CPODT           : oDataEdit.CPODT !== undefined ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00": null,
-                            DLVDT           : oDataEdit.DLVDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00": null,
-                            SEASONCD        : oDataEdit.SEASONCD,
-                            STATUS          : "NEW",//oDataEdit.STATUS,
-                            REMARKS         : oDataEdit.REMARKS,
-                            EDISOURCE       : oDataEdit.EDISOURCE,
-                            DELETED         : oDataEdit.DELETED
-                        }
-                        _promiseResult = new Promise((resolve, reject)=>{
-                            oModel.setHeaders({
-                                SBU: me._sbu
-                            });
-                            oModel.create("/SALDOCHDRSet", oParamData, {
-                                method: "POST",
-                                success: async function(oData, oResponse){
-                                    me._salesDocNo = oData.SALESDOCNO;
-                                     //Load header
-                                    await me.getHeaderConfig(); //get visible header fields
-                                    await me.getView().getModel("ui").setProperty("/Mode", 'UPDATE');
-                                    await me.getHeaderData(); //get header data
-                                    await me.cancelHeaderEdit(); 
-                                    await me.getDynamicTableColumns();
-                                    resolve();
-                                },error: function(error){
-                                    bError = true;
-                                    resolve()
-                                }
-                            })
-                        });
-                        await _promiseResult;
+                    if(oDataEdit.SALESDOCTYP === undefined || oDataEdit.SALESDOCTYP === ""){
+                        MessageBox.error("Sales Doc. Type cannot be empty!");
+                        bProceed = false;
                     }
 
-                    if(!bError){
-                        this.byId("btnHdrEdit").setVisible(true);
-                        this.byId("btnHdrDelete").setVisible(true);
-                        this.enableOtherTabs("itbDetail");
+                    if(bProceed){
+                        Common.openLoadingDialog(that);
+                        if(this.getView().getModel("ui").getData().Mode === "UPDATE"){
+                            
+                            console.log(oDataEdit.DOCDT);
+                            oParamData = {
+                                SALESDOCNO      : oDataEdit.SALESDOCNO,
+                                SALESDOCTYP     : oDataEdit.SALESDOCTYP,
+                                DOCDT           : oDataEdit.DOCDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00": null,
+                                SALESORG        : oDataEdit.SALESORG,
+                                CUSTGRP         : oDataEdit.CUSTGRP,
+                                CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
+                                CUSTBILLTO      : oDataEdit.CUSTBILLTO,
+                                DSTCHAN         : oDataEdit.DSTCHAN,
+                                DIVISION        : oDataEdit.DIVISION,
+                                SALESGRP        : oDataEdit.SALESGRP,
+                                PAYMENTHODCD    : oDataEdit.PAYMENTHODCD,
+                                PAYTERMCD       : oDataEdit.PAYTERMCD,
+                                PURTAXCD        : oDataEdit.PURTAXCD,
+                                SALESTERM       : oDataEdit.SALESTERM,
+                                SALESTERMTEXT   : oDataEdit.SALESTERMTEXT,
+                                CURRENCYCD      : oDataEdit.CURRENCYCD,
+                                CPONO           : oDataEdit.CPONO,
+                                CPOREV          : oDataEdit.CPOREV,
+                                CPODT           : sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
+                                DLVDT           : sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
+                                SEASONCD        : oDataEdit.SEASONCD,
+                                STATUS          : "NEW",//oDataEdit.STATUS,
+                                REMARKS         : oDataEdit.REMARKS,
+                                EDISOURCE       : oDataEdit.EDISOURCE,
+                                DELETED         : oDataEdit.DELETED
+                            }
+                            _promiseResult = new Promise((resolve, reject)=>{
+                                oModel.update("/SALDOCHDRSet(SALESDOCNO='"+ oDataEdit.SALESDOCNO +"')", oParamData, {
+                                    method: "PUT",
+                                    success: function(oData, oResponse){
+                                        resolve();
+                                    },error: function(error){
+                                        bError = true;
+                                        resolve()
+                                    }
+                                })
+                            });
+                            await _promiseResult;
+                        }else if(this.getView().getModel("ui").getData().Mode === "NEW"){
+                            oParamData = {
+                                SALESDOCNO      : "NEW",
+                                SALESDOCTYP     : oDataEdit.SALESDOCTYP,
+                                DOCDT           : oDataEdit.DOCDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00": null,
+                                SALESORG        : oDataEdit.SALESORG,
+                                CUSTGRP         : oDataEdit.CUSTGRP,
+                                CUSTSOLDTO      : oDataEdit.CUSTSOLDTO,
+                                CUSTBILLTO      : oDataEdit.CUSTBILLTO,
+                                DSTCHAN         : oDataEdit.DSTCHAN,
+                                DIVISION        : oDataEdit.DIVISION,
+                                SALESGRP        : oDataEdit.SALESGRP,
+                                PAYMENTHODCD    : oDataEdit.PAYMENTHODCD,
+                                PAYTERMCD       : oDataEdit.PAYTERMCD,
+                                PURTAXCD        : oDataEdit.PURTAXCD,
+                                SALESTERM       : oDataEdit.SALESTERM,
+                                SALESTERMTEXT   : oDataEdit.SALESTERMTEXT,
+                                CURRENCYCD      : oDataEdit.CURRENCYCD,
+                                CPONO           : oDataEdit.CPONO,
+                                CPOREV          : oDataEdit.CPOREV,
+                                CPODT           : oDataEdit.CPODT !== undefined ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00": null,
+                                DLVDT           : oDataEdit.DLVDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00": null,
+                                SEASONCD        : oDataEdit.SEASONCD,
+                                STATUS          : "NEW",//oDataEdit.STATUS,
+                                REMARKS         : oDataEdit.REMARKS,
+                                EDISOURCE       : oDataEdit.EDISOURCE,
+                                DELETED         : oDataEdit.DELETED
+                            }
+                            _promiseResult = new Promise((resolve, reject)=>{
+                                oModel.setHeaders({
+                                    SBU: me._sbu
+                                });
+                                oModel.create("/SALDOCHDRSet", oParamData, {
+                                    method: "POST",
+                                    success: async function(oData, oResponse){
+                                        me._salesDocNo = oData.SALESDOCNO;
+                                        //Load header
+                                        await me.getHeaderConfig(); //get visible header fields
+                                        await me.getView().getModel("ui").setProperty("/Mode", 'UPDATE');
+                                        await me.getHeaderData(); //get header data
+                                        await me.cancelHeaderEdit(); 
+                                        await me.getDynamicTableColumns();
+                                        resolve();
+                                    },error: function(error){
+                                        bError = true;
+                                        resolve()
+                                    }
+                                })
+                            });
+                            await _promiseResult;
+                        }
+
+                        if(!bError){
+                            this.byId("btnHdrEdit").setVisible(true);
+                            this.byId("btnHdrDelete").setVisible(true);
+                            this.enableOtherTabs("itbDetail");
+                            
+                            this.byId("btnHdrSave").setVisible(false);
+                            this.byId("btnHdrCancel").setVisible(false);
+                            await this.closeHeaderEdit();
+                        }
                         
-                        this.byId("btnHdrSave").setVisible(false);
-                        this.byId("btnHdrCancel").setVisible(false);
-                        await this.closeHeaderEdit();
+                        Common.closeLoadingDialog(that);
                     }
-                    
-                    Common.closeLoadingDialog(that);
                 }
             },
 
@@ -1438,12 +1473,12 @@ sap.ui.define([
                     if(oEvent.getParameters().value === ""){
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
-                        this.validationErrors.push(oEvent.getSource().getId());
+                        this._validationErrors.push(oEvent.getSource().getId());
                     }else{
                         oEvent.getSource().setValueState("None");
-                        this.validationErrors.forEach((item, index) => {
+                        this._validationErrors.forEach((item, index) => {
                             if (item === oEvent.getSource().getId()) {
-                                this.validationErrors.splice(index, 1)
+                                this._validationErrors.splice(index, 1)
                             }
                         })
                     }
@@ -1456,38 +1491,33 @@ sap.ui.define([
             },
 
             onInputLiveChange: function(oEvent){
+                console.log(oEvent.getSource().getBindingInfo("value"));
                 if(oEvent.getSource().getBindingInfo("value").mandatory){
                     if(oEvent.getParameters().value === ""){
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
-                        this.validationErrors.push(oEvent.getSource().getId());
+                        this._validationErrors.push(oEvent.getSource().getId());
                     }else{
                         oEvent.getSource().setValueState("None");
-                        this.validationErrors.forEach((item, index) => {
+                        this._validationErrors.forEach((item, index) => {
                             if (item === oEvent.getSource().getId()) {
-                                this.validationErrors.splice(index, 1)
+                                this._validationErrors.splice(index, 1)
                             }
                         })
                     }
                 }
-                if(oEvent.getParameters().value === oEvent.getSource().getBindingInfo("value").binding.oValue){
-                    this._isEdited = false;
-                }else{
-                    this._isEdited = true;
-                }
-
             },
             onNumberLiveChange: function(oEvent){
                 if(oEvent.getSource().getBindingInfo("value").mandatory){
                     if(oEvent.getParameters().value === ""){
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
-                        this.validationErrors.push(oEvent.getSource().getId());
+                        this._validationErrors.push(oEvent.getSource().getId());
                     }else{
                         oEvent.getSource().setValueState("None");
-                        this.validationErrors.forEach((item, index) => {
+                        this._validationErrors.forEach((item, index) => {
                             if (item === oEvent.getSource().getId()) {
-                                this.validationErrors.splice(index, 1)
+                                this._validationErrors.splice(index, 1)
                             }
                         })
                     }

@@ -50,7 +50,7 @@ sap.ui.define([
 
 
                 this._isEdited = false;
-                this.validationErrors = [];
+                this._validationErrors = [];
             },
             setSmartFilterModel: function () {
                 //Model StyleHeaderFilters is for the smartfilterbar
@@ -831,6 +831,13 @@ sap.ui.define([
                 var oSelectedIndices = oTable.getBinding("rows").aIndices;
                 var oTmpSelectedIndices = [];
                 var aData = oTable.getModel().getData().rows;
+
+                //Init Validation Errors Object
+                this._validationErrors = [];
+                //Boolean to check if there is Validation Errors
+                var boolProceed = true;
+
+                var aItems = oTable.getRows();
                 
                 var oModel = this.getOwnerComponent().getModel();
 
@@ -853,91 +860,140 @@ sap.ui.define([
                 oSelectedIndices.forEach(item => {
                     oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
                 })
-
-                Common.openLoadingDialog(that);
-                
                 oSelectedIndices = oTmpSelectedIndices;
-                oSelectedIndices.forEach((item, index) => {
-                    if(sdProcessCd === "CRT_STY"){
-                        ioNo = "";
-                        styleNo = "NEW";
-                    }else if( sdProcessCd === "CRT_STYIO"){
-                        ioNo = "NEW";
-                        styleNo = "NEW";
-                    }else if(sdProcessCd === "CRT_IO"){
-                        ioNo = "NEW";
-                        styleNo = "";
-                    }
-                    oParamHdr = {
-                        SDPROCESS: sdProcessCd,
-                        SBU: vSBU,
-                    }
-                    oParamData.push({
-                        SALESDOCNO:      aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
-                        STYLECD   :      aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
-                        STYLEDESC1:      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                        SEASONCD  :      aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
-                        DESC1     :      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                        WVTYP     :      aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
-                        PRODTYP   :      aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
-                        SIZEGRP   :      aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
-                        SALESGRP  :      aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
-                        CUSTGRP   :      aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
-                        CUSTSOLDTO:      aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
-                        UOM       :      aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
-                        STYLECAT  :      aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
-                        STYLENO   :      styleNo,
-                        VERNO     :      aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
-                        IONO      :      ioNo,
-                        IOTYPE    :      aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
-                        PRODSCEN  :      aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
-                    })
-                })
-                oParam = oParamHdr;
-                oParam['CrtIOStylData'] = oParamData;
-                oParam['CrtIOStylRetMsg'] = []
-                console.log(oParam);
-                _promiseResult = new Promise((resolve, reject)=>{
-                    oModel.create("/CrtIOStylHdrSet", oParam, {
-                        method: "POST",
-                        success: function(oData, oResponse){
-                            console.log(oData);
-                            if(oData.CrtIOStylData.results !== undefined){
-                                oData.CrtIOStylData.results.forEach(iostyRes => {
-                                    if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
-                                        createdStyleIONo.push(iostyRes.STYLENO)
-
-                                    }else if(sdProcessCd === "CRT_IO"){
-                                        createdStyleIONo.push(iostyRes.IONO)
-                                    }
-                                });
-                            }
-                            resolve();
-                        },error: function(error){
-                            Common.closeLoadingDialog(that);
-                            MessageBox.error("Error Encountered in Process!");
-                            resolve();
-                        }
-                    })
-                })
-
-                await _promiseResult;
                 
-                if(createdStyleIONo.length > 0){
-                    if(sdProcessCd === "CRT_STY"){
-                        MessageBox.information("Style Successfuly Created!");
-                        this.onCreateStyleIO.destroy(true);
-                    }else if(sdProcessCd === "CRT_IO"){
-                        MessageBox.information("IO Successfuly Created!");
-                        this.onCreateStyleIO.destroy(true);
-                    }else if(sdProcessCd === "CRT_STYIO"){
-                        MessageBox.information("IO/Style Successfuly Created!");
-                        this.onCreateStyleIO.destroy(true);
-                    }
-                }else{
-                    MessageBox.warning("Style/IO Creation Unsuccessful!");
+                if(oSelectedIndices.length > 0){
+                    aItems.forEach(function(oItem) {
+                        oSelectedIndices.forEach((item, index) => {
+                            if(oItem.getIndex() === item){
+                                var aCells = oItem.getCells();
+                                aCells.forEach(function(oCell) {
+                                    if (oCell.isA("sap.m.Input")) {
+                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                            if(oCell.getValue() === ""){
+                                                oCell.setValueState(sap.ui.core.ValueState.Error);
+                                                me._validationErrors.push(oCell.getId());
+                                            }else{
+                                                oCell.setValueState(sap.ui.core.ValueState.None);
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === oCell.getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }   
+                                        }
+                                    }else if (oCell.isA("sap.m.DatePicker")) {
+                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                            if(oCell.getValue() === ""){
+                                                oCell.setValueState(sap.ui.core.ValueState.Error);
+                                                me._validationErrors.push(oCell.getId());
+                                            }else{
+                                                oCell.setValueState(sap.ui.core.ValueState.None);
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === oCell.getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }   
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    });
                 }
-                Common.closeLoadingDialog(that);
+
+                if(this._validationErrors.length > 0){
+                    // MessageBox.error(this.getView().getModel("captionMsg").getData()["INFO_FILL_REQUIRED_FIELDS"]);
+                    MessageBox.error("Please Fill Required Fields!");
+                    boolProceed = false;
+                }
+
+                if(boolProceed){
+                    Common.openLoadingDialog(that);
+                    
+                    oSelectedIndices.forEach((item, index) => {
+                        if(sdProcessCd === "CRT_STY"){
+                            ioNo = "";
+                            styleNo = "NEW";
+                        }else if( sdProcessCd === "CRT_STYIO"){
+                            ioNo = "NEW";
+                            styleNo = "NEW";
+                        }else if(sdProcessCd === "CRT_IO"){
+                            ioNo = "NEW";
+                            styleNo = "";
+                        }
+                        oParamHdr = {
+                            SDPROCESS: sdProcessCd,
+                            SBU: vSBU,
+                        }
+                        oParamData.push({
+                            SALESDOCNO:      aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                            STYLECD   :      aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
+                            STYLEDESC1:      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                            SEASONCD  :      aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
+                            DESC1     :      aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                            WVTYP     :      aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
+                            PRODTYP   :      aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
+                            SIZEGRP   :      aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
+                            SALESGRP  :      aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
+                            CUSTGRP   :      aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
+                            CUSTSOLDTO:      aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
+                            UOM       :      aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
+                            STYLECAT  :      aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
+                            STYLENO   :      styleNo,
+                            VERNO     :      aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
+                            IONO      :      ioNo,
+                            IOTYPE    :      aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
+                            PRODSCEN  :      aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                        })
+                    })
+                    oParam = oParamHdr;
+                    oParam['CrtIOStylData'] = oParamData;
+                    oParam['CrtIOStylRetMsg'] = []
+                    console.log(oParam);
+                    _promiseResult = new Promise((resolve, reject)=>{
+                        oModel.create("/CrtIOStylHdrSet", oParam, {
+                            method: "POST",
+                            success: function(oData, oResponse){
+                                console.log(oData);
+                                if(oData.CrtIOStylData.results !== undefined){
+                                    oData.CrtIOStylData.results.forEach(iostyRes => {
+                                        if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
+                                            createdStyleIONo.push(iostyRes.STYLENO)
+
+                                        }else if(sdProcessCd === "CRT_IO"){
+                                            createdStyleIONo.push(iostyRes.IONO)
+                                        }
+                                    });
+                                }
+                                resolve();
+                            },error: function(error){
+                                Common.closeLoadingDialog(that);
+                                MessageBox.error("Error Encountered in Process!");
+                                resolve();
+                            }
+                        })
+                    })
+
+                    await _promiseResult;
+                    
+                    if(createdStyleIONo.length > 0){
+                        if(sdProcessCd === "CRT_STY"){
+                            MessageBox.information("Style Successfuly Created!");
+                            this.onCreateStyleIO.destroy(true);
+                        }else if(sdProcessCd === "CRT_IO"){
+                            MessageBox.information("IO Successfuly Created!");
+                            this.onCreateStyleIO.destroy(true);
+                        }else if(sdProcessCd === "CRT_STYIO"){
+                            MessageBox.information("IO/Style Successfuly Created!");
+                            this.onCreateStyleIO.destroy(true);
+                        }
+                    }else{
+                        MessageBox.warning("Style/IO Creation Unsuccessful!");
+                    }
+                    Common.closeLoadingDialog(that);
+                }
 
             },
             onCancelSaldocCreateStyleIO: async function(){
@@ -999,12 +1055,12 @@ sap.ui.define([
                     if(oEvent.getParameters().value === ""){
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
-                        this.validationErrors.push(oEvent.getSource().getId());
+                        this._validationErrors.push(oEvent.getSource().getId());
                     }else{
                         oEvent.getSource().setValueState("None");
-                        this.validationErrors.forEach((item, index) => {
+                        this._validationErrors.forEach((item, index) => {
                             if (item === oEvent.getSource().getId()) {
-                                this.validationErrors.splice(index, 1)
+                                this._validationErrors.splice(index, 1)
                             }
                         })
                     }
@@ -1021,12 +1077,12 @@ sap.ui.define([
                     if(oEvent.getParameters().value === ""){
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
-                        this.validationErrors.push(oEvent.getSource().getId());
+                        this._validationErrors.push(oEvent.getSource().getId());
                     }else{
                         oEvent.getSource().setValueState("None");
-                        this.validationErrors.forEach((item, index) => {
+                        this._validationErrors.forEach((item, index) => {
                             if (item === oEvent.getSource().getId()) {
-                                this.validationErrors.splice(index, 1)
+                                this._validationErrors.splice(index, 1)
                             }
                         })
                     }
