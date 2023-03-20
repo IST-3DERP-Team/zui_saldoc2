@@ -75,8 +75,11 @@ sap.ui.define([
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
-                console.log(this.getView().getModel("DisplayActionModel"));
-                console.log(this.getView());
+                // console.log(this.getView().getModel("DisplayActionModel"));
+                // console.log(this.getView());
+
+                console.log(this.byId("btnHdrEdit"));
+                console.log(this.byId("btnHdrDelete"));
 
                 this.byId("btnHdrEdit").setVisible(csAction === "display" ? false : true);
                 this.byId("btnHdrDelete").setVisible(csAction === "display" ? false : true);
