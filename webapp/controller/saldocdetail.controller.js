@@ -42,9 +42,7 @@ sap.ui.define([
 
                 this._onBeforeDetailData = []
                 this._isEdited = false
-                this._validationErrors = [];
-
-                this.getAppAction();
+                this._validationErrors = [];                
 
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
@@ -52,14 +50,17 @@ sap.ui.define([
                 this._router.getRoute("RouteSalesDocDetail").attachPatternMatched(this._routePatternMatched, this);
                 this.getView().setModel(new JSONModel({
                     editMode: 'READ',
-                    Mode: 'NEW'
+                    Mode: 'NEW',
+                    DisplayMode: 'change'
                 }), "ui");
+
+                this.getAppAction();
             },
 
             getAppAction: async function () {
                 // console.log("getAppAction");
                 // console.log(sap.ushell.Container)
-                var csAction = "change";
+                var csAction = "display";
                 if (sap.ushell.Container !== undefined) {
                     const fullHash = new HashChanger().getHash();
                     const urlParsing = await sap.ushell.Container.getServiceAsync("URLParsing");
@@ -73,16 +74,18 @@ sap.ui.define([
                     visible : csAction === "display" ? false : true
                 }
 
+                this.getView().getModel("ui").setProperty("/DisplayMode", csAction);
+
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
                 // console.log(this.getView().getModel("DisplayActionModel"));
                 // console.log(this.getView());
 
-                console.log(this.byId("btnHdrEdit"));
-                console.log(this.byId("btnHdrDelete"));
+                // console.log(this.byId("btnHdrEdit"));
+                // console.log(this.byId("btnHdrDelete"));
 
-                this.byId("btnHdrEdit").setVisible(csAction === "display" ? false : true);
-                this.byId("btnHdrDelete").setVisible(csAction === "display" ? false : true);
+                // this.byId("btnHdrEdit").setVisible(csAction === "display" ? false : true);
+                // this.byId("btnHdrDelete").setVisible(csAction === "display" ? false : true);
                 this.byId("btnDetAdd").setVisible(csAction === "display" ? false : true);
                 this.byId("btnDetEdit").setVisible(csAction === "display" ? false : true);
                 this.byId("btnDetDelete").setVisible(csAction === "display" ? false : true);
@@ -118,6 +121,10 @@ sap.ui.define([
 
                 // build Dynamic table for Sales Document Details
                 await this.getDynamicTableColumns();
+
+                this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+
                 Common.closeLoadingDialog(that);
             },
             handleValueHelp: async function (oEvent) {
@@ -1161,8 +1168,8 @@ sap.ui.define([
                     this._DiscardHeaderChangesDialog.addStyleClass("sapUiSizeCompact");
                     this._DiscardHeaderChangesDialog.open();
                 } else {
-                    this.byId("btnHdrEdit").setVisible(true);
-                    this.byId("btnHdrDelete").setVisible(true);
+                    this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                    this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
                     this.enableOtherTabs("itbDetail");
 
                     this.byId("btnHdrSave").setVisible(false);

@@ -88,9 +88,10 @@ sap.ui.define([
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
-                console.log(this.getView().getModel("DisplayActionModel"));
-                console.log(this.getView());
+                // console.log(this.getView().getModel("DisplayActionModel"));
+                // console.log(this.getView());
 
+                // alert(csAction);
                 if (csAction === "display") {
                     var btnAdd = this.getView().byId("btnAddSalDoc");
                     if (btnAdd.getVisible()) {
