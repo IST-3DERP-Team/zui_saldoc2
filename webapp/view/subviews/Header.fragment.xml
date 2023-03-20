@@ -6,8 +6,10 @@
                 <Toolbar id="TB1" height="2rem">
                     <Title text="{i18n>Header}" />
                     <ToolbarSpacer />
-                    <Button id="btnHdrEdit" type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" press="setHeaderEditMode" visible="true"/>
-                    <Button id="btnHdrDelete" type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="true"/> 
+                    <Button id="btnHdrEdit" type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" press="setHeaderEditMode" 
+                    visible="{ =${DisplayActionModel>sAction} === 'display' ? false : true }"/>
+                    <Button id="btnHdrDelete" type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" 
+                    visible="{ =${DisplayActionModel>sAction} === 'display' ? false : true }"/> 
                     <!-- <Button type="Ghost" icon="sap-icon://delete" text="{i18n>Deletesaldoc}" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="${HeaderEditModeModel>/editMode} === true ? false : true }"/>  -->
                     <Button id="btnHdrSave" type="Ghost" icon="sap-icon://save" tooltip="{i18n>Savesaldocheader}" press="onSaveHeader" visible="false"/> 
                     <Button id="btnHdrCancel" type="Ghost" icon="sap-icon://decline" tooltip="{i18n>Canceledit}" press="cancelHeaderEdit" visible="false"/> 

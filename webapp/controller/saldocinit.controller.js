@@ -19,7 +19,8 @@ sap.ui.define([
 
         var that;
         var salDocNotxt;
-        var _promiseResult; 
+        var _promiseResult;
+        var sDisplayAction = "";
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "MM/dd/yyyy" });
         var timeFormat = sap.ui.core.format.DateFormat.getTimeInstance({ pattern: "KK:mm:ss a" });
@@ -40,8 +41,7 @@ sap.ui.define([
                 // this._router.getRoute("RouteSalesDocHdr").attachPatternMatched(this._routePatternMatched, this);
 
                 this.getView().setModel(new JSONModel({
-                    crtStyleIOMode: '',
-                    DisplayAction: ''
+                    crtStyleIOMode: ''
                 }), "ui");
 
                 this.getAppAction();
@@ -56,18 +56,51 @@ sap.ui.define([
                 this._isEdited = false;
                 this._validationErrors = [];
 
-                alert(this.getView().getModel("ui").getProperty("/DisplayAction"));
+                // if (this.getView().getModel("ui").getProperty("/DisplayAction") === "display") {
+                //     var btnAdd = this.getView().byId("btnAddSalDoc");
+                //     if (btnAdd.getVisible()) {
+                //         btnAdd.setVisible(false);
+                //     }
+
+                //     var btnMenu = this.getView().byId("_IDGenMenuButton1");
+                //     if (btnMenu.getVisible()) {
+                //         btnMenu.setVisible(false);
+                //     }
+                // }
             },
 
             getAppAction: async function () {
-                console.log("getAppAction");
+                // console.log("getAppAction");
+                // console.log(sap.ushell.Container)
+                var csAction = "change";
                 if (sap.ushell.Container !== undefined) {
-                    const fullHash = new HasChanger().getHash();
-                    const urlParsing = await sap.shell.Container.getServiceAsync("URLParsing");
+                    const fullHash = new HashChanger().getHash();
+                    const urlParsing = await sap.ushell.Container.getServiceAsync("URLParsing");
                     const shellHash = urlParsing.parseShellHash(fullHash);
-                    const sAction = shellHash.action;
-                    console.log(shellHash.action);
-                    this.getView().getModel("ui").setProperty("/DisplayAction", shellHash.action);
+                    csAction = shellHash.action;  
+                }
+
+                var DisplayStateModel = new JSONModel();
+                var DisplayData = {
+                    sAction : csAction,
+                    visible : csAction === "display" ? false : true
+                }
+
+                DisplayStateModel.setData(DisplayData);
+                this.getView().setModel(DisplayStateModel, "DisplayActionModel");
+                console.log(this.getView().getModel("DisplayActionModel"));
+                console.log(this.getView());
+
+                if (csAction === "display") {
+                    var btnAdd = this.getView().byId("btnAddSalDoc");
+                    if (btnAdd.getVisible()) {
+                        btnAdd.setVisible(false);
+                    }
+
+                    var btnMenu = this.getView().byId("_IDGenMenuButton1");
+                    if (btnMenu.getVisible()) {
+                        btnMenu.setVisible(false);
+                    }                        
                 }
             },
 
