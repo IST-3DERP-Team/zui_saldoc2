@@ -60,7 +60,7 @@ sap.ui.define([
             getAppAction: async function () {
                 // console.log("getAppAction");
                 // console.log(sap.ushell.Container)
-                var csAction = "display";
+                var csAction = "change";
                 if (sap.ushell.Container !== undefined) {
                     const fullHash = new HashChanger().getHash();
                     const urlParsing = await sap.ushell.Container.getServiceAsync("URLParsing");
