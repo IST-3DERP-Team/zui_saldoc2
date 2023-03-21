@@ -782,11 +782,7 @@ sap.ui.define([
                                         if (item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN" || item.ColumnName === "PLANMONTH") {
                                             item.Visible = false;
                                         }
-<<<<<<<<< Temporary merge branch 1
-                                        if (item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT" || item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH") {
-=========
                                         if(item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
->>>>>>>>> Temporary merge branch 2
                                             item.Length = 50;
                                         }
                                     })
