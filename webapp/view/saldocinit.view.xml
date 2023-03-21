@@ -167,7 +167,7 @@
                     value=""
                     search="onSearchSaldoc"
                     width="15rem"/>
-                <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
+                <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add" visible = "true">
 			        <menu>
 				        <Menu id="_IDGenMenu1">
                             <MenuItem id="btnHdrCStyle" text="Style" press="onSaldocCreateStyleIO('CrtStyle')"/>
