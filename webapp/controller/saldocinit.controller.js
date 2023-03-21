@@ -220,6 +220,8 @@ sap.ui.define([
                 var oJSONColumnsModel = new sap.ui.model.json.JSONModel();
                 this.oJSONModel = new sap.ui.model.json.JSONModel();
                 var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+
+                var tableCol = [];
                                 
                 // this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
                 
@@ -240,7 +242,29 @@ sap.ui.define([
                                 me.getDynamicTableData(model);
                                 resolve();
                             }else if (model === 'SALDOCCRTSTYLEIO') {
-                                oJSONColumnsModel.setData(oData);
+                                tableCol = oData;
+                                tableCol.results.push({
+                                    ColumnLabel: "Log Description",
+                                    ColumnName: "LOGDESC",
+                                    ColumnType: "STRING",
+                                    ColumnWidth: 300,
+                                    Creatable: false,
+                                    DataType: "STRING",
+                                    Decimal: 0,
+                                    DictType: "CHAR",
+                                    Editable: false,
+                                    Key: "",
+                                    Length: 150,
+                                    Mandatory: true,
+                                    Order: "017",
+                                    Pivot: "",
+                                    SortOrder: "",
+                                    SortSeq: "",
+                                    Sorted: false,
+                                    Visible: false
+                                })
+                                console.log(tableCol)
+                                oJSONColumnsModel.setData(tableCol);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "SALDOCCRTSTYLEIOCOL");  //set the view model
                                 // me.getDynamicTableData(model);
@@ -705,7 +729,7 @@ sap.ui.define([
                                         if(item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN" || item.ColumnName === "PLANMONTH"){
                                             item.Visible = false;
                                         }
-                                        if(item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
+                                        if(item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
                                             item.Length = 50;
                                         }
                                     })
@@ -794,7 +818,7 @@ sap.ui.define([
                                     oColumnsData.forEach(item =>{
                                         if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"||item.ColumnName === "PLANMONTH" || 
                                            item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || 
-                                           item.ColumnName === "PLANMONTH"){
+                                           item.ColumnName === "PLANMONTH" || item.ColumnName === "FTYSTYLE"){
                                             item.Length = 50;
                                         }
                                     })
@@ -848,6 +872,10 @@ sap.ui.define([
                 var ioNo = "";
                 var styleNo = "";
                 var createdStyleIONo = []
+
+                var columnData = this.getView().getModel('SALDOCCRTSTYLEIOCOL').getData();
+                var oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
+                var oRowData = oDataModel === undefined ? [] :oDataModel;
 
                 if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
                     sdProcessCd = "CRT_STY";
@@ -955,8 +983,33 @@ sap.ui.define([
                     _promiseResult = new Promise((resolve, reject)=>{
                         oModel.create("/CrtIOStylHdrSet", oParam, {
                             method: "POST",
-                            success: function(oData, oResponse){
+                            success: async function(oData, oResponse){
                                 console.log(oData);
+
+                                for(var index in columnData.results){
+                                    if(columnData.results[index].ColumnName === "LOGDESC"){
+                                        columnData.results[index].Visible = true;
+                                    }
+                                }
+                                console.log(columnData);
+
+                                for(var index in oParam.CrtIOStylData){
+                                    for(var index2 in oData.CrtIOStylData.results){
+                                        if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO){
+                                            for(var index3 in oRowData){
+                                                if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO){
+                                                    oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                console.log(oRowData)
+
+                                await me.setTableData(columnData.results, oRowData, 'createStyleIOTbl');
+                                await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
+                                me.setChangeStatus(false);
+
                                 if(oData.CrtIOStylData.results !== undefined){
                                     oData.CrtIOStylData.results.forEach(iostyRes => {
                                         if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO" ){
@@ -981,13 +1034,13 @@ sap.ui.define([
                     if(createdStyleIONo.length > 0){
                         if(sdProcessCd === "CRT_STY"){
                             MessageBox.information("Style Successfuly Created!");
-                            this.onCreateStyleIO.destroy(true);
+                            // this.onCreateStyleIO.destroy(true);
                         }else if(sdProcessCd === "CRT_IO"){
                             MessageBox.information("IO Successfuly Created!");
-                            this.onCreateStyleIO.destroy(true);
+                            // this.onCreateStyleIO.destroy(true);
                         }else if(sdProcessCd === "CRT_STYIO"){
                             MessageBox.information("IO/Style Successfuly Created!");
-                            this.onCreateStyleIO.destroy(true);
+                            // this.onCreateStyleIO.destroy(true);
                         }
                     }else{
                         MessageBox.warning("Style/IO Creation Unsuccessful!");
