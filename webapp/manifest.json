@@ -124,6 +124,9 @@
                     "bundleName": "zuisaldoc2.zuisaldoc2.i18n.i18n"
                 }
             },
+            "displayModel": {
+                "type": "sap.ui.model.json.JSONModel"
+            },
             "": {
                 "dataSource": "mainService",
                 "preload": true,
