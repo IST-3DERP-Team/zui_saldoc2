@@ -275,7 +275,7 @@ sap.ui.define([
                 var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
 
                 var tableCol = [];
-
+                                
                 // this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
 
                 oModel.setHeaders({
@@ -294,7 +294,7 @@ sap.ui.define([
                                 me.getView().setModel(oJSONColumnsModel, "DynColumns");  //set the view model
                                 me.getDynamicTableData(model);
                                 resolve();
-                            } else if (model === 'SALDOCCRTSTYLEIO') {
+                            }else if (model === 'SALDOCCRTSTYLEIO') {
                                 tableCol = oData;
                                 tableCol.results.push({
                                     ColumnLabel: "Log Description",
@@ -782,7 +782,11 @@ sap.ui.define([
                                         if (item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN" || item.ColumnName === "PLANMONTH") {
                                             item.Visible = false;
                                         }
-                                        if (item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT" || item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH") {
+<<<<<<<<< Temporary merge branch 1
+                                        if (item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT" || item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH") {
+=========
+                                        if(item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
+>>>>>>>>> Temporary merge branch 2
                                             item.Length = 50;
                                         }
                                     })
@@ -930,11 +934,7 @@ sap.ui.define([
                 var oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
                 var oRowData = oDataModel === undefined ? [] :oDataModel;
 
-                var columnData = this.getView().getModel('SALDOCCRTSTYLEIOCOL').getData();
-                var oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
-                var oRowData = oDataModel === undefined ? [] :oDataModel;
-
-                if (this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle") {
+                if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
                     sdProcessCd = "CRT_STY";
                 } else if (this.getView().getModel("ui").getData().crtStyleIOMode === "CrtIO") {
                     sdProcessCd = "CRT_IO";
