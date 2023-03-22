@@ -117,13 +117,13 @@ sap.ui.define([
                     await this.getHeaderData(); //get header data
                     this.cancelHeaderEdit();
                     // this.setDetailVisible(true); //make detail section visible
+                    this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                    this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
                 }
 
                 // build Dynamic table for Sales Document Details
                 await this.getDynamicTableColumns();
 
-                this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
-                this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
 
                 Common.closeLoadingDialog(that);
             },
@@ -203,8 +203,9 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
                             success: function (data, response) {
+                                console.log(data)
                                 data.results.forEach(item => {
-                                    item.Item = item.SEASON;
+                                    item.Item = item.SEASONCD;
                                     item.Desc = item.DESCRIPTION;
                                 })
 
@@ -240,6 +241,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
                                     item.Item = item.Kunnr;
                                 })
 
@@ -257,6 +259,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
                                     item.Item = item.Kunnr;
                                 })
 
@@ -869,8 +872,8 @@ sap.ui.define([
                             oData.DOCDT = dateFormat.format(oData.DOCDT);
                             oData.CPODT = dateFormat.format(oData.CPODT);
                             oData.DLVDT = dateFormat.format(oData.DLVDT);
-                            // oData.CREATEDDT = dateFormat.format(oData.CREATEDDT);
-                            // oData.UPDATEDDT = dateFormat.format(oData.UPDATEDDT);
+                            oData.CREATEDDT = dateFormat.format(oData.CREATEDDT);
+                            oData.UPDATEDDT = dateFormat.format(oData.UPDATEDDT);
                             // })
                             oJSONModel.setData(oData);
                             oView.setModel(oJSONModel, "headerData");
@@ -1535,7 +1538,7 @@ sap.ui.define([
 
             onInputLiveChange: function (oEvent) {
                 console.log(oEvent.getSource().getBindingInfo("value"));
-                if (oEvent.getSource().getBindingInfo("value").mandatory) {
+                if (oEvent.getSource().getBindingInfo("value").mandatory === "true") {
                     if (oEvent.getParameters().value === "") {
                         oEvent.getSource().setValueState("Error");
                         oEvent.getSource().setValueStateText("Required Field");
@@ -1652,14 +1655,62 @@ sap.ui.define([
 
                 var bProceed = true;
                 Common.openLoadingDialog(that);
+
+                oSelectedIndices.forEach(item => {
+                    oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                })
+
+                oSelectedIndices = oTmpSelectedIndices;
+
+                var aItems = oTable.getRows();
+                if(oSelectedIndices.length > 0){
+                    aItems.forEach(function(oItem) {
+                        oSelectedIndices.forEach((item, index) => {
+                            if(oItem.getIndex() === item){
+                                var aCells = oItem.getCells();
+                                aCells.forEach(function(oCell) {
+                                    if (oCell.isA("sap.m.Input")) {
+                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                            if(oCell.getValue() === ""){
+                                                oCell.setValueState(sap.ui.core.ValueState.Error);
+                                                me._validationErrors.push(oCell.getId());
+                                            }else{
+                                                oCell.setValueState(sap.ui.core.ValueState.None);
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === oCell.getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }   
+                                        }
+                                    }else if (oCell.isA("sap.m.DatePicker")) {
+                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                            if(oCell.getValue() === ""){
+                                                oCell.setValueState(sap.ui.core.ValueState.Error);
+                                                me._validationErrors.push(oCell.getId());
+                                            }else{
+                                                oCell.setValueState(sap.ui.core.ValueState.None);
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === oCell.getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }   
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    });
+                }
+
+                if(this._validationErrors.length > 0){
+                    MessageBox.error("Please Fill Required Fields!");
+                    bProceed = false;
+                }
+                
                 if (bProceed) {
                     if (type === "UPDATE") {
-                        oSelectedIndices.forEach(item => {
-                            oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
-                        })
-
-                        oSelectedIndices = oTmpSelectedIndices;
-
                         oSelectedIndices.forEach(async (item, index) => {
                             oParamData = {
                                 SALESDOCNO: aData.at(item).SALESDOCNO,
@@ -1740,13 +1791,6 @@ sap.ui.define([
                         //Set Edit Mode
                         this.getView().getModel("ui").setProperty("/editMode", 'READ');
                     } else if (type === "NEW") {
-
-                        oSelectedIndices.forEach(item => {
-                            oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
-                        })
-
-                        oSelectedIndices = oTmpSelectedIndices;
-
                         oSelectedIndices.forEach(async (item, index) => {
                             oParamData = {
                                 SALESDOCNO: me._salesDocNo,
