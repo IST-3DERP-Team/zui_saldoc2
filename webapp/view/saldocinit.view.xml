@@ -22,7 +22,7 @@
 
         <VBox fitContainer="true"> 
         <!-- #### Smart Filter Bar #### -->
-        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" persistencyKey="3DERP_StylesPKey" filterContainerWidth="7rem" useToolbar="false" useDateRangeType="true">
+        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" showClearOnFB="true" persistencyKey="3DERP_StylesPKey" filterContainerWidth="10rem">
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SBU" mandatory="mandatory" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false">
                         <smartfilterbar:customControl>
@@ -167,12 +167,12 @@
                     value=""
                     search="onSearchSaldoc"
                     width="15rem"/>
-                <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add" visible = "true">
+                <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add" text="Create Style/IO" visible = "true">
 			        <menu>
 				        <Menu id="_IDGenMenu1">
-                            <MenuItem id="btnHdrCStyle" text="Style" press="onSaldocCreateStyleIO('CrtStyle')"/>
-                            <MenuItem id="btnHdrCIO" text="IO" press="onSaldocCreateStyleIO('CrtIO')"/>
-					        <MenuItem id="btnHdrCSIO" text="Style/IO" press="onSaldocCreateStyleIO('CrtStyleIO')"/>
+                            <MenuItem id="btnHdrCStyle" text="Create Style" press="onSaldocCreateStyleIO('CrtStyle')"/>
+                            <MenuItem id="btnHdrCIO" text="Create IO" press="onSaldocCreateStyleIO('CrtIO')"/>
+					        <MenuItem id="btnHdrCSIO" text="Create Style/IO" press="onSaldocCreateStyleIO('CrtStyleIO')"/>
                         </Menu>
 			        </menu>                    
                 </MenuButton>                 
@@ -182,8 +182,8 @@
                 <Button id="_IDGenOverflowToolbarButton3" type="Ghost" icon="sap-icon://filter" tooltip="Filter" text="Filter" press="onFilter"/>
                 <Button id="_IDGenOverflowToolbarButton4" type="Ghost" icon="sap-icon://group-2" tooltip="Group" text="Group" press="onGroup"/> -->
                 <!-- <Button id="btnSearchSalDoc" type="Ghost" icon="sap-icon://search" tooltip="Search" press="onDynamicSearch" visible="true"/> -->
-                <Button id="btnAddSalDoc" type="Ghost" icon="sap-icon://add" tooltip="New" press="addNewDetail" visible="true"/>
-                <Button id="btnTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout"/>
+                <Button id="btnAddSalDoc" type="Ghost" icon="sap-icon://add" tooltip="New" text="Create Sales Doc" press="addNewDetail" visible="true"/>
+                <Button id="btnTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" text="Save Table Layout" press="onSaveTableLayout"/>
                 <!-- <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
                 <menu>
                     <Menu id="_IDGenMenu1">

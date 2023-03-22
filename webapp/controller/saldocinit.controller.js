@@ -365,13 +365,13 @@ sap.ui.define([
                         success: function (oData, oResponse) {
                             oData.results.forEach(item => {
 
-                                item.DLVDT = dateFormat.format(new Date(item.DLVDT));
-                                item.DOCDT = dateFormat.format(new Date(item.DOCDT));
-                                item.CPODT = dateFormat.format(new Date(item.CPODT));
+                                item.DLVDT = dateFormat.format(item.DLVDT);
+                                item.DOCDT = dateFormat.format(item.DOCDT);
+                                item.CPODT = dateFormat.format(item.CPODT);
                                 item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
                                 item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
-                                item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
-                                item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+                                item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                                item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
                             })
                             oText.setText(oData.results.length + "");
                             oJSONDataModel.setData(oData);
