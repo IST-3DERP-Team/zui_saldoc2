@@ -295,8 +295,9 @@ sap.ui.define([
                                 me.getDynamicTableData(model);
                                 resolve();
                             }else if (model === 'SALDOCCRTSTYLEIO') {
-                                tableCol = oData;
-                                tableCol.results.push({
+                                var tableColResults = {};
+
+                                tableColResults['results'] = [{
                                     ColumnLabel: "Log Description",
                                     ColumnName: "LOGDESC",
                                     ColumnType: "STRING",
@@ -309,13 +310,39 @@ sap.ui.define([
                                     Key: "",
                                     Length: 150,
                                     Mandatory: true,
-                                    Order: "017",
+                                    Order: "001",
                                     Pivot: "",
                                     SortOrder: "",
                                     SortSeq: "",
                                     Sorted: false,
                                     Visible: false
-                                })
+                                }]; 
+                                tableCol = tableColResults;
+
+                                for(var index in oData.results){
+                                    tableCol.results.push(oData.results[index])
+                                }
+                                // tableCol = oData;
+                                // tableCol.results.push({
+                                //     ColumnLabel: "Log Description",
+                                //     ColumnName: "LOGDESC",
+                                //     ColumnType: "STRING",
+                                //     ColumnWidth: 300,
+                                //     Creatable: false,
+                                //     DataType: "STRING",
+                                //     Decimal: 0,
+                                //     DictType: "CHAR",
+                                //     Editable: false,
+                                //     Key: "",
+                                //     Length: 150,
+                                //     Mandatory: true,
+                                //     Order: "001",
+                                //     Pivot: "",
+                                //     SortOrder: "",
+                                //     SortSeq: "",
+                                //     Sorted: false,
+                                //     Visible: false
+                                // })
                                 console.log(tableCol)
                                 oJSONColumnsModel.setData(tableCol);
                                 me.oJSONModel.setData(oData);
@@ -698,8 +725,6 @@ sap.ui.define([
                 var iCounter = 0;
                 var bProceed = true;
 
-
-
                 var crtIOListObj = [];
                 var crtStyleListObj = [];
 
@@ -926,6 +951,9 @@ sap.ui.define([
                 var styleNo = "";
                 var createdStyleIONo = []
 
+                var createStyleResultStatus = ""
+                var createStyleResultMsg = ""
+
                 var columnData = this.getView().getModel('SALDOCCRTSTYLEIOCOL').getData();
                 var oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
                 var oRowData = oDataModel === undefined ? [] :oDataModel;
@@ -1044,14 +1072,55 @@ sap.ui.define([
                                         columnData.results[index].Visible = true;
                                     }
                                 }
-                                console.log(columnData);
 
                                 for(var index in oParam.CrtIOStylData){
                                     for(var index2 in oData.CrtIOStylData.results){
-                                        if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO){
+                                        if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
                                             for(var index3 in oRowData){
-                                                if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO){
-                                                    oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
+                                                    if(oData.CrtIOStylData.results[index2].MSGTYP === "E"){
+                                                        if(oData.CrtIOStylData.results[index2].MSG !== ""){
+                                                            oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
+                                                            oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                            createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
+                                                        }else{
+                                                            oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
+                                                            oRowData[index3].LOGDESC = "Error Encountered."
+                                                        }
+                                                    }else{
+                                                        if(sdProcessCd === "CRT_STY"){
+                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!";
+                                                                createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                            }else{
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                            }
+                                                        }else if(sdProcessCd === "CRT_IO"){
+                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
+                                                                createStyleResultMsg = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                            }else{
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                            }
+                                                        }else if(sdProcessCd === "CRT_STYIO"){
+                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
+                                                                createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                            }else{
+                                                                oRowData[index3].LOGDESCSTAT = "S"
+                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                            }
+                                                        }
+                                                        
+                                                    }
                                                 }
                                             }
                                         }
@@ -1084,19 +1153,8 @@ sap.ui.define([
 
                     await _promiseResult;
 
-                    if (createdStyleIONo.length > 0) {
-                        if (sdProcessCd === "CRT_STY") {
-                            MessageBox.information("Style Successfuly Created!");
-                            // this.onCreateStyleIO.destroy(true);
-                        }else if(sdProcessCd === "CRT_IO"){
-                            MessageBox.information("IO Successfuly Created!");
-                            // this.onCreateStyleIO.destroy(true);
-                        }else if(sdProcessCd === "CRT_STYIO"){
-                            MessageBox.information("IO/Style Successfuly Created!");
-                            // this.onCreateStyleIO.destroy(true);
-                        }
-                    } else {
-                        MessageBox.warning("Style/IO Creation Unsuccessful!");
+                    if (createStyleResultMsg.length > 0) {
+                        MessageBox.information(createStyleResultMsg);
                     }
                     Common.closeLoadingDialog(that);
                 }
@@ -1108,53 +1166,148 @@ sap.ui.define([
 
             onRowEditSalDoc: async function (table, model) {
                 var me = this;
+                var tblData = null;
+                if(table === "createStyleIOTbl")
+                    tblData = this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData() === undefined ? null : this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData().rows;
+                    
+                console.log(tblData);
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
                 var oColumnsData = model;
-                oTable.getColumns().forEach((col, idx) => {
-                    oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
-                        .forEach(ci => {
-                            var sColumnType = ci.DataType;
-                            if (ci.Editable) {
-                                if (ci.ColumnName === "UNLIMITED") {
-                                    col.setTemplate(new sap.m.CheckBox({
-                                        selected: "{" + ci.ColumnName + "}",
-                                        editable: true,
-                                        // liveChange: this.onInputLiveChange.bind(this)
-                                    }));
-                                } else if (sColumnType === "STRING") {
-                                    col.setTemplate(new sap.m.Input({
-                                        // id: "ipt" + ci.name,
-                                        type: "Text",
-                                        value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
-                                        maxLength: +ci.Length,
-                                        showValueHelp: true,
-                                        valueHelpRequest: this.handleValueHelp.bind(this),
-                                        liveChange: this.onInputLiveChange.bind(this)
-                                    }));
-                                } else if (sColumnType === "DATETIME") {
-                                    col.setTemplate(new sap.m.DatePicker({
-                                        // id: "ipt" + ci.name,
-                                        value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
-                                        displayFormat: "short",
-                                        change: "handleChange",
 
-                                        liveChange: this.onInputLiveChange.bind(this)
-                                    }));
-                                } else if (sColumnType === "NUMBER") {
-                                    col.setTemplate(new sap.m.Input({
-                                        // id: "ipt" + ci.name,
-                                        type: sap.m.InputType.Number,
-                                        value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
+                if(table === "createStyleIOTbl"){
+                    oTable.getColumns().forEach((col, idx) => {
+                        oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
+                            .forEach(ci => {
+                                var sColumnType = ci.DataType;
+                                if (ci.Editable) {
+                                    if (ci.ColumnName === "UNLIMITED") {
+                                        col.setTemplate(new sap.m.CheckBox({
+                                            selected: "{" + ci.ColumnName + "}",
+                                            editable: true,
+                                            // liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "STRING") {
+                                        col.setTemplate(new sap.m.Input({
+                                            // id: "ipt" + ci.name,
+                                            type: "Text",
+                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            enabled: {
+                                                path: "SALESDOCNO",
+                                                formatter: function (SALESDOCNO) {
+                                                    var result; 
+                                                    tblData.forEach(async (data)=>{
+                                                        if(data.LOGDESCSTAT === "S"){
+                                                            result = false;
+                                                        }
+                                                    });
+                                                    return result;
+                                                }
+            
+                                            },
+                                            maxLength: +ci.Length,
+                                            showValueHelp: true,
+                                            valueHelpRequest: this.handleValueHelp.bind(this),
+                                            liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "DATETIME") {
+                                        col.setTemplate(new sap.m.DatePicker({
+                                            // id: "ipt" + ci.name,
+                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            enabled: {
+                                                path: "SALESDOCNO",
+                                                formatter: function (SALESDOCNO) {
+                                                    var result; 
+                                                    tblData.forEach(async (data)=>{
+                                                        if(data.LOGDESCSTAT === "S"){
+                                                            result = false;
+                                                        }
+                                                    });
+                                                    return result;
+                                                }
+            
+                                            },
+                                            displayFormat: "short",
+                                            change: "handleChange",
 
-                                        maxLength: +ci.Length,
+                                            liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "NUMBER") {
+                                        col.setTemplate(new sap.m.Input({
+                                            // id: "ipt" + ci.name,
+                                            type: sap.m.InputType.Number,
+                                            value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
 
-                                        liveChange: this.onNumberLiveChange.bind(this)
-                                    }));
+                                            maxLength: +ci.Length,
+
+                                            liveChange: this.onNumberLiveChange.bind(this)
+                                        }));
+                                    }
+                                    if (ci.Mandatory) {
+                                        col.getLabel().addStyleClass("sapMLabelRequired");
+                                        col.getLabel().addStyleClass("requiredField");
+                                    }
                                 }
-                            }
-                        });
-                });
+                                if(ci.ColumnName === "LOGDESC"){
+                                    col.getLabel().addStyleClass("sapMLabelRequired");
+                                    col.getLabel().addStyleClass("requiredField");
+                                }
+                            });
+                    });
+                }else{
+                    oTable.getColumns().forEach((col, idx) => {
+                        oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
+                            .forEach(ci => {
+                                var sColumnType = ci.DataType;
+                                if (ci.Editable) {
+                                    if (ci.ColumnName === "UNLIMITED") {
+                                        col.setTemplate(new sap.m.CheckBox({
+                                            selected: "{" + ci.ColumnName + "}",
+                                            editable: true,
+                                            // liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "STRING") {
+                                        col.setTemplate(new sap.m.Input({
+                                            // id: "ipt" + ci.name,
+                                            type: "Text",
+                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            maxLength: +ci.Length,
+                                            showValueHelp: true,
+                                            valueHelpRequest: this.handleValueHelp.bind(this),
+                                            liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "DATETIME") {
+                                        col.setTemplate(new sap.m.DatePicker({
+                                            // id: "ipt" + ci.name,
+                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            displayFormat: "short",
+                                            change: "handleChange",
+
+                                            liveChange: this.onInputLiveChange.bind(this)
+                                        }));
+                                    } else if (sColumnType === "NUMBER") {
+                                        col.setTemplate(new sap.m.Input({
+                                            // id: "ipt" + ci.name,
+                                            type: sap.m.InputType.Number,
+                                            value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
+
+                                            maxLength: +ci.Length,
+
+                                            liveChange: this.onNumberLiveChange.bind(this)
+                                        }));
+                                    }
+                                    if (ci.Mandatory) {
+                                        col.getLabel().addStyleClass("sapMLabelRequired");
+                                        col.getLabel().addStyleClass("requiredField");
+                                    }
+                                }
+                                if(ci.ColumnName === "LOGDESC"){
+                                    col.getLabel().addStyleClass("sapMLabelRequired");
+                                    col.getLabel().addStyleClass("requiredField");
+                                }
+                            });
+                    });
+                }
             },
             onInputLiveChange: function (oEvent) {
                 if (oEvent.getSource().getBindingInfo("value").mandatory) {
