@@ -1054,7 +1054,8 @@ sap.ui.define([
                             VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
                             IONO: ioNo,
                             IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
-                            PRODSCEN: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                            PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
+                            PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
                         })
                     })
                     oParam = oParamHdr;
