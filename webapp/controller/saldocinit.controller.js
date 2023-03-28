@@ -1050,137 +1050,144 @@ sap.ui.define([
                     Common.openLoadingDialog(that);
 
                     oSelectedIndices.forEach((item, index) => {
-                        if (sdProcessCd === "CRT_STY") {
-                            ioNo = "";
-                            styleNo = "NEW";
-                        } else if (sdProcessCd === "CRT_STYIO") {
-                            ioNo = "NEW";
-                            styleNo = "NEW";
-                        } else if (sdProcessCd === "CRT_IO") {
-                            ioNo = "NEW";
-                            styleNo = "";
+                        console.log(aData.at(item));
+                        if(aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined){
+                            if (sdProcessCd === "CRT_STY") {
+                                ioNo = "";
+                                styleNo = "NEW";
+                            } else if (sdProcessCd === "CRT_STYIO") {
+                                ioNo = "NEW";
+                                styleNo = "NEW";
+                            } else if (sdProcessCd === "CRT_IO") {
+                                ioNo = "NEW";
+                                styleNo = "";
+                            }
+                            oParamHdr = {
+                                SDPROCESS: sdProcessCd,
+                                SBU: vSBU,
+                            }
+                            oParamData.push({
+                                SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                                STYLECD: aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
+                                STYLEDESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                SEASONCD: aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
+                                DESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                WVTYP: aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
+                                PRODTYP: aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
+                                SIZEGRP: aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
+                                SALESGRP: aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
+                                CUSTGRP: aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
+                                CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
+                                UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
+                                STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
+                                STYLENO: styleNo,
+                                VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
+                                IONO: ioNo,
+                                IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
+                                PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
+                                PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                            })
                         }
-                        oParamHdr = {
-                            SDPROCESS: sdProcessCd,
-                            SBU: vSBU,
-                        }
-                        oParamData.push({
-                            SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
-                            STYLECD: aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
-                            STYLEDESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                            SEASONCD: aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
-                            DESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                            WVTYP: aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
-                            PRODTYP: aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
-                            SIZEGRP: aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
-                            SALESGRP: aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
-                            CUSTGRP: aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
-                            CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
-                            UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
-                            STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
-                            STYLENO: styleNo,
-                            VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
-                            IONO: ioNo,
-                            IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
-                            PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
-                            PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
-                        })
                     })
-                    oParam = oParamHdr;
-                    oParam['CrtIOStylData'] = oParamData;
-                    oParam['CrtIOStylRetMsg'] = []
-                    console.log(oParam);
-                    _promiseResult = new Promise((resolve, reject) => {
-                        oModel.create("/CrtIOStylHdrSet", oParam, {
-                            method: "POST",
-                            success: async function (oData, oResponse) {
-                                console.log(oData);
+                    if(oParamData.length > 0){
+                        oParam = oParamHdr;
+                        oParam['CrtIOStylData'] = oParamData;
+                        oParam['CrtIOStylRetMsg'] = []
+                        console.log(oParam);
+                        _promiseResult = new Promise((resolve, reject) => {
+                            oModel.create("/CrtIOStylHdrSet", oParam, {
+                                method: "POST",
+                                success: async function(oData, oResponse){
+                                    console.log(oData);
 
-                                for (var index in columnData.results) {
-                                    if (columnData.results[index].ColumnName === "LOGDESC") {
-                                        columnData.results[index].Visible = true;
+                                    for(var index in columnData.results){
+                                        if(columnData.results[index].ColumnName === "LOGDESC"){
+                                            columnData.results[index].Visible = true;
+                                        }
                                     }
-                                }
 
-                                for(var index in oParam.CrtIOStylData){
-                                    for(var index2 in oData.CrtIOStylData.results){
-                                        if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                            for(var index3 in oRowData){
-                                                if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                                    if(oData.CrtIOStylData.results[index2].MSGTYP === "E"){
-                                                        if(oData.CrtIOStylData.results[index2].MSG !== ""){
-                                                            oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
-                                                            oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                            createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
+                                    for(var index in oParam.CrtIOStylData){
+                                        for(var index2 in oData.CrtIOStylData.results){
+                                            if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
+                                                for(var index3 in oRowData){
+                                                    if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
+                                                        if(oData.CrtIOStylData.results[index2].MSGTYP === "E"){
+                                                            if(oData.CrtIOStylData.results[index2].MSG !== ""){
+                                                                oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
+                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
+                                                            }else{
+                                                                oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
+                                                                oRowData[index3].LOGDESC = "Error Encountered."
+                                                            }
                                                         }else{
-                                                            oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
-                                                            oRowData[index3].LOGDESC = "Error Encountered."
+                                                            if(sdProcessCd === "CRT_STY"){
+                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                                }else{
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                }
+                                                            }else if(sdProcessCd === "CRT_IO"){
+                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
+                                                                    createStyleResultMsg = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                                }else{
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                }
+                                                            }else if(sdProcessCd === "CRT_STYIO"){
+                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
+                                                                }else{
+                                                                    oRowData[index3].LOGDESCSTAT = "S"
+                                                                    oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                }
+                                                            }
+                                                            
                                                         }
-                                                    }else{
-                                                        if(sdProcessCd === "CRT_STY"){
-                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!";
-                                                                createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                            }else{
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
-                                                            }
-                                                        }else if(sdProcessCd === "CRT_IO"){
-                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                createStyleResultMsg = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                            }else{
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
-                                                            }
-                                                        }else if(sdProcessCd === "CRT_STYIO"){
-                                                            if(oData.CrtIOStylData.results[index2].MSG === ""){
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                            }else{
-                                                                oRowData[index3].LOGDESCSTAT = "S"
-                                                                oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
-                                                            }
-                                                        }
-                                                        
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                    console.log(oRowData)
+
+                                    await me.setTableData(columnData.results, oRowData, 'createStyleIOTbl');
+                                    await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
+                                    me.setChangeStatus(false);
+
+                                    if(oData.CrtIOStylData.results !== undefined){
+                                        oData.CrtIOStylData.results.forEach(iostyRes => {
+                                            if (sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO") {
+                                                createdStyleIONo.push(iostyRes.STYLENO)
+
+                                            } else if (sdProcessCd === "CRT_IO") {
+                                                createdStyleIONo.push(iostyRes.IONO)
+                                            }
+                                        });
+                                    }
+                                    resolve();
+                                }, error: function (error) {
+                                    Common.closeLoadingDialog(that);
+                                    MessageBox.error("Error Encountered in Process!");
+                                    resolve();
                                 }
-                                console.log(oRowData)
-
-                                await me.setTableData(columnData.results, oRowData, 'createStyleIOTbl');
-                                await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
-                                me.setChangeStatus(false);
-
-                                if (oData.CrtIOStylData.results !== undefined) {
-                                    oData.CrtIOStylData.results.forEach(iostyRes => {
-                                        if (sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO") {
-                                            createdStyleIONo.push(iostyRes.STYLENO)
-
-                                        } else if (sdProcessCd === "CRT_IO") {
-                                            createdStyleIONo.push(iostyRes.IONO)
-                                        }
-                                    });
-                                }
-                                resolve();
-                            }, error: function (error) {
-                                Common.closeLoadingDialog(that);
-                                MessageBox.error("Error Encountered in Process!");
-                                resolve();
-                            }
+                            })
                         })
-                    })
+                        await _promiseResult;
+                    }else{
+                        MessageBox.information("No Data to Process!");
+                    }
 
-                    await _promiseResult;
 
                     if (createStyleResultMsg.length > 0) {
                         MessageBox.information(createStyleResultMsg);

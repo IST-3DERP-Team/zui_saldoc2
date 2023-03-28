@@ -6,7 +6,7 @@ xmlns:f="sap.ui.layout.form" xmlns:uiT="sap.ui.table">
 			visibleRowCountMode="Auto"
 			showColumnVisibilityMenu="true"
 			enableColumnFreeze="true"
-			selectionMode="MultiToggle"
+			selectionMode="Single"
 			selectionBehavior="Row"
 			sort="onSorted">
 			<uiT:extension>
