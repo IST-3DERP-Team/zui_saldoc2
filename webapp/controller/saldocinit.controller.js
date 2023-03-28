@@ -36,9 +36,9 @@ sap.ui.define([
                 //back button, check if has Locked
                 //perform unLock function
                 if (sap.ui.getCore().byId("backBtn") !== undefined) {
-                    this._fBackButton = sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction;
+                    that._fBackButton = sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction;
 
-                    var oView = this.getView();
+                    var oView = that.getView();
                     oView.addEventDelegate({
                         onAfterShow: function (oEvent) {
                             sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction = that._fBackButton;
@@ -47,7 +47,7 @@ sap.ui.define([
                             //     that.refresh();
                             // }
 
-                            if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+                            if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
                             }
                         }
@@ -65,7 +65,9 @@ sap.ui.define([
                 this.getView().setModel(new JSONModel({
                     crtStyleIOMode: '',
                     LockType: 'S',
-                    LockMessage: ''
+                    LockMessage: '',
+                    LockError: '',
+                    DisplayMode: "change"
                 }), "ui");
 
                 this.getAppAction();
@@ -112,6 +114,9 @@ sap.ui.define([
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
+
+                this.getView().getModel("ui").setProperty("/DisplayMode", csAction);
+
                 // console.log(this.getView().getModel("DisplayActionModel"));
                 // console.log(this.getView());
 
@@ -318,7 +323,7 @@ sap.ui.define([
                                 me.getView().setModel(oJSONColumnsModel, "DynColumns");  //set the view model
                                 me.getDynamicTableData(model);
                                 resolve();
-                            }else if (model === 'SALDOCCRTSTYLEIO') {
+                            } else if (model === 'SALDOCCRTSTYLEIO') {
                                 var tableColResults = {};
 
                                 tableColResults['results'] = [{
@@ -340,10 +345,10 @@ sap.ui.define([
                                     SortSeq: "",
                                     Sorted: false,
                                     Visible: false
-                                }]; 
+                                }];
                                 tableCol = tableColResults;
 
-                                for(var index in oData.results){
+                                for (var index in oData.results) {
                                     tableCol.results.push(oData.results[index])
                                 }
                                 // tableCol = oData;
@@ -545,8 +550,7 @@ sap.ui.define([
                     oTable.attachBrowserEvent('dblclick', function (e) {
                         e.preventDefault();
                         me.setChangeStatus(false); //remove change flag
-                        me.lock(me);
-                        me.navToDetail(salDocNotxt); //navigate to detail page
+                        me.navToDetail(salDocNotxt); //navigate to detail page                      
 
                     });
                 }
@@ -704,8 +708,9 @@ sap.ui.define([
                 that.navToDetail(salesDocNo); //navigate to detail page
             },
 
-            navToDetail: function (salesDocNo, sbu) {
+            navToDetail: async function (salesDocNo, sbu) {
                 //route to detail page
+                await this.lock(this);
                 if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
@@ -1051,7 +1056,7 @@ sap.ui.define([
 
                     oSelectedIndices.forEach((item, index) => {
                         console.log(aData.at(item));
-                        if(aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined){
+                        if (aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined) {
                             if (sdProcessCd === "CRT_STY") {
                                 ioNo = "";
                                 styleNo = "NEW";
@@ -1089,7 +1094,7 @@ sap.ui.define([
                             })
                         }
                     })
-                    if(oParamData.length > 0){
+                    if (oParamData.length > 0) {
                         oParam = oParamHdr;
                         oParam['CrtIOStylData'] = oParamData;
                         oParam['CrtIOStylRetMsg'] = []
@@ -1097,62 +1102,62 @@ sap.ui.define([
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.create("/CrtIOStylHdrSet", oParam, {
                                 method: "POST",
-                                success: async function(oData, oResponse){
+                                success: async function (oData, oResponse) {
                                     console.log(oData);
 
-                                    for(var index in columnData.results){
-                                        if(columnData.results[index].ColumnName === "LOGDESC"){
+                                    for (var index in columnData.results) {
+                                        if (columnData.results[index].ColumnName === "LOGDESC") {
                                             columnData.results[index].Visible = true;
                                         }
                                     }
 
-                                    for(var index in oParam.CrtIOStylData){
-                                        for(var index2 in oData.CrtIOStylData.results){
-                                            if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                                for(var index3 in oRowData){
-                                                    if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                                        if(oData.CrtIOStylData.results[index2].MSGTYP === "E"){
-                                                            if(oData.CrtIOStylData.results[index2].MSG !== ""){
+                                    for (var index in oParam.CrtIOStylData) {
+                                        for (var index2 in oData.CrtIOStylData.results) {
+                                            if (oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD) {
+                                                for (var index3 in oRowData) {
+                                                    if (oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD) {
+                                                        if (oData.CrtIOStylData.results[index2].MSGTYP === "E") {
+                                                            if (oData.CrtIOStylData.results[index2].MSG !== "") {
                                                                 oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
                                                                 oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
                                                                 createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
-                                                            }else{
+                                                            } else {
                                                                 oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
                                                                 oRowData[index3].LOGDESC = "Error Encountered."
                                                             }
-                                                        }else{
-                                                            if(sdProcessCd === "CRT_STY"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                        } else {
+                                                            if (sdProcessCd === "CRT_STY") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!";
-                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
-                                                            }else if(sdProcessCd === "CRT_IO"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                            } else if (sdProcessCd === "CRT_IO") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                    createStyleResultMsg = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!";
+                                                                    createStyleResultMsg = "IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
-                                                            }else if(sdProcessCd === "CRT_STYIO"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                            } else if (sdProcessCd === "CRT_STYIO") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " and IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " and IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
                                                             }
-                                                            
+
                                                         }
                                                     }
                                                 }
@@ -1165,7 +1170,7 @@ sap.ui.define([
                                     await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
                                     me.setChangeStatus(false);
 
-                                    if(oData.CrtIOStylData.results !== undefined){
+                                    if (oData.CrtIOStylData.results !== undefined) {
                                         oData.CrtIOStylData.results.forEach(iostyRes => {
                                             if (sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO") {
                                                 createdStyleIONo.push(iostyRes.STYLENO)
@@ -1184,7 +1189,7 @@ sap.ui.define([
                             })
                         })
                         await _promiseResult;
-                    }else{
+                    } else {
                         MessageBox.information("No Data to Process!");
                     }
 
@@ -1203,15 +1208,15 @@ sap.ui.define([
             onRowEditSalDoc: async function (table, model) {
                 var me = this;
                 var tblData = null;
-                if(table === "createStyleIOTbl")
+                if (table === "createStyleIOTbl")
                     tblData = this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData() === undefined ? null : this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData().rows;
-                    
+
                 console.log(tblData);
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
                 var oColumnsData = model;
 
-                if(table === "createStyleIOTbl"){
+                if (table === "createStyleIOTbl") {
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
@@ -1231,15 +1236,15 @@ sap.ui.define([
                                             enabled: {
                                                 path: "SALESDOCNO",
                                                 formatter: function (SALESDOCNO) {
-                                                    var result; 
-                                                    tblData.forEach(async (data)=>{
-                                                        if(data.LOGDESCSTAT === "S"){
+                                                    var result;
+                                                    tblData.forEach(async (data) => {
+                                                        if (data.LOGDESCSTAT === "S") {
                                                             result = false;
                                                         }
                                                     });
                                                     return result;
                                                 }
-            
+
                                             },
                                             maxLength: +ci.Length,
                                             showValueHelp: true,
@@ -1253,15 +1258,15 @@ sap.ui.define([
                                             enabled: {
                                                 path: "SALESDOCNO",
                                                 formatter: function (SALESDOCNO) {
-                                                    var result; 
-                                                    tblData.forEach(async (data)=>{
-                                                        if(data.LOGDESCSTAT === "S"){
+                                                    var result;
+                                                    tblData.forEach(async (data) => {
+                                                        if (data.LOGDESCSTAT === "S") {
                                                             result = false;
                                                         }
                                                     });
                                                     return result;
                                                 }
-            
+
                                             },
                                             displayFormat: "short",
                                             change: "handleChange",
@@ -1284,13 +1289,13 @@ sap.ui.define([
                                         col.getLabel().addStyleClass("requiredField");
                                     }
                                 }
-                                if(ci.ColumnName === "LOGDESC"){
+                                if (ci.ColumnName === "LOGDESC") {
                                     col.getLabel().addStyleClass("sapMLabelRequired");
                                     col.getLabel().addStyleClass("requiredField");
                                 }
                             });
                     });
-                }else{
+                } else {
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
@@ -1337,7 +1342,7 @@ sap.ui.define([
                                         col.getLabel().addStyleClass("requiredField");
                                     }
                                 }
-                                if(ci.ColumnName === "LOGDESC"){
+                                if (ci.ColumnName === "LOGDESC") {
                                     col.getLabel().addStyleClass("sapMLabelRequired");
                                     col.getLabel().addStyleClass("requiredField");
                                 }
@@ -1453,11 +1458,11 @@ sap.ui.define([
                         success: function (oResultLock) {
                             console.log(oResultLock);
                             oResultLock.SALDOC_MSG.results.forEach(item => {
-                                if (item.Type === "S") {
-                                    me.getView().getModel("ui").setProperty("/LockType", item.Type);
-                                    me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
-                                    // alert(me.getView().getModel("ui").getProperty("/isLocked"));
-                                }
+                                // if (item.Type === "S") {
+                                me.getView().getModel("ui").setProperty("/LockType", item.Type);
+                                me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
+                                // alert(me.getView().getModel("ui").getProperty("/isLocked"));
+                                // }
                                 sError += item.Message + ".\r\n ";
                             })
 
@@ -1489,11 +1494,11 @@ sap.ui.define([
                     "Lock": ""
                 })
 
-                oParamLock["SALDOC_TAB"] = oSALDOC_TAB;
-                oParamLock["Iv_Count"] = 300;
-                oParamLock["SALDOC_MSG"] = [];
+                oParamUnLock["SALDOC_TAB"] = oSALDOC_TAB;
+                oParamUnLock["Iv_Count"] = 300;
+                oParamUnLock["SALDOC_MSG"] = [];
 
-                console.log(oParamLock);
+                console.log(oParamUnLock);
 
                 oModelLock.create("/ZERP_SALDOCHDR", oParamUnLock, {
                     method: "POST",
