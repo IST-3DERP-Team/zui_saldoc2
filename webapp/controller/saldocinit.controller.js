@@ -32,6 +32,28 @@ sap.ui.define([
 
                 //get current userid
                 var oModel = new sap.ui.model.json.JSONModel();
+
+                //back button, check if has Locked
+                //perform unLock function
+                if (sap.ui.getCore().byId("backBtn") !== undefined) {
+                    this._fBackButton = sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction;
+
+                    var oView = this.getView();
+                    oView.addEventDelegate({
+                        onAfterShow: function (oEvent) {
+                            sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction = that._fBackButton;
+
+                            // if (that.getOwnerComponent().getModel("UI_MODEL").getData().flag) {
+                            //     that.refresh();
+                            // }
+
+                            if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+                                that.unLock();
+                            }
+                        }
+                    }, oView);
+                }
+
                 oModel.loadData("/sap/bc/ui2/start_up").then(() => {
                     this._userid = oModel.oData.id;
                 })
@@ -41,7 +63,9 @@ sap.ui.define([
                 // this._router.getRoute("RouteSalesDocHdr").attachPatternMatched(this._routePatternMatched, this);
 
                 this.getView().setModel(new JSONModel({
-                    crtStyleIOMode: ''
+                    crtStyleIOMode: '',
+                    LockType: 'S',
+                    LockMessage: ''
                 }), "ui");
 
                 this.getAppAction();
@@ -77,13 +101,13 @@ sap.ui.define([
                     const fullHash = new HashChanger().getHash();
                     const urlParsing = await sap.ushell.Container.getServiceAsync("URLParsing");
                     const shellHash = urlParsing.parseShellHash(fullHash);
-                    csAction = shellHash.action;  
+                    csAction = shellHash.action;
                 }
 
                 var DisplayStateModel = new JSONModel();
                 var DisplayData = {
-                    sAction : csAction,
-                    visible : csAction === "display" ? false : true
+                    sAction: csAction,
+                    visible: csAction === "display" ? false : true
                 }
 
                 DisplayStateModel.setData(DisplayData);
@@ -101,7 +125,7 @@ sap.ui.define([
                     var btnMenu = this.getView().byId("_IDGenMenuButton1");
                     if (btnMenu.getVisible()) {
                         btnMenu.setVisible(false);
-                    }                        
+                    }
                 }
             },
 
@@ -275,7 +299,7 @@ sap.ui.define([
                 var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
 
                 var tableCol = [];
-                                
+
                 // this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
 
                 oModel.setHeaders({
@@ -521,6 +545,7 @@ sap.ui.define([
                     oTable.attachBrowserEvent('dblclick', function (e) {
                         e.preventDefault();
                         me.setChangeStatus(false); //remove change flag
+                        me.lock(me);
                         me.navToDetail(salDocNotxt); //navigate to detail page
 
                     });
@@ -681,10 +706,13 @@ sap.ui.define([
 
             navToDetail: function (salesDocNo, sbu) {
                 //route to detail page
-                this._router.navTo("RouteSalesDocDetail", {
-                    salesdocno: salesDocNo,
-                    sbu: this._sbu
-                });
+                if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+                    this._router.navTo("RouteSalesDocDetail", {
+                        salesdocno: salesDocNo,
+                        sbu: this._sbu
+                    });
+                } else
+                    MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
             },
 
             onSearchSaldoc: async function (oEvent) {
@@ -807,7 +835,7 @@ sap.ui.define([
                                         if (item.ColumnName === "IOTYPE" || item.ColumnName === "PRODSCEN" || item.ColumnName === "PLANMONTH") {
                                             item.Visible = false;
                                         }
-                                        if(item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH"){
+                                        if (item.ColumnName === "FTYSTYLE" || item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT" || item.ColumnName === "SIZEGRP" || item.ColumnName === "PLANMONTH") {
                                             item.Length = 50;
                                         }
                                     })
@@ -893,10 +921,10 @@ sap.ui.define([
 
                                     me.getView().getModel("ui").setProperty("/crtStyleIOMode", 'CrtStyleIO');
 
-                                    oColumnsData.forEach(item =>{
-                                        if(item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE"||item.ColumnName === "PLANMONTH" || 
-                                           item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT"|| item.ColumnName === "SIZEGRP" || 
-                                           item.ColumnName === "PLANMONTH" || item.ColumnName === "FTYSTYLE"){
+                                    oColumnsData.forEach(item => {
+                                        if (item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE" || item.ColumnName === "PLANMONTH" ||
+                                            item.ColumnName === "WEAVETYP" || item.ColumnName === "STYLECAT" || item.ColumnName === "SIZEGRP" ||
+                                            item.ColumnName === "PLANMONTH" || item.ColumnName === "FTYSTYLE") {
                                             item.Length = 50;
                                         }
                                     })
@@ -955,10 +983,10 @@ sap.ui.define([
                 var createStyleResultMsg = ""
 
                 var columnData = this.getView().getModel('SALDOCCRTSTYLEIOCOL').getData();
-                var oDataModel = me.getView().getModel("CrtStyleIOData").getData(); 
-                var oRowData = oDataModel === undefined ? [] :oDataModel;
+                var oDataModel = me.getView().getModel("CrtStyleIOData").getData();
+                var oRowData = oDataModel === undefined ? [] : oDataModel;
 
-                if(this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle"){
+                if (this.getView().getModel("ui").getData().crtStyleIOMode === "CrtStyle") {
                     sdProcessCd = "CRT_STY";
                 } else if (this.getView().getModel("ui").getData().crtStyleIOMode === "CrtIO") {
                     sdProcessCd = "CRT_IO";
@@ -1400,6 +1428,93 @@ sap.ui.define([
                     },
                     error: function (err) { }
                 });
+            },
+
+            lock: async (me) => {
+                var oModelLock = me.getOwnerComponent().getModel("ZGW_3DERP_LOCK_SRV");
+                var oParamLock = {};
+                var oSALDOC_TAB = [];
+                var sError = "";
+
+                oSALDOC_TAB.push({
+                    "Salesdocno": salDocNotxt,
+                    "Lock": "X"
+                })
+
+                oParamLock["SALDOC_TAB"] = oSALDOC_TAB;
+                oParamLock["Iv_Count"] = 300;
+                oParamLock["SALDOC_MSG"] = [];
+
+                console.log(oParamLock);
+                // return;
+                var promise = new Promise((resolve, reject) => {
+                    oModelLock.create("/ZERP_SALDOCHDR", oParamLock, {
+                        method: "POST",
+                        success: function (oResultLock) {
+                            console.log(oResultLock);
+                            oResultLock.SALDOC_MSG.results.forEach(item => {
+                                if (item.Type === "S") {
+                                    me.getView().getModel("ui").setProperty("/LockType", item.Type);
+                                    me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
+                                    // alert(me.getView().getModel("ui").getProperty("/isLocked"));
+                                }
+                                sError += item.Message + ".\r\n ";
+                            })
+
+                            if (sError.length > 0) {
+                                resolve(false);
+                                // sap.m.MessageBox.information(sError);
+                                // me.closeLoadingDialog();
+                            }
+                            else resolve(true);
+                        },
+                        error: function (err) {
+                            // me.closeLoadingDialog();
+                            resolve(false);
+                        }
+                    });
+                })
+
+                return await promise;
+            },
+
+            unLock() {
+                var oModelLock = this.getOwnerComponent().getModel("ZGW_3DERP_LOCK_SRV");
+                var oParamUnLock = {};
+                var oSALDOC_TAB = [];
+                var me = this;
+
+                oSALDOC_TAB.push({
+                    "Salesdocno": salDocNotxt,
+                    "Lock": ""
+                })
+
+                oParamLock["SALDOC_TAB"] = oSALDOC_TAB;
+                oParamLock["Iv_Count"] = 300;
+                oParamLock["SALDOC_MSG"] = [];
+
+                console.log(oParamLock);
+
+                oModelLock.create("/ZERP_SALDOCHDR", oParamUnLock, {
+                    method: "POST",
+                    success: function (oResultLock) {
+                        oResultLock.SALDOC_MSG.results.forEach(item => {
+                            if (item.Type === "S") {
+                                me.getView().getModel("ui").setProperty("/LockType", "");
+                                me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
+                                // alert(me.getView().getModel("ui").getProperty("/isLocked"));
+                            }
+                            sError += item.Message + ".\r\n ";
+                        })
+
+                        console.log("Unlock", oResultLock)
+                    },
+                    error: function (err) {
+                        // me.closeLoadingDialog();
+                    }
+                })
+
+                this._oLock = [];
             },
 
             handleValueHelp: async function (oEvent) {

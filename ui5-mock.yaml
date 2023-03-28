@@ -18,6 +18,10 @@ server:
             url: http://159.138.39.203:8000
             client: "888"
             destination: LTD888
+          - path: /sap
+            url: http://159.138.39.203:8000
+            client: "888"
+            destination: LTD888
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
@@ -47,4 +51,8 @@ server:
           - urlPath: /sap/opu/odata/sap/ZGW_3DERP_SH_SRV/
             metadataXmlPath: ./webapp/localService/ZGW_3DERP_SH_SRV/metadata.xml
             mockdataRootPath: ./webapp/localService/ZGW_3DERP_SH_SRV/mockdata
+            generateMockData: true
+          - urlPath: /sap/opu/odata/sap/ZGW_3DERP_LOCK_SRV
+            metadataXmlPath: ./webapp/localService/ZGW_3DERP_LOCK_SRV/metadata.xml
+            mockdataRootPath: ./webapp/localService/ZGW_3DERP_LOCK_SRV/mockdata
             generateMockData: true
