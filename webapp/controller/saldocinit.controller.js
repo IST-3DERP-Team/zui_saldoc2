@@ -710,23 +710,17 @@ sap.ui.define([
 
             navToDetail: async function (salesDocNo, sbu) {
                 //route to detail page
-                await this.lock(this);
-
                 if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
-                    if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
-                        this._router.navTo("RouteSalesDocDetail", {
-                            salesdocno: salesDocNo,
-                            sbu: this._sbu
-                        });
-                    } else
-                        MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
+                    await this.lock(this);
                 }
-                else {
+
+                if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
                         sbu: this._sbu
                     });
-                }
+                } else
+                    MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
             },
 
             onSearchSaldoc: async function (oEvent) {
