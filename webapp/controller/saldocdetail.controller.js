@@ -7,13 +7,14 @@ sap.ui.define([
     'jquery.sap.global',
     'sap/m/MessageBox',
     'sap/ui/core/routing/HashChanger',
+    "sap/ui/core/routing/History",
     'sap/m/MessageStrip',
     "../control/DynamicTable"
 ],
     /** 
      * @param {typeof sap.ui.core.mvc.Controller} Controller 
      */
-    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, MessageStrip, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, History, MessageStrip, control) {
         "use strict";
 
         var that;
@@ -124,8 +125,103 @@ sap.ui.define([
                 // build Dynamic table for Sales Document Details
                 await this.getDynamicTableColumns();
 
+                //This Section remove required Field Indicator when initializing page 
+                this._validationErrors = [];     
+                var me = this;
+                var oView = this.getView();
+                var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
+                var formContainers = formView.getFormContainers(); // Form Container
+                var formElements = ""; //Form Elements
+                var formFields = ""; // Form Field
+                var formElementsIsVisible = false; //is Form Element Visible Boolean
+                var fieldIsEditable = false; // is Field Editable Boolean
+                var fieldMandatory = ""; // Field Mandatory variable
+                var fieldIsMandatory = false; // Is Field Mandatory Boolean
+                var oMandatoryModel = oView.getModel("MandatoryFieldsData").getProperty("/");
 
+                //Form Validations
+                //Iterate Form Containers
+                for (var index in formContainers) {
+                    formElements = formContainers[index].getFormElements(); //get Form Elements
+
+                    //iterate Form Elements
+                    for (var elementIndex in formElements) {
+                        formElementsIsVisible = formElements[elementIndex].getProperty("visible"); //get the property Visible of Element
+                        if (formElementsIsVisible) {
+                            formFields = formElements[elementIndex].getFields(); //get FIelds in Form Element
+
+                            //Iterate Fields
+                            for (var formIndex in formFields) {
+                                fieldMandatory = formFields[formIndex].getBindingInfo("value") === undefined ? "" : formFields[formIndex].getBindingInfo("value").mandatory;
+
+                                fieldIsMandatory = oMandatoryModel[fieldMandatory] === undefined ? false : oMandatoryModel[fieldMandatory];
+
+                                if (fieldIsMandatory) {
+                                    fieldIsEditable = formFields[formIndex].getProperty("editable"); //get the property Editable of Fields
+                                    if (fieldIsEditable) {
+                                        formFields[formIndex].setValueState("None");
+                                        me._validationErrors.forEach((item, index) => {
+                                            if (item === formFields[formIndex].getId()) {
+                                                me._validationErrors.splice(index, 1)
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
                 Common.closeLoadingDialog(that);
+            },
+
+            setReqField: async function(isEdit){
+                var me = this;
+                var oView = this.getView();
+                var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
+                var formContainers = formView.getFormContainers(); // Form Container
+                var formElements = ""; //Form Elements
+                var formFields = ""; // Form Field
+                var formElementsIsVisible = false; //is Form Element Visible Boolean
+                var fieldIsEditable = false; // is Field Editable Boolean
+                var fieldMandatory = ""; // Field Mandatory variable
+                var fieldIsMandatory = false; // Is Field Mandatory Boolean
+                var oMandatoryModel = oView.getModel("MandatoryFieldsData").getProperty("/");
+                var label = "";
+
+                //Form Validations
+                //Iterate Form Containers
+                for (var index in formContainers) {
+                    formElements = formContainers[index].getFormElements(); //get Form Elements
+
+                    //iterate Form Elements
+                    for (var elementIndex in formElements) {
+                        formElementsIsVisible = formElements[elementIndex].getProperty("visible"); //get the property Visible of Element
+                        if (formElementsIsVisible) {
+                            formFields = formElements[elementIndex].getFields(); //get FIelds in Form Element
+
+                            //Iterate Fields
+                            for (var formIndex in formFields) {
+                                fieldMandatory = formFields[formIndex].getBindingInfo("value") === undefined ? "" : formFields[formIndex].getBindingInfo("value").mandatory;
+
+                                fieldIsMandatory = oMandatoryModel[fieldMandatory] === undefined ? false : oMandatoryModel[fieldMandatory];
+
+                                if (fieldIsMandatory) {
+                                    if(isEdit){
+                                        label = formElements[elementIndex].getLabel().replace("*", "");
+                                        formElements[elementIndex].setLabel("*" + label);
+                                        formElements[elementIndex]._oLabel.addStyleClass("requiredField");
+                                    }else{
+                                        label = formElements[elementIndex].getLabel().replace("*", "");
+                                        formElements[elementIndex].setLabel(label);
+                                        formElements[elementIndex]._oLabel.removeStyleClass("requiredField");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
             },
             handleValueHelp: async function (oEvent) {
                 var me = this;
@@ -659,12 +755,12 @@ sap.ui.define([
                         },
                         success: function (oData, oResponse) {
                             oData.results.forEach(item => {
-                                item.CPODT = dateFormat.format(new Date(item.CPODT));
-                                item.DLVDT = dateFormat.format(new Date(item.DLVDT));
+                                item.CPODT = dateFormat.format(item.CPODT);
+                                item.DLVDT = dateFormat.format(item.DLVDT);
                                 item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
                                 item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
-                                item.CREATEDDT = dateFormat.format(new Date(item.CREATEDDT));
-                                item.UPDATEDDT = dateFormat.format(new Date(item.UPDATEDDT));
+                                item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                                item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
                             })
                             // oText.setText(oData.Results.length + "");
                             oJSONDataModel.setData(oData);
@@ -918,6 +1014,7 @@ sap.ui.define([
 
                     this.byId("btnHdrSave").setVisible(true);
                     this.byId("btnHdrCancel").setVisible(true);
+                    await this.setReqField(true);
                 } else {
                     MessageBox.error("Sales Doc. is already Deleted!");
                 }
@@ -925,6 +1022,7 @@ sap.ui.define([
 
             setNewHeaderEditMode: async function () {
                 //unlock editable fields of style header
+                await this.setReqField(true);
                 var oJSONModel = new JSONModel();
                 this._headerChanged = false;
 
@@ -973,7 +1071,6 @@ sap.ui.define([
             // },
             onSaveHeader: async function () {
                 var me = this;
-                var oView = this.getView();
                 var oDataEDitModel = this.getView().getModel("headerData");
                 var oDataEdit = oDataEDitModel.getProperty('/');
 
@@ -986,6 +1083,7 @@ sap.ui.define([
                 //Init Validation Errors Object
                 this._validationErrors = [];
 
+                var oView = this.getView();
                 var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
                 var formContainers = formView.getFormContainers(); // Form Container
                 var formElements = ""; //Form Elements
@@ -1161,24 +1259,37 @@ sap.ui.define([
             },
 
             cancelHeaderEdit: async function () {
-                //confirm cancel edit of style header
-                if (this._headerChanged) {
-                    if (!this._DiscardHeaderChangesDialog) {
-                        this._DiscardHeaderChangesDialog = sap.ui.xmlfragment("zuisaldoc2.zuisaldoc2.view.fragments.dialog.DiscardHeaderChanges", this);
-                        this.getView().addDependent(this._DiscardHeaderChangesDialog);
+                if(this._salesDocNo === "NEW"){
+                    var oHistory = History.getInstance();
+                    var sPreviousHash = oHistory.getPreviousHash();
+                    await this.setReqField(false);
+
+                    if (sPreviousHash !== undefined) {
+                        window.history.go(-1);
+                    } else {
+                        var oRouter = this.getOwnerComponent().getRouter();
+                        oRouter.navTo("Routesaldocinit", {}, true);
                     }
-                    jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this._LoadingDialog);
-                    this._DiscardHeaderChangesDialog.addStyleClass("sapUiSizeCompact");
-                    this._DiscardHeaderChangesDialog.open();
-                } else {
-                    this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
-                    this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
-                    this.enableOtherTabs("itbDetail");
+                }else{
+                    //confirm cancel edit of style header
+                    if (this._headerChanged) {
+                        if (!this._DiscardHeaderChangesDialog) {
+                            this._DiscardHeaderChangesDialog = sap.ui.xmlfragment("zuisaldoc2.zuisaldoc2.view.fragments.dialog.DiscardHeaderChanges", this);
+                            this.getView().addDependent(this._DiscardHeaderChangesDialog);
+                        }
+                        jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this._LoadingDialog);
+                        this._DiscardHeaderChangesDialog.addStyleClass("sapUiSizeCompact");
+                        this._DiscardHeaderChangesDialog.open();
+                    } else {
+                        this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                        this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                        this.enableOtherTabs("itbDetail");
 
-                    this.byId("btnHdrSave").setVisible(false);
-                    this.byId("btnHdrCancel").setVisible(false);
-
-                    await this.closeHeaderEdit();
+                        this.byId("btnHdrSave").setVisible(false);
+                        this.byId("btnHdrCancel").setVisible(false);
+                        await this.setReqField(false);
+                        await this.closeHeaderEdit();
+                    }
                 }
             },
 
@@ -1486,8 +1597,13 @@ sap.ui.define([
                                         liveChange: this.onNumberLiveChange.bind(this)
                                     }));
                                 }
+                                if (ci.Mandatory) {
+                                    col.getLabel().addStyleClass("sapMLabelRequired");
+                                    col.getLabel().addStyleClass("requiredField");
+                                }
                             }
                         });
+                    
                 });
             },
             onHeaderChange: async function (oEvent) {
@@ -1537,7 +1653,25 @@ sap.ui.define([
             },
 
             onInputLiveChange: function (oEvent) {
+                var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
                 console.log(oEvent.getSource().getBindingInfo("value"));
+
+                var fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
+                if (fieldIsMandatory) {
+                    if (oEvent.getParameters().value === "") {
+                        oEvent.getSource().setValueState("Error");
+                        oEvent.getSource().setValueStateText("Required Field");
+                        this._validationErrors.push(oEvent.getSource().getId());
+                    } else {
+                        oEvent.getSource().setValueState("None");
+                        this._validationErrors.forEach((item, index) => {
+                            if (item === oEvent.getSource().getId()) {
+                                this._validationErrors.splice(index, 1)
+                            }
+                        })
+                    }
+                }
+
                 if (oEvent.getSource().getBindingInfo("value").mandatory === "true") {
                     if (oEvent.getParameters().value === "") {
                         oEvent.getSource().setValueState("Error");
@@ -1723,8 +1857,8 @@ sap.ui.define([
                                 CPONO: aData.at(item).CPONO,
                                 CPOREV: +aData.at(item).CPOREV,
                                 CPOITEM: +aData.at(item).CPOITEM,
-                                CPODT: sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
-                                DLVDT: sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
+                                CPODT: aData.at(item).CPODT === undefined ? "" : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
+                                DLVDT: aData.at(item).DLVDT === undefined ? "" : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
                                 CUSSTYLEDESC: aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO: aData.at(item).CUSTSHIPTO,
@@ -1761,7 +1895,6 @@ sap.ui.define([
                             // await _promiseResult;
                             oModel.update("/SDDETSet(SALESDOCNO='" + aData.at(item).SALESDOCNO + "',SALESDOCITEM=" + aData.at(item).SALESDOCITEM + ")", oParamData, updateModelParameter);
                         });
-
 
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.submitChanges({
@@ -1803,8 +1936,8 @@ sap.ui.define([
                                 CPONO: aData.at(item).CPONO,
                                 CPOREV: +aData.at(item).CPOREV,
                                 CPOITEM: +aData.at(item).CPOITEM,
-                                CPODT: aData.at(item).CPODT === undefined ? null : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
-                                DLVDT: aData.at(item).DLVDT === undefined ? null : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
+                                CPODT: aData.at(item).CPODT === undefined ? "" : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
+                                DLVDT: aData.at(item).DLVDT === undefined ? "" : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
                                 CUSTSTYLEDESC: aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO: aData.at(item).CUSTSHIPTO,
@@ -1841,7 +1974,6 @@ sap.ui.define([
                             // await _promiseResult;
                             oModel.create("/SALDOCDETSet", oParamData, insertModelParameter);
                         });
-
 
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.submitChanges({
