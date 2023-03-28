@@ -20,6 +20,10 @@ server:
             url: http://159.138.39.203:8000
             client: '888'
             destination: LTD888
+          - path: /sap
+            url: http://159.138.39.203:8000
+            client: '888'
+            destination: LTD888
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
