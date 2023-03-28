@@ -711,13 +711,22 @@ sap.ui.define([
             navToDetail: async function (salesDocNo, sbu) {
                 //route to detail page
                 await this.lock(this);
-                if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+
+                if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
+                    if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+                        this._router.navTo("RouteSalesDocDetail", {
+                            salesdocno: salesDocNo,
+                            sbu: this._sbu
+                        });
+                    } else
+                        MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
+                }
+                else {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
                         sbu: this._sbu
                     });
-                } else
-                    MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
+                }
             },
 
             onSearchSaldoc: async function (oEvent) {
