@@ -47,7 +47,7 @@ sap.ui.define([
                             //     that.refresh();
                             // }
 
-                            if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+                            if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
                             }
                         }
@@ -279,13 +279,40 @@ sap.ui.define([
                 } catch (err) { }
             },
 
-            onSearch: function () {
+            onSearch: async function () {
+                var me = this;
                 // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
                 this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
 
                 this.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
                 this.getStatistics("/SalDocStatSet"); //style statistics
                 this.byId("_IDGenOverflowToolbars1").setEnabled(true);
+
+                var oJSONModel = new JSONModel();
+                var iCounter = 0;
+                var itemResult = [];
+                var vSBU = this.getView().getModel("ui").getData().sbu;
+                var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
+
+                await new Promise((resolve, reject) => {
+                    oModel.read("/ZVB_3DERP_SEASON_SH", {
+                        success: function (oData, oResponse) {
+                            for (var item in oData.results) {
+                                iCounter++;
+                                if (oData.results[item].SBU === vSBU) {
+                                    itemResult.push(oData.results[item])
+                                }
+                                if (iCounter === oData.results.length) {
+                                    oJSONModel.setData(itemResult)
+                                    me.getView().setModel(oJSONModel, "seasonSource");
+                                    resolve();
+                                }
+                            }
+                        },
+                        error: function (err) { }
+                    });
+                })
+
 
                 // oTable.placeAt('scTable');
             },
@@ -318,7 +345,7 @@ sap.ui.define([
                                 me.getView().setModel(oJSONColumnsModel, "DynColumns");  //set the view model
                                 me.getDynamicTableData(model);
                                 resolve();
-                            }else if (model === 'SALDOCCRTSTYLEIO') {
+                            } else if (model === 'SALDOCCRTSTYLEIO') {
                                 var tableColResults = {};
 
                                 tableColResults['results'] = [{
@@ -340,10 +367,10 @@ sap.ui.define([
                                     SortSeq: "",
                                     Sorted: false,
                                     Visible: false
-                                }]; 
+                                }];
                                 tableCol = tableColResults;
 
-                                for(var index in oData.results){
+                                for (var index in oData.results) {
                                     tableCol.results.push(oData.results[index])
                                 }
                                 // tableCol = oData;
@@ -400,6 +427,7 @@ sap.ui.define([
                 // var aFilters1 = this.getView().byId("smartFilterBar").getFilters();
 
                 var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                var aFiltersObj = [];
                 var oText = this.getView().byId("SalesDocCount");
 
                 var oColumnsModel;
@@ -409,10 +437,38 @@ sap.ui.define([
                 var oColumnsData;
                 var oData;
 
+                aFiltersObj.push(aFilters);
+                aFiltersObj = aFiltersObj[0];
+
+                if (this.getView().byId("smartFilterBar")) {
+                    var oCtrlSeasonCd = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
+                    if (oCtrlSeasonCd) {
+                        if (oCtrlSeasonCd.getSelectedKey() !== "") {
+                            if (aFilters.length === 0) {
+                                aFiltersObj.push({
+                                    aFilters: [{
+                                        sPath: "SEASONCD",
+                                        sOperator: "EQ",
+                                        oValue1: oCtrlSeasonCd.getSelectedKey(),
+                                        _bMultiFilter: false
+                                    }]
+                                })
+                            } else {
+                                aFiltersObj[0].aFilters[parseInt(Object.keys(aFiltersObj[0].aFilters).pop()) + 1] = ({
+                                    sPath: "SEASONCD",
+                                    sOperator: "EQ",
+                                    oValue1: oCtrlSeasonCd.getSelectedKey(),
+                                    _bMultiFilter: false
+                                })
+                            }
+                        }
+                    }
+                }
+
                 // this.addDateFilters(aFilters); //date not automatically added to filters
                 if (model === 'SALDOCINIT') {
                     oModel.read("/SALDOCHDRINITSet", {
-                        filters: aFilters,
+                        filters: aFiltersObj,
                         success: function (oData, oResponse) {
                             oData.results.forEach(item => {
 
@@ -704,9 +760,12 @@ sap.ui.define([
                 that.navToDetail(salesDocNo); //navigate to detail page
             },
 
-            navToDetail: function (salesDocNo, sbu) {
-                //route to detail page
-                if (this.getView().getModel("ui").getProperty("/LockType") === "S") {
+            navToDetail: async function (salesDocNo, sbu) {
+                if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
+                    if (salesDocNo !== "NEW")
+                        await this.lock(this);
+                }
+                if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
                         sbu: this._sbu
@@ -879,10 +938,10 @@ sap.ui.define([
                                             item.Visible = false;
                                         }
                                         if (item.ColumnName === "PLANMONTH") {
-                                            item.Visible = true;
+                                            item.Visible = false;
                                         }
 
-                                        if (item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE" || item.ColumnName === "PLANMONTH") {
+                                        if (item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE") {//|| item.ColumnName === "PLANMONTH") {
                                             item.Editable = true;
                                             item.Length = 50;
                                         } else {
@@ -1051,7 +1110,7 @@ sap.ui.define([
 
                     oSelectedIndices.forEach((item, index) => {
                         console.log(aData.at(item));
-                        if(aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined){
+                        if (aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined) {
                             if (sdProcessCd === "CRT_STY") {
                                 ioNo = "";
                                 styleNo = "NEW";
@@ -1089,7 +1148,7 @@ sap.ui.define([
                             })
                         }
                     })
-                    if(oParamData.length > 0){
+                    if (oParamData.length > 0) {
                         oParam = oParamHdr;
                         oParam['CrtIOStylData'] = oParamData;
                         oParam['CrtIOStylRetMsg'] = []
@@ -1097,62 +1156,62 @@ sap.ui.define([
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.create("/CrtIOStylHdrSet", oParam, {
                                 method: "POST",
-                                success: async function(oData, oResponse){
+                                success: async function (oData, oResponse) {
                                     console.log(oData);
 
-                                    for(var index in columnData.results){
-                                        if(columnData.results[index].ColumnName === "LOGDESC"){
+                                    for (var index in columnData.results) {
+                                        if (columnData.results[index].ColumnName === "LOGDESC") {
                                             columnData.results[index].Visible = true;
                                         }
                                     }
 
-                                    for(var index in oParam.CrtIOStylData){
-                                        for(var index2 in oData.CrtIOStylData.results){
-                                            if(oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                                for(var index3 in oRowData){
-                                                    if(oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD){
-                                                        if(oData.CrtIOStylData.results[index2].MSGTYP === "E"){
-                                                            if(oData.CrtIOStylData.results[index2].MSG !== ""){
+                                    for (var index in oParam.CrtIOStylData) {
+                                        for (var index2 in oData.CrtIOStylData.results) {
+                                            if (oParam.CrtIOStylData[index].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oParam.CrtIOStylData[index].STYLECD === oData.CrtIOStylData.results[index2].STYLECD) {
+                                                for (var index3 in oRowData) {
+                                                    if (oRowData[index3].SALESDOCNO === oData.CrtIOStylData.results[index2].SALESDOCNO && oRowData[index3].STYLECD === oData.CrtIOStylData.results[index2].STYLECD) {
+                                                        if (oData.CrtIOStylData.results[index2].MSGTYP === "E") {
+                                                            if (oData.CrtIOStylData.results[index2].MSG !== "") {
                                                                 oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
                                                                 oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
                                                                 createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
-                                                            }else{
+                                                            } else {
                                                                 oRowData[index3].LOGDESCSTAT = oData.CrtIOStylData.results[index2].MSGTYP
                                                                 oRowData[index3].LOGDESC = "Error Encountered."
                                                             }
-                                                        }else{
-                                                            if(sdProcessCd === "CRT_STY"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                        } else {
+                                                            if (sdProcessCd === "CRT_STY") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!";
-                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
-                                                            }else if(sdProcessCd === "CRT_IO"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                            } else if (sdProcessCd === "CRT_IO") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                    createStyleResultMsg = "IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!";
+                                                                    createStyleResultMsg = "IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
-                                                            }else if(sdProcessCd === "CRT_STYIO"){
-                                                                if(oData.CrtIOStylData.results[index2].MSG === ""){
+                                                            } else if (sdProcessCd === "CRT_STYIO") {
+                                                                if (oData.CrtIOStylData.results[index2].MSG === "") {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
-                                                                    oRowData[index3].LOGDESC = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!";
-                                                                    createStyleResultMsg = "Style No. "+ oData.CrtIOStylData.results[index2].STYLENO +" and IO No. "+ oData.CrtIOStylData.results[index2].IONO +" Successfully Created!" + " \n"+ createStyleResultMsg;
-                                                                }else{
+                                                                    oRowData[index3].LOGDESC = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " and IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!";
+                                                                    createStyleResultMsg = "Style No. " + oData.CrtIOStylData.results[index2].STYLENO + " and IO No. " + oData.CrtIOStylData.results[index2].IONO + " Successfully Created!" + " \n" + createStyleResultMsg;
+                                                                } else {
                                                                     oRowData[index3].LOGDESCSTAT = "S"
                                                                     oRowData[index3].LOGDESC = oData.CrtIOStylData.results[index2].MSG
-                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n"+ createStyleResultMsg;
+                                                                    createStyleResultMsg = oData.CrtIOStylData.results[index2].MSG + " \n" + createStyleResultMsg;
                                                                 }
                                                             }
-                                                            
+
                                                         }
                                                     }
                                                 }
@@ -1165,7 +1224,7 @@ sap.ui.define([
                                     await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
                                     me.setChangeStatus(false);
 
-                                    if(oData.CrtIOStylData.results !== undefined){
+                                    if (oData.CrtIOStylData.results !== undefined) {
                                         oData.CrtIOStylData.results.forEach(iostyRes => {
                                             if (sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO") {
                                                 createdStyleIONo.push(iostyRes.STYLENO)
@@ -1184,7 +1243,7 @@ sap.ui.define([
                             })
                         })
                         await _promiseResult;
-                    }else{
+                    } else {
                         MessageBox.information("No Data to Process!");
                     }
 
@@ -1203,15 +1262,15 @@ sap.ui.define([
             onRowEditSalDoc: async function (table, model) {
                 var me = this;
                 var tblData = null;
-                if(table === "createStyleIOTbl")
+                if (table === "createStyleIOTbl")
                     tblData = this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData() === undefined ? null : this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData().rows;
-                    
+
                 console.log(tblData);
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
                 var oColumnsData = model;
 
-                if(table === "createStyleIOTbl"){
+                if (table === "createStyleIOTbl") {
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
@@ -1231,15 +1290,15 @@ sap.ui.define([
                                             enabled: {
                                                 path: "SALESDOCNO",
                                                 formatter: function (SALESDOCNO) {
-                                                    var result; 
-                                                    tblData.forEach(async (data)=>{
-                                                        if(data.LOGDESCSTAT === "S"){
+                                                    var result;
+                                                    tblData.forEach(async (data) => {
+                                                        if (data.LOGDESCSTAT === "S") {
                                                             result = false;
                                                         }
                                                     });
                                                     return result;
                                                 }
-            
+
                                             },
                                             maxLength: +ci.Length,
                                             showValueHelp: true,
@@ -1253,15 +1312,15 @@ sap.ui.define([
                                             enabled: {
                                                 path: "SALESDOCNO",
                                                 formatter: function (SALESDOCNO) {
-                                                    var result; 
-                                                    tblData.forEach(async (data)=>{
-                                                        if(data.LOGDESCSTAT === "S"){
+                                                    var result;
+                                                    tblData.forEach(async (data) => {
+                                                        if (data.LOGDESCSTAT === "S") {
                                                             result = false;
                                                         }
                                                     });
                                                     return result;
                                                 }
-            
+
                                             },
                                             displayFormat: "short",
                                             change: "handleChange",
@@ -1284,13 +1343,13 @@ sap.ui.define([
                                         col.getLabel().addStyleClass("requiredField");
                                     }
                                 }
-                                if(ci.ColumnName === "LOGDESC"){
+                                if (ci.ColumnName === "LOGDESC") {
                                     col.getLabel().addStyleClass("sapMLabelRequired");
                                     col.getLabel().addStyleClass("requiredField");
                                 }
                             });
                     });
-                }else{
+                } else {
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
@@ -1337,7 +1396,7 @@ sap.ui.define([
                                         col.getLabel().addStyleClass("requiredField");
                                     }
                                 }
-                                if(ci.ColumnName === "LOGDESC"){
+                                if (ci.ColumnName === "LOGDESC") {
                                     col.getLabel().addStyleClass("sapMLabelRequired");
                                     col.getLabel().addStyleClass("requiredField");
                                 }
@@ -1483,17 +1542,18 @@ sap.ui.define([
                 var oParamUnLock = {};
                 var oSALDOC_TAB = [];
                 var me = this;
+                var sError = "";
 
                 oSALDOC_TAB.push({
                     "Salesdocno": salDocNotxt,
                     "Lock": ""
                 })
 
-                oParamLock["SALDOC_TAB"] = oSALDOC_TAB;
-                oParamLock["Iv_Count"] = 300;
-                oParamLock["SALDOC_MSG"] = [];
+                oParamUnLock["SALDOC_TAB"] = oSALDOC_TAB;
+                oParamUnLock["Iv_Count"] = 300;
+                oParamUnLock["SALDOC_MSG"] = [];
 
-                console.log(oParamLock);
+                console.log(oParamUnLock);
 
                 oModelLock.create("/ZERP_SALDOCHDR", oParamUnLock, {
                     method: "POST",
@@ -1593,8 +1653,9 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
                             success: function (data, response) {
+                                console.log(data)
                                 data.results.forEach(item => {
-                                    item.Item = item.SEASON;
+                                    item.Item = item.SEASONCD;
                                     item.Desc = item.DESCRIPTION;
                                 })
 
@@ -1626,28 +1687,46 @@ sap.ui.define([
                         });
                     });
                 } else if (fieldName === 'CUSTSOLDTO') {
+
+                    var custGrp = this.getView().byId("CUSTGRP").getValue();
+                    if (custGrp === "" || custGrp === null || custGrp === undefined) {
+                        this.getView().byId("CUSTGRP").setValueState("Error");
+                        this.getView().byId("CUSTGRP").setValueStateText("Required Field!");
+                        MessageBox.error("Please Select Customer Group First!");
+                        return;
+                    } else {
+                        await new Promise((resolve, reject) => {
+                            oModel3DERP.setHeaders({
+                                sbu: this._sbu
+                            });
+                            oModel3DERP.read('/SoldToCustSet', {
+                                success: function (data, response) {
+                                    var dataResult = [];
+                                    data.results.forEach(item => {
+                                        if (custGrp === item.Custgrp) {
+                                            item.Item = item.Custno;
+                                            item.Desc = item.Desc1;
+                                            dataResult.push(item)
+                                        }
+                                    })
+
+                                    valueHelpObjects = dataResult;
+                                    title = "Sold-to Customer"
+                                    resolve();
+                                },
+                                error: function (err) {
+                                    resolve();
+                                }
+                            });
+                        });
+
+                    }
+                } else if (fieldName === 'CUSTBILLTO') {
                     await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
+                        oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
                                     while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
-                                    item.Item = item.Kunnr;
-                                })
-
-                                valueHelpObjects = data.results;
-                                title = "Sold-to Customer"
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
-                        });
-                    });
-                } else if (fieldName === 'CUSTBILLTO') {
-                    await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
                                     item.Item = item.Kunnr;
                                 })
 
@@ -1660,6 +1739,25 @@ sap.ui.define([
                             }
                         });
                     });
+                } else if (fieldName === 'CUSTSHIPTO') {
+                    await new Promise((resolve, reject) => {
+                        oModel.read('/SHIPTOvhSet', {
+                            success: function (data, response) {
+                                data.results.forEach(item => {
+                                    item.Item = item.KUNNR;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Ship-To Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+
                 } else if (fieldName === 'CURRENCYCD') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_CURRSH', {

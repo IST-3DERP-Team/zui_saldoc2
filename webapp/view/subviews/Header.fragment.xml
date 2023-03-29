@@ -37,7 +37,7 @@
                             </f:FormElement>  
                             <f:FormElement label="{i18n>SALESORG}" visible="{= ${VisibleFieldsData>/SALESORG} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESORG" value="{path: 'headerData>/SALESORG', mandatory: 'SALESORG'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTGRP}" valueStateText="Required"
+                                    <Input id="SALESORG" value="{path: 'headerData>/SALESORG', mandatory: 'SALESORG'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESORG}" valueStateText="Required"
                                          change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
                                     </Input>
                                 </f:fields>

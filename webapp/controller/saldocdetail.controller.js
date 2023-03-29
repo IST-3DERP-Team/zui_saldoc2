@@ -93,7 +93,8 @@ sap.ui.define([
             },
 
             _routePatternMatched: async function (oEvent) {
-                Common.openLoadingDialog(that);               
+                Common.openLoadingDialog(that);         
+                var me = this;      
 
                 this._salesDocNo = oEvent.getParameter("arguments").salesdocno; //get Style from route pattern
                 this._sbu = oEvent.getParameter("arguments").sbu; //get SBU from route pattern
@@ -118,8 +119,8 @@ sap.ui.define([
                     await this.getHeaderData(); //get header data
                     this.cancelHeaderEdit();
                     // this.setDetailVisible(true); //make detail section visible
-                    this.byId("btnHdrEdit").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
-                    this.byId("btnHdrDelete").setVisible(this.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                    this.byId("btnHdrEdit").setVisible(me.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
+                    this.byId("btnHdrDelete").setVisible(me.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
                 }
 
                 // build Dynamic table for Sales Document Details
@@ -240,7 +241,7 @@ sap.ui.define([
 
                 var valueHelpObjects = [];
                 var title = "";
-
+                
                 if (fieldName === 'SALESGRP') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SALESGRP_SH', {
@@ -333,26 +334,43 @@ sap.ui.define([
                         });
                     });
                 } else if (fieldName === 'CUSTSOLDTO') {
-                    await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
-                                    while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
-                                    item.Item = item.Kunnr;
-                                })
 
-                                valueHelpObjects = data.results;
-                                title = "Sold-to Customer"
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
+                    var custGrp = this.getView().byId("CUSTGRP").getValue();
+                    if(custGrp === "" || custGrp === null || custGrp === undefined){
+                        this.getView().byId("CUSTGRP").setValueState("Error");
+                        this.getView().byId("CUSTGRP").setValueStateText("Required Field!");
+                        MessageBox.error("Please Select Customer Group First!");
+                        return;
+                    }else{
+                        await new Promise((resolve, reject) => {
+                            oModel3DERP.setHeaders({
+                                sbu: this._sbu
+                            });
+                            oModel3DERP.read('/SoldToCustSet', {
+                                success: function (data, response) {
+                                    var dataResult = [];
+                                    data.results.forEach(item => {
+                                        if(custGrp === item.Custgrp){
+                                            item.Item = item.Custno;
+                                            item.Desc = item.Desc1;
+                                            dataResult.push(item)
+                                        }
+                                    })
+    
+                                    valueHelpObjects = dataResult;
+                                    title = "Sold-to Customer"
+                                    resolve();
+                                },
+                                error: function (err) {
+                                    resolve();
+                                }
+                            });
                         });
-                    });
+
+                    }
                 } else if (fieldName === 'CUSTBILLTO') {
                     await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
+                        oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
                                     while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
@@ -368,6 +386,25 @@ sap.ui.define([
                             }
                         });
                     });
+                } else if (fieldName === 'CUSTSHIPTO') {
+                    await new Promise((resolve, reject) => {
+                        oModel.read('/SHIPTOvhSet', {
+                            success: function (data, response) {
+                                data.results.forEach(item => {
+                                    item.Item = item.KUNNR;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Ship-To Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                    
                 } else if (fieldName === 'CURRENCYCD') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_CURRSH', {
@@ -1170,7 +1207,7 @@ sap.ui.define([
                                 SALESTERMTEXT: oDataEdit.SALESTERMTEXT,
                                 CURRENCYCD: oDataEdit.CURRENCYCD,
                                 CPONO: oDataEdit.CPONO,
-                                CPOREV: oDataEdit.CPOREV,
+                                CPOREV: +oDataEdit.CPOREV,
                                 CPODT: sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
                                 DLVDT: sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
                                 SEASONCD: oDataEdit.SEASONCD,
@@ -1179,6 +1216,7 @@ sap.ui.define([
                                 EDISOURCE: oDataEdit.EDISOURCE,
                                 DELETED: oDataEdit.DELETED
                             }
+                            console.log(oParamData);
                             _promiseResult = new Promise((resolve, reject) => {
                                 oModel.update("/SALDOCHDRSet(SALESDOCNO='" + oDataEdit.SALESDOCNO + "')", oParamData, {
                                     method: "PUT",
@@ -1210,7 +1248,7 @@ sap.ui.define([
                                 SALESTERMTEXT: oDataEdit.SALESTERMTEXT,
                                 CURRENCYCD: oDataEdit.CURRENCYCD,
                                 CPONO: oDataEdit.CPONO,
-                                CPOREV: oDataEdit.CPOREV,
+                                CPOREV: +oDataEdit.CPOREV,
                                 CPODT: oDataEdit.CPODT !== undefined ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00" : null,
                                 DLVDT: oDataEdit.DLVDT !== undefined ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00" : null,
                                 SEASONCD: oDataEdit.SEASONCD,
@@ -1223,6 +1261,7 @@ sap.ui.define([
                                 oModel.setHeaders({
                                     SBU: me._sbu
                                 });
+                                console.log(oParamData);
                                 oModel.create("/SALDOCHDRSet", oParamData, {
                                     method: "POST",
                                     success: async function (oData, oResponse) {
@@ -1366,7 +1405,7 @@ sap.ui.define([
                             SALESTERMTEXT: oDataEdit.SALESTERMTEXT,
                             CURRENCYCD: oDataEdit.CURRENCYCD,
                             CPONO: oDataEdit.CPONO,
-                            CPOREV: oDataEdit.CPOREV,
+                            CPOREV: +oDataEdit.CPOREV,
                             CPODT: oDataEdit.CPODT !== "" ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00" : null,
                             DLVDT: oDataEdit.DLVDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00" : null,
                             SEASONCD: oDataEdit.SEASONCD,
@@ -2146,8 +2185,8 @@ sap.ui.define([
                                                                 UOM: aData.at(item).UOM,
                                                                 UNITPRICE: aData.at(item).UNITPRICE,
                                                                 CPONO: aData.at(item).CPONO,
-                                                                CPOREV: aData.at(item).CPOREV,
-                                                                CPOITEM: aData.at(item).CPOITEM,
+                                                                CPOREV: +aData.at(item).CPOREV,
+                                                                CPOITEM: +aData.at(item).CPOITEM,
                                                                 CPODT: aData.at(item).CPODT !== "" ? sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00" : null,
                                                                 DLVDT: aData.at(item).DLVDT !== "" ? sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00" : null,
                                                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
