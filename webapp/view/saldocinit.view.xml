@@ -22,7 +22,7 @@
 
         <VBox fitContainer="true"> 
         <!-- #### Smart Filter Bar #### -->
-        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" showClearOnFB="true" persistencyKey="3DERP_StylesPKey" filterContainerWidth="10rem">
+        <smartfilterbar:SmartFilterBar id="smartFilterBar" entitySet="ZVB_3DERP_SALDOC_FILTERS" search="onSearch" showClearOnFB="true" persistencyKey="3DERP_StylesPKey"  useToolbar="true" filterContainerWidth="10rem">
                     <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SBU" mandatory="mandatory" groupId="_BASIC" label="{i18n>SBU}" preventInitialDataFetchInValueHelpDialog="false">
                         <smartfilterbar:customControl>
