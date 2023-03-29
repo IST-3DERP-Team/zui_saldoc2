@@ -1208,8 +1208,8 @@ sap.ui.define([
                                 CURRENCYCD: oDataEdit.CURRENCYCD,
                                 CPONO: oDataEdit.CPONO,
                                 CPOREV: +oDataEdit.CPOREV,
-                                CPODT: sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
-                                DLVDT: sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
+                                CPODT: oDataEdit.CPODT === "" ? null : sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00",
+                                DLVDT: oDataEdit.DLVDT === "" ? null : sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00",
                                 SEASONCD: oDataEdit.SEASONCD,
                                 STATUS: "NEW",//oDataEdit.STATUS,
                                 REMARKS: oDataEdit.REMARKS,
@@ -1896,8 +1896,8 @@ sap.ui.define([
                                 CPONO: aData.at(item).CPONO,
                                 CPOREV: +aData.at(item).CPOREV,
                                 CPOITEM: +aData.at(item).CPOITEM,
-                                CPODT: aData.at(item).CPODT === undefined ? null : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
-                                DLVDT: aData.at(item).DLVDT === undefined ? null : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
+                                CPODT: aData.at(item).CPODT === "" ? null : sapDateFormat.format(new Date(aData.at(item).CPODT)) + "T00:00:00",
+                                DLVDT: aData.at(item).DLVDT === "" ? null : sapDateFormat.format(new Date(aData.at(item).DLVDT)) + "T00:00:00",
                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
                                 CUSSTYLEDESC: aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO: aData.at(item).CUSTSHIPTO,
@@ -1920,6 +1920,7 @@ sap.ui.define([
                                 ITEMSTATUS: aData.at(item).ITEMSTATUS,
                                 DELETED: aData.at(item).DELETED
                             }
+                            console.log(oParamData)
                             // _promiseResult = new Promise((resolve, reject)=>{
                             //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
                             //         method: "PUT",
