@@ -46,7 +46,7 @@ sap.ui.define([
                             // if (that.getOwnerComponent().getModel("UI_MODEL").getData().flag) {
                             //     that.refresh();
                             // }
-
+                            console.log("back");
                             if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
                             }
@@ -710,9 +710,13 @@ sap.ui.define([
 
             navToDetail: async function (salesDocNo, sbu) {
                 //route to detail page
+
                 if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
-                    await this.lock(this);
+                    if(salesDocNo !== "NEW")
+                        await this.lock(this);
                 }
+
+                console.log(this.getView().getModel("ui").getProperty("/LockType"));
 
                 if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
@@ -1491,6 +1495,7 @@ sap.ui.define([
                 var oParamUnLock = {};
                 var oSALDOC_TAB = [];
                 var me = this;
+                var sError = "";
 
                 oSALDOC_TAB.push({
                     "Salesdocno": salDocNotxt,

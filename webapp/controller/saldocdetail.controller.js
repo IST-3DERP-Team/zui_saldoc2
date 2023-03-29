@@ -52,7 +52,10 @@ sap.ui.define([
                 this.getView().setModel(new JSONModel({
                     editMode: 'READ',
                     Mode: 'NEW',
-                    DisplayMode: 'change'
+                    DisplayMode: 'change',
+                    LockType: 'S',
+                    LockMessage: '',
+                    LockError: ''
                 }), "ui");
 
                 this.getAppAction();
@@ -1227,6 +1230,8 @@ sap.ui.define([
                                     method: "POST",
                                     success: async function (oData, oResponse) {
                                         me._salesDocNo = oData.SALESDOCNO;
+
+                                        await me.lock(me);
                                         //Load header
                                         await me.getHeaderConfig(); //get visible header fields
                                         await me.getView().getModel("ui").setProperty("/Mode", 'UPDATE');
@@ -1256,6 +1261,54 @@ sap.ui.define([
                         Common.closeLoadingDialog(that);
                     }
                 }
+            },
+
+            lock: async (me) => {
+                var oModelLock = me.getOwnerComponent().getModel("ZGW_3DERP_LOCK_SRV");
+                var oParamLock = {};
+                var oSALDOC_TAB = [];
+                var sError = "";
+
+                oSALDOC_TAB.push({
+                    "Salesdocno": me._salesDocNo,
+                    "Lock": "X"
+                })
+
+                oParamLock["SALDOC_TAB"] = oSALDOC_TAB;
+                oParamLock["Iv_Count"] = 300;
+                oParamLock["SALDOC_MSG"] = [];
+
+                console.log(oParamLock);
+                // return;
+                var promise = new Promise((resolve, reject) => {
+                    oModelLock.create("/ZERP_SALDOCHDR", oParamLock, {
+                        method: "POST",
+                        success: function (oResultLock) {
+                            console.log(oResultLock);
+                            oResultLock.SALDOC_MSG.results.forEach(item => {
+                                // if (item.Type === "S") {
+                                me.getView().getModel("ui").setProperty("/LockType", item.Type);
+                                me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
+                                // alert(me.getView().getModel("ui").getProperty("/isLocked"));
+                                // }
+                                sError += item.Message + ".\r\n ";
+                            })
+
+                            if (sError.length > 0) {
+                                resolve(false);
+                                // sap.m.MessageBox.information(sError);
+                                // me.closeLoadingDialog();
+                            }
+                            else resolve(true);
+                        },
+                        error: function (err) {
+                            // me.closeLoadingDialog();
+                            resolve(false);
+                        }
+                    });
+                })
+
+                return await promise;
             },
 
             cancelHeaderEdit: async function () {
