@@ -65,7 +65,9 @@ sap.ui.define([
                 this.getView().setModel(new JSONModel({
                     crtStyleIOMode: '',
                     LockType: 'S',
-                    LockMessage: ''
+                    LockMessage: '',
+                    LockError: '',
+                    DisplayMode: 'change'
                 }), "ui");
 
                 this.getAppAction();
@@ -104,11 +106,15 @@ sap.ui.define([
                     csAction = shellHash.action;
                 }
 
+                console.log("Display Action: " + csAction);
+
                 var DisplayStateModel = new JSONModel();
                 var DisplayData = {
                     sAction: csAction,
                     visible: csAction === "display" ? false : true
                 }
+
+                this.getView().getModel("ui").setProperty("/Displaymode", csAction);
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
@@ -601,7 +607,6 @@ sap.ui.define([
                     oTable.attachBrowserEvent('dblclick', function (e) {
                         e.preventDefault();
                         me.setChangeStatus(false); //remove change flag
-                        me.lock(me);
                         me.navToDetail(salDocNotxt); //navigate to detail page
 
                     });
@@ -761,10 +766,14 @@ sap.ui.define([
             },
 
             navToDetail: async function (salesDocNo, sbu) {
+                console.log("Nav to Detail : " + salesDocNo);
                 if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
                     if (salesDocNo !== "NEW")
                         await this.lock(this);
                 }
+
+                console.log(this.getView().getModel("ui").getProperty("/LockType"));
+
                 if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
@@ -1490,6 +1499,7 @@ sap.ui.define([
             },
 
             lock: async (me) => {
+                console.log("Lock:");
                 var oModelLock = me.getOwnerComponent().getModel("ZGW_3DERP_LOCK_SRV");
                 var oParamLock = {};
                 var oSALDOC_TAB = [];
@@ -1512,11 +1522,11 @@ sap.ui.define([
                         success: function (oResultLock) {
                             console.log(oResultLock);
                             oResultLock.SALDOC_MSG.results.forEach(item => {
-                                if (item.Type === "S") {
+                                // if (item.Type === "S") {
                                     me.getView().getModel("ui").setProperty("/LockType", item.Type);
                                     me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
                                     // alert(me.getView().getModel("ui").getProperty("/isLocked"));
-                                }
+                                // }
                                 sError += item.Message + ".\r\n ";
                             })
 
