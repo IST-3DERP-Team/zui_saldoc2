@@ -36,9 +36,9 @@ sap.ui.define([
                 //back button, check if has Locked
                 //perform unLock function
                 if (sap.ui.getCore().byId("backBtn") !== undefined) {
-                    that._fBackButton = sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction;
+                    this._fBackButton = sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction;
 
-                    var oView = that.getView();
+                    var oView = this.getView();
                     oView.addEventDelegate({
                         onAfterShow: function (oEvent) {
                             sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction = that._fBackButton;
@@ -46,7 +46,7 @@ sap.ui.define([
                             // if (that.getOwnerComponent().getModel("UI_MODEL").getData().flag) {
                             //     that.refresh();
                             // }
-                            console.log("back");
+
                             if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
                             }
@@ -65,9 +65,7 @@ sap.ui.define([
                 this.getView().setModel(new JSONModel({
                     crtStyleIOMode: '',
                     LockType: 'S',
-                    LockMessage: '',
-                    LockError: '',
-                    DisplayMode: "change"
+                    LockMessage: ''
                 }), "ui");
 
                 this.getAppAction();
@@ -114,9 +112,6 @@ sap.ui.define([
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
-
-                this.getView().getModel("ui").setProperty("/DisplayMode", csAction);
-
                 // console.log(this.getView().getModel("DisplayActionModel"));
                 // console.log(this.getView());
 
@@ -284,13 +279,40 @@ sap.ui.define([
                 } catch (err) { }
             },
 
-            onSearch: function () {
+            onSearch: async function () {
+                var me = this;
                 // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
                 this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
 
                 this.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
                 this.getStatistics("/SalDocStatSet"); //style statistics
                 this.byId("_IDGenOverflowToolbars1").setEnabled(true);
+
+                var oJSONModel = new JSONModel();
+                var iCounter = 0;
+                var itemResult = [];
+                var vSBU = this.getView().getModel("ui").getData().sbu;
+                var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
+
+                await new Promise((resolve, reject) => {
+                    oModel.read("/ZVB_3DERP_SEASON_SH", {
+                        success: function (oData, oResponse) {
+                            for (var item in oData.results) {
+                                iCounter++;
+                                if (oData.results[item].SBU === vSBU) {
+                                    itemResult.push(oData.results[item])
+                                }
+                                if (iCounter === oData.results.length) {
+                                    oJSONModel.setData(itemResult)
+                                    me.getView().setModel(oJSONModel, "seasonSource");
+                                    resolve();
+                                }
+                            }
+                        },
+                        error: function (err) { }
+                    });
+                })
+
 
                 // oTable.placeAt('scTable');
             },
@@ -405,6 +427,7 @@ sap.ui.define([
                 // var aFilters1 = this.getView().byId("smartFilterBar").getFilters();
 
                 var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                var aFiltersObj = [];
                 var oText = this.getView().byId("SalesDocCount");
 
                 var oColumnsModel;
@@ -414,10 +437,38 @@ sap.ui.define([
                 var oColumnsData;
                 var oData;
 
+                aFiltersObj.push(aFilters);
+                aFiltersObj = aFiltersObj[0];
+
+                if (this.getView().byId("smartFilterBar")) {
+                    var oCtrlSeasonCd = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
+                    if (oCtrlSeasonCd) {
+                        if (oCtrlSeasonCd.getSelectedKey() !== "") {
+                            if (aFilters.length === 0) {
+                                aFiltersObj.push({
+                                    aFilters: [{
+                                        sPath: "SEASONCD",
+                                        sOperator: "EQ",
+                                        oValue1: oCtrlSeasonCd.getSelectedKey(),
+                                        _bMultiFilter: false
+                                    }]
+                                })
+                            } else {
+                                aFiltersObj[0].aFilters[parseInt(Object.keys(aFiltersObj[0].aFilters).pop()) + 1] = ({
+                                    sPath: "SEASONCD",
+                                    sOperator: "EQ",
+                                    oValue1: oCtrlSeasonCd.getSelectedKey(),
+                                    _bMultiFilter: false
+                                })
+                            }
+                        }
+                    }
+                }
+
                 // this.addDateFilters(aFilters); //date not automatically added to filters
                 if (model === 'SALDOCINIT') {
                     oModel.read("/SALDOCHDRINITSet", {
-                        filters: aFilters,
+                        filters: aFiltersObj,
                         success: function (oData, oResponse) {
                             oData.results.forEach(item => {
 
@@ -550,7 +601,8 @@ sap.ui.define([
                     oTable.attachBrowserEvent('dblclick', function (e) {
                         e.preventDefault();
                         me.setChangeStatus(false); //remove change flag
-                        me.navToDetail(salDocNotxt); //navigate to detail page                      
+                        me.lock(me);
+                        me.navToDetail(salDocNotxt); //navigate to detail page
 
                     });
                 }
@@ -709,15 +761,10 @@ sap.ui.define([
             },
 
             navToDetail: async function (salesDocNo, sbu) {
-                //route to detail page
-
                 if (this.getView().getModel("ui").getProperty("/DisplayMode") === "change") {
-                    if(salesDocNo !== "NEW")
+                    if (salesDocNo !== "NEW")
                         await this.lock(this);
                 }
-
-                console.log(this.getView().getModel("ui").getProperty("/LockType"));
-
                 if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
@@ -891,10 +938,10 @@ sap.ui.define([
                                             item.Visible = false;
                                         }
                                         if (item.ColumnName === "PLANMONTH") {
-                                            item.Visible = true;
+                                            item.Visible = false;
                                         }
 
-                                        if (item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE" || item.ColumnName === "PLANMONTH") {
+                                        if (item.ColumnName === "PRODSCEN" || item.ColumnName === "IOTYPE") {//|| item.ColumnName === "PLANMONTH") {
                                             item.Editable = true;
                                             item.Length = 50;
                                         } else {
@@ -1465,11 +1512,11 @@ sap.ui.define([
                         success: function (oResultLock) {
                             console.log(oResultLock);
                             oResultLock.SALDOC_MSG.results.forEach(item => {
-                                // if (item.Type === "S") {
-                                me.getView().getModel("ui").setProperty("/LockType", item.Type);
-                                me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
-                                // alert(me.getView().getModel("ui").getProperty("/isLocked"));
-                                // }
+                                if (item.Type === "S") {
+                                    me.getView().getModel("ui").setProperty("/LockType", item.Type);
+                                    me.getView().getModel("ui").setProperty("/LockMessage", item.Message);
+                                    // alert(me.getView().getModel("ui").getProperty("/isLocked"));
+                                }
                                 sError += item.Message + ".\r\n ";
                             })
 
@@ -1606,8 +1653,9 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
                             success: function (data, response) {
+                                console.log(data)
                                 data.results.forEach(item => {
-                                    item.Item = item.SEASON;
+                                    item.Item = item.SEASONCD;
                                     item.Desc = item.DESCRIPTION;
                                 })
 
@@ -1639,28 +1687,46 @@ sap.ui.define([
                         });
                     });
                 } else if (fieldName === 'CUSTSOLDTO') {
+
+                    var custGrp = this.getView().byId("CUSTGRP").getValue();
+                    if (custGrp === "" || custGrp === null || custGrp === undefined) {
+                        this.getView().byId("CUSTGRP").setValueState("Error");
+                        this.getView().byId("CUSTGRP").setValueStateText("Required Field!");
+                        MessageBox.error("Please Select Customer Group First!");
+                        return;
+                    } else {
+                        await new Promise((resolve, reject) => {
+                            oModel3DERP.setHeaders({
+                                sbu: this._sbu
+                            });
+                            oModel3DERP.read('/SoldToCustSet', {
+                                success: function (data, response) {
+                                    var dataResult = [];
+                                    data.results.forEach(item => {
+                                        if (custGrp === item.Custgrp) {
+                                            item.Item = item.Custno;
+                                            item.Desc = item.Desc1;
+                                            dataResult.push(item)
+                                        }
+                                    })
+
+                                    valueHelpObjects = dataResult;
+                                    title = "Sold-to Customer"
+                                    resolve();
+                                },
+                                error: function (err) {
+                                    resolve();
+                                }
+                            });
+                        });
+
+                    }
+                } else if (fieldName === 'CUSTBILLTO') {
                     await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
+                        oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
                                     while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
-                                    item.Item = item.Kunnr;
-                                })
-
-                                valueHelpObjects = data.results;
-                                title = "Sold-to Customer"
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
-                        });
-                    });
-                } else if (fieldName === 'CUSTBILLTO') {
-                    await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CSHPTO_SH', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
                                     item.Item = item.Kunnr;
                                 })
 
@@ -1673,6 +1739,25 @@ sap.ui.define([
                             }
                         });
                     });
+                } else if (fieldName === 'CUSTSHIPTO') {
+                    await new Promise((resolve, reject) => {
+                        oModel.read('/SHIPTOvhSet', {
+                            success: function (data, response) {
+                                data.results.forEach(item => {
+                                    item.Item = item.KUNNR;
+                                    item.Desc = item.DESC1;
+                                })
+
+                                valueHelpObjects = data.results;
+                                title = "Ship-To Customer"
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+
                 } else if (fieldName === 'CURRENCYCD') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_CURRSH', {
