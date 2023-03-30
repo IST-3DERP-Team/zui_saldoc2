@@ -40,7 +40,7 @@ sap.ui.define([
 
                     var oView = this.getView();
                     oView.addEventDelegate({
-                        onAfterShow: function (oEvent) {
+                        onAfterShow: async function (oEvent) {
                             sap.ui.getCore().byId("backBtn").mEventRegistry.press[0].fFunction = that._fBackButton;
 
                             // if (that.getOwnerComponent().getModel("UI_MODEL").getData().flag) {
@@ -49,6 +49,13 @@ sap.ui.define([
 
                             if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
+                            }
+                            console.log(that._sbu);
+                            if(that._sbu !== "" && that._sbu !== null && that._sbu !== undefined){
+                                Common.openLoadingDialog(that);
+                                await that.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
+                                await that.getStatistics("/SalDocStatSet"); //style statistics
+                                Common.closeLoadingDialog(that);
                             }
                         }
                     }, oView);
