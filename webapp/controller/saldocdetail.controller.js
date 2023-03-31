@@ -303,7 +303,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
                             success: function (data, response) {
-                                console.log(data)
                                 data.results.forEach(item => {
                                     item.Item = item.SEASONCD;
                                     item.Desc = item.DESCRIPTION;
@@ -1191,7 +1190,6 @@ sap.ui.define([
                         Common.openLoadingDialog(that);
                         if (this.getView().getModel("ui").getData().Mode === "UPDATE") {
 
-                            console.log(oDataEdit.DOCDT);
                             oParamData = {
                                 SALESDOCNO: oDataEdit.SALESDOCNO,
                                 SALESDOCTYP: oDataEdit.SALESDOCTYP,
@@ -1219,7 +1217,6 @@ sap.ui.define([
                                 EDISOURCE: oDataEdit.EDISOURCE,
                                 DELETED: oDataEdit.DELETED
                             }
-                            console.log(oParamData);
                             _promiseResult = new Promise((resolve, reject) => {
                                 oModel.update("/SALDOCHDRSet(SALESDOCNO='" + oDataEdit.SALESDOCNO + "')", oParamData, {
                                     method: "PUT",
@@ -1264,7 +1261,6 @@ sap.ui.define([
                                 oModel.setHeaders({
                                     SBU: me._sbu
                                 });
-                                console.log(oParamData);
                                 oModel.create("/SALDOCHDRSet", oParamData, {
                                     method: "POST",
                                     success: async function (oData, oResponse) {
@@ -1747,7 +1743,6 @@ sap.ui.define([
 
             onInputLiveChange: function (oEvent) {
                 var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
-                console.log(oEvent.getSource().getBindingInfo("value"));
 
                 var fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
                 if (fieldIsMandatory) {
@@ -1974,7 +1969,6 @@ sap.ui.define([
                                 ITEMSTATUS: aData.at(item).ITEMSTATUS,
                                 DELETED: aData.at(item).DELETED
                             }
-                            console.log(oParamData)
                             // _promiseResult = new Promise((resolve, reject)=>{
                             //     oModel.create("/SALDOCDETSet(SALESDOCNO='"+ aData.at(item).SALESDOCNO +"',SALESDOCITEM="+ aData.at(item).SALESDOCITEM +")", oParamData, {
                             //         method: "PUT",
