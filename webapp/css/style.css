@@ -49,3 +49,12 @@
 .requiredField {
     color: red !important;
 }
+
+/* smart filter bar value help configuration */
+.compValueHelpDialog .sapUiTableCtrl> thead > .sapUiTableCtrlCol > th[style]:nth-child(1) {
+    width: 170px !important;
+}
+
+/* .compValueHelpDialog .sapUiTableCtrl> thead > .sapUiTableCtrlCol > th:nth-child(1) {
+    width: auto;
+} */
