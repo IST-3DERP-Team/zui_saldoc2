@@ -50,7 +50,6 @@ sap.ui.define([
                             if (that.getView().getModel("ui").getProperty("/LockType") === "S") {
                                 that.unLock();
                             }
-                            console.log(that._sbu);
                             if(that._sbu !== "" && that._sbu !== null && that._sbu !== undefined){
                                 Common.openLoadingDialog(that);
                                 await that.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
@@ -103,8 +102,6 @@ sap.ui.define([
             },
 
             getAppAction: async function () {
-                // console.log("getAppAction");
-                // console.log(sap.ushell.Container)
                 var csAction = "change";
                 if (sap.ushell.Container !== undefined) {
                     const fullHash = new HashChanger().getHash();
@@ -112,8 +109,6 @@ sap.ui.define([
                     const shellHash = urlParsing.parseShellHash(fullHash);
                     csAction = shellHash.action;
                 }
-
-                console.log("Display Action: " + csAction);
 
                 var DisplayStateModel = new JSONModel();
                 var DisplayData = {
@@ -125,8 +120,6 @@ sap.ui.define([
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
-                // console.log(this.getView().getModel("DisplayActionModel"));
-                // console.log(this.getView());
 
                 // alert(csAction);
                 if (csAction === "display") {
@@ -407,7 +400,6 @@ sap.ui.define([
                                 //     Sorted: false,
                                 //     Visible: false
                                 // })
-                                console.log(tableCol)
                                 oJSONColumnsModel.setData(tableCol);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "SALDOCCRTSTYLEIOCOL");  //set the view model
@@ -1125,7 +1117,6 @@ sap.ui.define([
                     Common.openLoadingDialog(that);
 
                     oSelectedIndices.forEach((item, index) => {
-                        console.log(aData.at(item));
                         if (aData.at(item).LOGDESCSTAT === "E" || aData.at(item).LOGDESCSTAT === "" || aData.at(item).LOGDESCSTAT === undefined) {
                             if (sdProcessCd === "CRT_STY") {
                                 ioNo = "";
@@ -1168,12 +1159,10 @@ sap.ui.define([
                         oParam = oParamHdr;
                         oParam['CrtIOStylData'] = oParamData;
                         oParam['CrtIOStylRetMsg'] = []
-                        console.log(oParam);
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.create("/CrtIOStylHdrSet", oParam, {
                                 method: "POST",
                                 success: async function (oData, oResponse) {
-                                    console.log(oData);
 
                                     for (var index in columnData.results) {
                                         if (columnData.results[index].ColumnName === "LOGDESC") {
@@ -1234,7 +1223,6 @@ sap.ui.define([
                                             }
                                         }
                                     }
-                                    console.log(oRowData)
 
                                     await me.setTableData(columnData.results, oRowData, 'createStyleIOTbl');
                                     await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
@@ -1281,7 +1269,6 @@ sap.ui.define([
                 if (table === "createStyleIOTbl")
                     tblData = this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData() === undefined ? null : this.getView().byId("createStyleIOTbl").getBinding("rows").getModel().getData().rows;
 
-                console.log(tblData);
                 // this.getView().getModel(model).getData().results.forEach(item => item.Edited = false);
                 var oTable = this.byId(table);
                 var oColumnsData = model;
@@ -1670,7 +1657,6 @@ sap.ui.define([
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
                             success: function (data, response) {
-                                console.log(data)
                                 data.results.forEach(item => {
                                     item.Item = item.SEASONCD;
                                     item.Desc = item.DESCRIPTION;
