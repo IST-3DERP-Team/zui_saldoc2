@@ -389,23 +389,34 @@ sap.ui.define([
                         });
                     });
                 } else if (fieldName === 'CUSTSHIPTO') {
-                    await new Promise((resolve, reject) => {
-                        oModel.read('/SHIPTOvhSet', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
-                                    item.Item = item.KUNNR;
-                                    item.Desc = item.DESC1;
-                                })
-
-                                valueHelpObjects = data.results;
-                                title = "Ship-To Customer"
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
+                    var soldToCostHeader = this.byId("CUSTSOLDTO").getValue();
+                    if(soldToCostHeader === ""){
+                        MessageBox.error("Sold-To Cust Field is Required.");
+                        return;
+                    }else{
+                        await new Promise((resolve, reject) => {
+                            oModel.read('/SHIPTOvhSet', {
+                                success: function (data, response) {
+                                    var dataResult = [];
+                                    data.results.forEach(item => {
+                                        console.log(item);
+                                        if(soldToCostHeader === item.SOLDTOCUST){
+                                            item.Item = item.KUNNR;
+                                            item.Desc = item.DESC1;
+                                            dataResult.push(item)
+                                        }
+                                    })
+    
+                                    valueHelpObjects = dataResult;
+                                    title = "Ship-To Customer"
+                                    resolve();
+                                },
+                                error: function (err) {
+                                    resolve();
+                                }
+                            });
                         });
-                    });
+                    }
                     
                 } else if (fieldName === 'CURRENCYCD') {
                     await new Promise((resolve, reject) => {
