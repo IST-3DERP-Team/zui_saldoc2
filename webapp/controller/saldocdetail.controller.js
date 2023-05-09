@@ -778,6 +778,7 @@ sap.ui.define([
                 await new Promise((resolve, reject) => {
                     oModel.read("/ColumnsSet", {
                         success: function (oData, oResponse) {
+                            console.log(oData);
                             oJSONColumnsModel.setData(oData);
                             me.oJSONModel.setData(oData);
                             me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
@@ -804,6 +805,7 @@ sap.ui.define([
                             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                         },
                         success: function (oData, oResponse) {
+                            console.log(oData);
                             oData.results.forEach(item => {
                                 item.CPODT = dateFormat.format(item.CPODT);
                                 item.DLVDT = dateFormat.format(item.DLVDT);
