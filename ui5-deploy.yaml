@@ -20,4 +20,6 @@ builder:
           name: ZUI_SALDOC2
           description: Sales Document - Latest
           package: ZPK_LTH_3DERP
-          transport: LTDK909214
+          transport: LTDK910941
+        exclude:
+          - /test/
