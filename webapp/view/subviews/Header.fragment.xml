@@ -63,6 +63,13 @@
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
+                            <f:FormElement label="{i18n>CUSTSEASON}" visible="{= ${VisibleFieldsData>/CUSTSEASON} === true ? true : false }">
+                                <f:fields>
+                                    <Input id="CUSTSEASON" value="{path: 'headerData>/CUSTSEASON', mandatory: 'CUSTSEASON'}" showSuggestion="true" showValueHelp="false" editable="{HeaderEditModeModel>/CUSTSEASON}" valueStateText="Required"
+                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
                                                   
                         </f:formElements>
                     </f:FormContainer> 
