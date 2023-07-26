@@ -231,7 +231,7 @@ sap.ui.define([
                 //get information of columns, add to payload
                 oColumns.forEach((column) => {
                     oParam.TableLayoutToItems.push({
-                        COLUMNNAME: column.sId,
+                        COLUMNNAME: column.sId.split("-")[1],
                         ORDER: ctr.toString(),
                         SORTED: column.mProperties.sorted,
                         SORTORDER: column.mProperties.sortOrder,
@@ -342,14 +342,14 @@ sap.ui.define([
                 });
 
                 //DynamicColumnsSet
-                await new Promise((resolve, reject) => {
+                await new Promise(async (resolve, reject) => {
                     oModel.read("/ColumnsSet", {
-                        success: function (oData, oResponse) {
+                        success: async function (oData, oResponse) {
                             if (model === 'SALDOCINIT') {
                                 oJSONColumnsModel.setData(oData);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "DynColumns");  //set the view model
-                                me.getDynamicTableData(model);
+                                await me.getDynamicTableData(model);
                                 resolve();
                             } else if (model === 'SALDOCCRTSTYLEIO') {
                                 var tableColResults = {};
@@ -415,7 +415,7 @@ sap.ui.define([
                 })
             },
 
-            getDynamicTableData: function (model) {
+            getDynamicTableData: async function (model) {
                 var me = this;
                 var oModel = this.getOwnerComponent().getModel();
 
@@ -472,34 +472,48 @@ sap.ui.define([
 
                 // this.addDateFilters(aFilters); //date not automatically added to filters
                 if (model === 'SALDOCINIT') {
-                    oModel.read("/SALDOCHDRINITSet", {
-                        filters: aFiltersObj,
-                        success: function (oData, oResponse) {
-                            oData.results.forEach(item => {
+                    await new Promise((resolve, reject)=>{
+                        oModel.read("/SALDOCHDRINITSet", {
+                            filters: aFiltersObj,
+                            success: function (oData, oResponse) {
+                                oData.results.forEach(async item => {
 
-                                item.DLVDT = dateFormat.format(item.DLVDT);
-                                item.DOCDT = dateFormat.format(item.DOCDT);
-                                item.CPODT = dateFormat.format(item.CPODT);
-                                item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
-                                item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
-                                item.CREATEDDT = dateFormat.format(item.CREATEDDT);
-                                item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
-                            })
-                            oText.setText(oData.results.length + "");
-                            oJSONDataModel.setData(oData);
-                            me.getView().setModel(oJSONDataModel, "DataModel");
+                                    item.DLVDT = dateFormat.format(item.DLVDT);
+                                    item.DOCDT = dateFormat.format(item.DOCDT);
+                                    item.CPODT = dateFormat.format(item.CPODT);
+                                    item.CREATEDTM = timeFormat.format(new Date(item.CREATEDTM.ms + TZOffsetMs));
+                                    item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
+                                    item.CREATEDDT = dateFormat.format(item.CREATEDDT);
+                                    item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
+                                    if(item.SALESORG){
+                                        var desc = await me.getDescTableColumn("SalesOrg", item.SALESORG);
+                                        item.SALESORG = item.SALESORG + " - " + desc;
+                                    }
+                                    if(item.CUSTGRP){
+                                        var desc = await me.getDescTableColumn("CustGrp", item.CUSTGRP);
+                                        item.CUSTGRP = item.CUSTGRP + " - " + desc;
+                                    }
+                                })
+                                oText.setText(oData.results.length + "");
+                                oJSONDataModel.setData(oData);
+                                me.getView().setModel(oJSONDataModel, "DataModel");
 
-                            var oColumnsModel = me.getView().getModel("DynColumns");
-                            var oDataModel = me.getView().getModel("DataModel");
+                                var oColumnsModel = me.getView().getModel("DynColumns");
+                                var oDataModel = me.getView().getModel("DataModel");
 
-                            var oColumnsData = oColumnsModel.getProperty('/results');
-                            var oData = oDataModel.getProperty('/results');
+                                var oColumnsData = oColumnsModel.getProperty('/results');
+                                var oData = oDataModel.getProperty('/results');
 
-                            me.setTableData(oColumnsData, oData, 'salDocDynTable');
-                            me.setChangeStatus(false);
-                        },
-                        error: function (err) { }
-                    });
+                                me.setTableData(oColumnsData, oData, 'salDocDynTable');
+                                me.setChangeStatus(false);
+                                resolve();
+                            },
+                            error: function (err) {
+                                reject();
+                            }
+                        });
+                        
+                    })
                 } else if (model === 'SALDOCCRTSTYLEIO') {
                     oColumnsModel = me.getView().getModel("SALDOCCRTSTYLEIOCOL");
                     oDataModel = me.getView().getModel("CrtStyleIOData").getData();
@@ -510,6 +524,49 @@ sap.ui.define([
                     this.setTableData(oColumnsData, oData, 'createStyleIOTbl');
                     this.setChangeStatus(false);
                 }
+            },
+
+            getDescTableColumn: async function(type, value){
+                var me = this;
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                var result = "";
+                
+                if(type === "SalesOrg"){
+                    await new Promise((resolve, reject) => {
+                        oModelFilter.read('/ZVB_3DERP_SALESORG_SH', {
+                            success: function (data, response) {
+                                data.results.forEach(item => {
+                                    if(value === item.SALESORG){
+                                        result = item.DESCRIPTION;
+                                    }
+                                })
+                                resolve();
+                            },
+                            error: function (err) {
+                                reject();
+                            }
+                        });
+                    });
+                }
+
+                if(type === "CustGrp"){
+                    await new Promise((resolve, reject) => {
+                        oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH', {
+                            success: function (data, response) {
+                                data.results.forEach(item => {
+                                    if(value === item.CUSTGRP){
+                                        result = item.DESCRIPTION;
+                                    }
+                                })
+                                resolve();
+                            },
+                            error: function (err) {
+                                reject();
+                            }
+                        });
+                    });
+                }
+                return result;
             },
 
             addDateFilters: function (aFilters) {

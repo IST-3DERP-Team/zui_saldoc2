@@ -371,23 +371,39 @@ sap.ui.define([
 
                     }
                 } else if (fieldName === 'CUSTBILLTO') {
-                    await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
-                                    while (item.Kunnr.length < 10) item.Kunnr = "0" + item.Kunnr;
-                                    item.Item = item.Kunnr;
-                                })
 
-                                valueHelpObjects = data.results;
-                                title = "Bill-to Customer"
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
+                    var custSoldTo = this.getView().byId("CUSTSOLDTO").getValue();
+
+                    if(custSoldTo === "" || custSoldTo === null || custSoldTo === undefined){
+                        this.getView().byId("CUSTSOLDTO").setValueState("Error");
+                        this.getView().byId("CUSTSOLDTO").setValueStateText("Required Field!");
+                        MessageBox.error("Please Select Sold-To Customer First!");
+                        return;
+                    }else{
+                        await new Promise((resolve, reject) => {
+                            oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
+                                success: function (data, response) {
+                                    var dataResult = [];
+                                    data.results.forEach(item => {
+                                        while (item.KUNNR.length < 10) item.KUNNR = "0" + item.KUNNR;
+                                        while (item.SOLDTOCUST.length < 10) item.SOLDTOCUST = "0" + item.SOLDTOCUST;
+                                        if(item.SOLDTOCUST === custSoldTo){
+                                            item.Item = item.KUNNR;
+                                            item.Desc = item.Name;
+                                            dataResult.push(item)
+                                        }
+                                    })
+    
+                                    valueHelpObjects = dataResult;
+                                    title = "Bill-to Customer"
+                                    resolve();
+                                },
+                                error: function (err) {
+                                    resolve();
+                                }
+                            });
                         });
-                    });
+                    }
                 } else if (fieldName === 'CUSTSHIPTO') {
                     var soldToCostHeader = this.byId("CUSTSOLDTO").getValue();
                     if(soldToCostHeader === ""){
@@ -1045,28 +1061,32 @@ sap.ui.define([
                 var oDataEdit = oDataEDitModel.getProperty('/');
                 var edditableFields = []
                 if (await this.checkIfSalDocIsDeleted()) {
-                    for (var oDatas in oDataEdit) {
-                        //get only editable fields
-                        edditableFields[oDatas] = true;
+                    if (await this.checkIfSalDocIsEDI()) {
+                        for (var oDatas in oDataEdit) {
+                            //get only editable fields
+                            edditableFields[oDatas] = true;
+                        }
+                        edditableFields.SALESDOCNO = false
+                        edditableFields.DELETED = false
+                        edditableFields.EDISOURCE = false
+                        edditableFields.SALESTERMTEXT = false
+                        // edditableFields.SALESDOCTYP = false
+
+                        // data.editMode = true;
+                        oJSONModel.setData(edditableFields);
+                        this.getView().setModel(oJSONModel, "HeaderEditModeModel");
+                        // this.getView().setModel(oJSONModel, "headerData"); 
+
+                        this.byId("btnHdrEdit").setVisible(false);
+                        this.byId("btnHdrDelete").setVisible(false);
+                        this.disableOtherTabs("itbDetail");
+
+                        this.byId("btnHdrSave").setVisible(true);
+                        this.byId("btnHdrCancel").setVisible(true);
+                        await this.setReqField(true);
+                    }else{
+                        MessageBox.error("Sales Doc. is EDI PO!");
                     }
-                    edditableFields.SALESDOCNO = false
-                    edditableFields.DELETED = false
-                    edditableFields.EDISOURCE = false
-                    edditableFields.SALESTERMTEXT = false
-                    // edditableFields.SALESDOCTYP = false
-
-                    // data.editMode = true;
-                    oJSONModel.setData(edditableFields);
-                    this.getView().setModel(oJSONModel, "HeaderEditModeModel");
-                    // this.getView().setModel(oJSONModel, "headerData"); 
-
-                    this.byId("btnHdrEdit").setVisible(false);
-                    this.byId("btnHdrDelete").setVisible(false);
-                    this.disableOtherTabs("itbDetail");
-
-                    this.byId("btnHdrSave").setVisible(true);
-                    this.byId("btnHdrCancel").setVisible(true);
-                    await this.setReqField(true);
                 } else {
                     MessageBox.error("Sales Doc. is already Deleted!");
                 }
@@ -1111,6 +1131,17 @@ sap.ui.define([
                 var oDataHdrModel = this.getView().getModel("headerData");
                 var oDataHdrData = oDataHdrModel.getProperty('/');
                 if (!oDataHdrData.DELETED) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+
+            checkIfSalDocIsEDI: async function () {
+                await this.getHeaderData();
+                var oDataHdrModel = this.getView().getModel("headerData");
+                var oDataHdrData = oDataHdrModel.getProperty('/');
+                if (!oDataHdrData.EDISOURCE) {
                     return true;
                 } else {
                     return false;
@@ -1228,7 +1259,8 @@ sap.ui.define([
                                 STATUS: "NEW",//oDataEdit.STATUS,
                                 REMARKS: oDataEdit.REMARKS,
                                 EDISOURCE: oDataEdit.EDISOURCE,
-                                DELETED: oDataEdit.DELETED
+                                DELETED: oDataEdit.DELETED,
+                                CUSTSEASON: oDataEdit.CUSTSEASON
                             }
                             _promiseResult = new Promise((resolve, reject) => {
                                 oModel.update("/SALDOCHDRSet(SALESDOCNO='" + oDataEdit.SALESDOCNO + "')", oParamData, {
@@ -1268,7 +1300,8 @@ sap.ui.define([
                                 STATUS: "NEW",//oDataEdit.STATUS,
                                 REMARKS: oDataEdit.REMARKS,
                                 EDISOURCE: oDataEdit.EDISOURCE,
-                                DELETED: oDataEdit.DELETED
+                                DELETED: oDataEdit.DELETED,
+                                CUSTSEASON: oDataEdit.CUSTSEASON
                             }
                             _promiseResult = new Promise((resolve, reject) => {
                                 oModel.setHeaders({
@@ -1570,72 +1603,77 @@ sap.ui.define([
                 var bProceed = true;
 
                 if (await this.checkIfSalDocIsDeleted()) {
-                    if (aSelIndices.length > 0) {
-                        aSelIndices.forEach(item => {
-                            oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
-                        });
+                    if(await this.checkIfSalDocIsEDI()){
+                        if (aSelIndices.length > 0) {
+                            aSelIndices.forEach(item => {
+                                oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                            });
 
-                        aSelIndices = oTmpSelectedIndices;
-                        aSelIndices.forEach((item, index) => {
-                            if (aData.at(item).DELETED === true) {
-                                iCounter++;
-                                if (aSelIndices.length === iCounter) {
-                                    MessageBox.error("Sales Doc. Item Already Deleted");
-                                }
-                            } else {
-                                salDocNo = aData.at(item).SALESDOCNO;
-                                salDocItem = aData.at(item).SALESDOCITEM;
-                                oModel.read("/SALDOCDETSet", {
-                                    urlParameters: {
-                                        "$filter": "SALESDOCNO eq '" + salDocNo + "'"
-                                    },
-                                    success: async function (oData, oResponse) {
-                                        oData.results.forEach(item1 => {
-                                            item1.CPODT = dateFormat.format(new Date(item1.CPODT));
-                                            item1.DLVDT = dateFormat.format(new Date(item1.DLVDT));
-                                            item1.CREATEDTM = timeFormat.format(new Date(item1.CREATEDTM.ms + TZOffsetMs));
-                                            item1.UPDATEDTM = timeFormat.format(new Date(item1.UPDATEDTM.ms + TZOffsetMs));
-                                            item1.CREATEDDT = dateFormat.format(new Date(item1.CREATEDDT));
-                                            item1.UPDATEDDT = dateFormat.format(new Date(item1.UPDATEDDT));
+                            aSelIndices = oTmpSelectedIndices;
+                            aSelIndices.forEach((item, index) => {
+                                if (aData.at(item).DELETED === true) {
+                                    iCounter++;
+                                    if (aSelIndices.length === iCounter) {
+                                        MessageBox.error("Sales Doc. Item Already Deleted");
+                                    }
+                                } else {
+                                    salDocNo = aData.at(item).SALESDOCNO;
+                                    salDocItem = aData.at(item).SALESDOCITEM;
+                                    oModel.read("/SALDOCDETSet", {
+                                        urlParameters: {
+                                            "$filter": "SALESDOCNO eq '" + salDocNo + "'"
+                                        },
+                                        success: async function (oData, oResponse) {
+                                            oData.results.forEach(item1 => {
+                                                item1.CPODT = dateFormat.format(new Date(item1.CPODT));
+                                                item1.DLVDT = dateFormat.format(new Date(item1.DLVDT));
+                                                item1.CREATEDTM = timeFormat.format(new Date(item1.CREATEDTM.ms + TZOffsetMs));
+                                                item1.UPDATEDTM = timeFormat.format(new Date(item1.UPDATEDTM.ms + TZOffsetMs));
+                                                item1.CREATEDDT = dateFormat.format(new Date(item1.CREATEDDT));
+                                                item1.UPDATEDDT = dateFormat.format(new Date(item1.UPDATEDDT));
 
-                                            if (salDocItem === item1.SALESDOCITEM) {
-                                                iCounter++;
-                                                aDataToEdit.push(aData.at(item));
-                                                if (bProceed) {
-                                                    if (aSelIndices.length === iCounter) {
-                                                        me.getView().getModel("DetDataModel").setProperty("/results", aDataToEdit);
-                                                        me.setTableData();
+                                                if (salDocItem === item1.SALESDOCITEM) {
+                                                    iCounter++;
+                                                    aDataToEdit.push(aData.at(item));
+                                                    if (bProceed) {
+                                                        if (aSelIndices.length === iCounter) {
+                                                            me.getView().getModel("DetDataModel").setProperty("/results", aDataToEdit);
+                                                            me.setTableData();
 
-                                                        me.byId("btnDetAdd").setVisible(false);
-                                                        me.byId("btnDetEdit").setVisible(false);
-                                                        me.byId("btnDetDelete").setVisible(false);
-                                                        me.byId("btnDetSave").setVisible(true);
-                                                        me.byId("btnDetCancel").setVisible(true);
-                                                        // me.byId("btnDetCreateStyle").setVisible(false);
-                                                        // me.byId("btnDetCreateIO").setVisible(false);
-                                                        // me.byId("btnDetCreateStyleIO").setVisible(false);
-                                                        me.byId("btnDetTabLayout").setVisible(false);
-                                                        me.byId("TB1").setEnabled(false);
+                                                            me.byId("btnDetAdd").setVisible(false);
+                                                            me.byId("btnDetEdit").setVisible(false);
+                                                            me.byId("btnDetDelete").setVisible(false);
+                                                            me.byId("btnDetSave").setVisible(true);
+                                                            me.byId("btnDetCancel").setVisible(true);
+                                                            // me.byId("btnDetCreateStyle").setVisible(false);
+                                                            // me.byId("btnDetCreateIO").setVisible(false);
+                                                            // me.byId("btnDetCreateStyleIO").setVisible(false);
+                                                            me.byId("btnDetTabLayout").setVisible(false);
+                                                            me.byId("TB1").setEnabled(false);
 
-                                                        //Set Edit Mode
-                                                        me.getView().getModel("ui").setProperty("/editMode", 'UPDATE');
+                                                            //Set Edit Mode
+                                                            me.getView().getModel("ui").setProperty("/editMode", 'UPDATE');
 
-                                                        me.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
+                                                            me.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
+                                                        }
                                                     }
                                                 }
-                                            }
-                                        })
-                                    },
-                                    error: function (err) { }
-                                });
-                            }
-                        });
-                    } else {
-                        MessageBox.error("No data to edit.");
+                                            })
+                                        },
+                                        error: function (err) { }
+                                    });
+                                }
+                            });
+                        } else {
+                            MessageBox.error("No data to edit.");
+                        }
+                    }else{
+                        MessageBox.error("Sales Doc. is EDI PO!");
                     }
                 } else {
                     MessageBox.error("Sales Doc. is already Deleted!");
                 }
+                
             },
             onRowEditSalDoc: async function (table, model) {
                 var me = this;
@@ -1659,7 +1697,8 @@ sap.ui.define([
                                     }));
                                 } else if (sColumnType === "STRING") {
                                     if (sColumnName === "CUSTSTYLE" || sColumnName === "CUSTSTYLEDESC" || sColumnName === "CPONO" || sColumnName === "CUSTCOLOR"
-                                        || sColumnName === "CUSTSIZE" || sColumnName === "PRODUCTCD" || sColumnName === "PRODUCTGRP") {
+                                        || sColumnName === "CUSTSIZE" || sColumnName === "PRODUCTCD" || sColumnName === "PRODUCTGRP" 
+                                        || sColumnName === "CUSTSHIPTOCD" || sColumnName === "CUSTSHIPTONM" || sColumnName === "CUSTCOLDESC" ) {
                                         col.setTemplate(new sap.m.Input({
                                             // id: "ipt" + ci.name,
                                             type: "Text",
@@ -1963,6 +2002,8 @@ sap.ui.define([
                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
                                 CUSSTYLEDESC: aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO: aData.at(item).CUSTSHIPTO,
+                                CUSTSHIPTOCD: aData.at(item).CUSTSHIPTOCD,
+                                CUSTSHIPTONM: aData.at(item).CUSTSHIPTONM,
                                 PRODUCTCD: aData.at(item).PRODUCTCD,
                                 PRODUCTGRP: aData.at(item).PRODUCTGRP,
                                 PRODUCTTYP: aData.at(item).PRODUCTTYP,
@@ -1970,6 +2011,7 @@ sap.ui.define([
                                 STYLEDESC: aData.at(item).STYLEDESC,
                                 STYLENO: aData.at(item).STYLENO,
                                 CUSTCOLOR: aData.at(item).CUSTCOLOR,
+                                CUSTCOLDESC: aData.at(item).CUSTCOLDESC,
                                 CUSTDEST: aData.at(item).CUSTDEST,
                                 CUSTSIZE: aData.at(item).CUSTSIZE,
                                 GENDER: aData.at(item).GENDER,
@@ -2042,6 +2084,8 @@ sap.ui.define([
                                 CUSTSTYLE: aData.at(item).CUSTSTYLE,
                                 CUSTSTYLEDESC: aData.at(item).CUSTSTYLEDESC,
                                 CUSTSHIPTO: aData.at(item).CUSTSHIPTO,
+                                CUSTSHIPTOCD: aData.at(item).CUSTSHIPTOCD,
+                                CUSTSHIPTONM: aData.at(item).CUSTSHIPTONM,
                                 PRODUCTCD: aData.at(item).PRODUCTCD,
                                 PRODUCTGRP: aData.at(item).PRODUCTGRP,
                                 PRODUCTTYP: aData.at(item).PRODUCTTYP,
@@ -2049,6 +2093,7 @@ sap.ui.define([
                                 STYLEDESC: aData.at(item).STYLEDESC,
                                 STYLENO: aData.at(item).STYLENO,
                                 CUSTCOLOR: aData.at(item).CUSTCOLOR,
+                                CUSTCOLDESC: aData.at(item).CUSTCOLDESC,
                                 CUSTDEST: aData.at(item).CUSTDEST,
                                 CUSTSIZE: aData.at(item).CUSTSIZE,
                                 GENDER: aData.at(item).GENDER,
