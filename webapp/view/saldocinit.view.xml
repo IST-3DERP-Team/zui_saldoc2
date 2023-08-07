@@ -28,7 +28,12 @@
                             </smartfilterbar:ControlConfiguration>
                             
                         </smartfilterbar:controlConfiguration>
-                    <smartfilterbar:controlConfiguration>
+                    <!-- <smartfilterbar:controlConfiguration>
+                        <smartfilterbar:ControlConfiguration key="SALESDOCNO" groupId="_BASIC" label="{i18n>SALESDOCNO}" preventInitialDataFetchInValueHelpDialog="false">
+                            </smartfilterbar:ControlConfiguration>
+                    </smartfilterbar:controlConfiguration> -->
+
+                    <smartfilterbar:controlConfiguration>   
                         <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false">
                         <!-- <smartfilterbar:customControl>
                                 <ComboBox id="cboxSALESGRP"
@@ -155,6 +160,7 @@
                     value=""
                     search="onSearchSaldoc"
                     width="15rem"/>
+                <Button id="btnAddSalDoc" type="Ghost" icon="sap-icon://add" tooltip="New" text="Create Sales Doc" press="addNewDetail" visible="true"/>
                 <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add" text="Create Style/IO" visible = "true">
 			        <menu>
 				        <Menu id="_IDGenMenu1">
@@ -169,8 +175,7 @@
                 <Button id="_IDGenOverflowToolbarButton2" type="Ghost" icon="sap-icon://sort" tooltip="Sort" text="Sort" press="onSort"/>
                 <Button id="_IDGenOverflowToolbarButton3" type="Ghost" icon="sap-icon://filter" tooltip="Filter" text="Filter" press="onFilter"/>
                 <Button id="_IDGenOverflowToolbarButton4" type="Ghost" icon="sap-icon://group-2" tooltip="Group" text="Group" press="onGroup"/> -->
-                <!-- <Button id="btnSearchSalDoc" type="Ghost" icon="sap-icon://search" tooltip="Search" press="onDynamicSearch" visible="true"/> -->
-                <Button id="btnAddSalDoc" type="Ghost" icon="sap-icon://add" tooltip="New" text="Create Sales Doc" press="addNewDetail" visible="true"/>
+                <!-- <Button id="btnSearchSalDoc" type="Ghost" icon="sap-icon://search" tooltip="Search" press="onDynamicSearch" visible="true"/> -->                
                 <Button id="btnTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" text="Save Table Layout" press="onSaveTableLayout"/>
                 <!-- <MenuButton id="_IDGenMenuButton1" icon="sap-icon://add">
                 <menu>

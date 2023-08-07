@@ -308,6 +308,8 @@ sap.ui.define([
                                     item.Desc = item.DESCRIPTION;
                                 })
 
+                                data.results.sort((a, b) => (a.YR > b.YR ? 1 : -1));
+
                                 valueHelpObjects = data.results;
                                 title = "Season"
                                 resolve();
@@ -1026,6 +1028,8 @@ sap.ui.define([
                 var oJSONModel = new JSONModel();
 
                 var oView = this.getView();
+
+                console.log(salesDocNo);
 
                 // read Style header data
                 var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"

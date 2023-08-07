@@ -494,6 +494,9 @@ sap.ui.define([
                                         item.CUSTGRP = item.CUSTGRP + " - " + desc;
                                     }
                                 })
+
+                                oData.results.sort((a, b) => (a.SALESDOCNO > b.SALESDOCNO ? -1 : 1));
+
                                 oText.setText(oData.results.length + "");
                                 oJSONDataModel.setData(oData);
                                 me.getView().setModel(oJSONDataModel, "DataModel");
