@@ -1541,9 +1541,12 @@ sap.ui.define([
 
                 var vEntitySet = EntitySet;
 
+                console.log(aFilters);
+
                 this._Model.read(vEntitySet, {
                     filters: aFilters,
                     success: function (oData) {
+                        console.log("forecast", oData);
                         oForecast.setNumber(oData.results[0].FORECASTQTY);
                         oOrder.setNumber(oData.results[0].ORDERQTY);
                         oShipped.setNumber(oData.results[0].SHIPQTY);

@@ -28,10 +28,10 @@
                             </smartfilterbar:ControlConfiguration>
                             
                         </smartfilterbar:controlConfiguration>
-                    <!-- <smartfilterbar:controlConfiguration>
+                    <smartfilterbar:controlConfiguration>
                         <smartfilterbar:ControlConfiguration key="SALESDOCNO" groupId="_BASIC" label="{i18n>SALESDOCNO}" preventInitialDataFetchInValueHelpDialog="false">
                             </smartfilterbar:ControlConfiguration>
-                    </smartfilterbar:controlConfiguration> -->
+                    </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>   
                         <smartfilterbar:ControlConfiguration key="SALESGRP" groupId="_BASIC" label="{i18n>SALESGRP}" preventInitialDataFetchInValueHelpDialog="false">
