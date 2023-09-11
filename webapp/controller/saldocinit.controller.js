@@ -895,7 +895,8 @@ sap.ui.define([
                     oModel.read('/CRTIOLISTSet', {
                         success: function (data, response) {
                             data.results.forEach(element => {
-                                while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
+                                if(element.CUSTSOLDTO !== undefined || element.CUSTSOLDTO !== "" || element.CUSTSOLDTO !== null)
+                                    while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
                             });
                             crtIOListObj = data.results;
                             resolve();
@@ -909,8 +910,10 @@ sap.ui.define([
                 await new Promise((resolve, reject) => {
                     oModel.read('/CRTSTYLISTSet', {
                         success: function (data, response) {
+                            console.log(data);
                             data.results.forEach(element => {
-                                while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
+                                if(element.CUSTSOLDTO !== undefined || element.CUSTSOLDTO !== "" || element.CUSTSOLDTO !== null)
+                                    while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
                             });
                             crtStyleListObj = data.results;
                             resolve();
@@ -1098,6 +1101,7 @@ sap.ui.define([
                 var oParam = {};
                 var oParamHdr = {};
                 var oParamData = [];
+                var oParamCrtIOStylSalDocItems = [];
                 var sdProcessCd = "";
                 var ioNo = "";
                 var styleNo = "";
@@ -1105,6 +1109,9 @@ sap.ui.define([
 
                 var createStyleResultStatus = ""
                 var createStyleResultMsg = ""
+
+                var seq = 0; //for Style and Style IO
+                var saldocItem = "";
 
                 var columnData = this.getView().getModel('SALDOCCRTSTYLEIOCOL').getData();
                 var oDataModel = me.getView().getModel("CrtStyleIOData").getData();
@@ -1189,33 +1196,79 @@ sap.ui.define([
                                 SDPROCESS: sdProcessCd,
                                 SBU: vSBU,
                             }
-                            oParamData.push({
-                                SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
-                                STYLECD: aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
-                                STYLEDESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                                SEASONCD: aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
-                                DESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
-                                WVTYP: aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
-                                PRODTYP: aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
-                                SIZEGRP: aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
-                                SALESGRP: aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
-                                CUSTGRP: aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
-                                CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
-                                UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
-                                STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
-                                STYLENO: styleNo,
-                                VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
-                                IONO: ioNo,
-                                IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
-                                PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
-                                PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
-                            })
+                            if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO"){
+                                seq++;
+                                saldocItem = aData.at(item).SALESDOCITEM.split(',');
+
+                                saldocItem.forEach((sdItem) => {
+                                    oParamCrtIOStylSalDocItems.push({
+                                        SEQ: seq.toString(),
+                                        SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                                        SALESDOCITEM: sdItem
+                                    })
+                                });
+
+                                oParamData.push({
+                                    SEQ: seq.toString(),
+                                    SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                                    STYLECD: aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
+                                    STYLEDESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                    SEASONCD: aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
+                                    DESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                    WVTYP: aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
+                                    PRODTYP: aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
+                                    SIZEGRP: aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
+                                    SALESGRP: aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
+                                    CUSTGRP: aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
+                                    CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
+                                    UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
+                                    STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
+                                    STYLENO: styleNo,
+                                    VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
+                                    IONO: ioNo,
+                                    IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
+                                    PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
+                                    PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                                });
+                                
+                            }else{
+                                oParamData.push({
+                                    SALESDOCNO: aData.at(item).SALESDOCNO === undefined ? "" : aData.at(item).SALESDOCNO,
+                                    STYLECD: aData.at(item).STYLECD === undefined ? "" : aData.at(item).STYLECD,
+                                    STYLEDESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                    SEASONCD: aData.at(item).SEASONCD === undefined ? "" : aData.at(item).SEASONCD,
+                                    DESC1: aData.at(item).STYLEDESC1 === undefined ? "" : aData.at(item).STYLEDESC1,
+                                    WVTYP: aData.at(item).WEAVETYP === undefined ? "" : aData.at(item).WEAVETYP,
+                                    PRODTYP: aData.at(item).PRODUCTTYP === undefined ? "" : aData.at(item).PRODUCTTYP,
+                                    SIZEGRP: aData.at(item).SIZEGRP === undefined ? "" : aData.at(item).SIZEGRP,
+                                    SALESGRP: aData.at(item).SALESGRP === undefined ? "" : aData.at(item).SALESGRP,
+                                    CUSTGRP: aData.at(item).CUSTGRP === undefined ? "" : aData.at(item).CUSTGRP,
+                                    CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
+                                    UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
+                                    STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
+                                    STYLENO: styleNo,
+                                    VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
+                                    IONO: ioNo,
+                                    IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
+                                    PRODSCEN: aData.at(item).PRODSCEN === undefined ? "" : aData.at(item).PRODSCEN,
+                                    PLANMONTH: aData.at(item).PLANMONTH === undefined ? "" : aData.at(item).PLANMONTH
+                                })
+                            }
                         }
                     })
                     if (oParamData.length > 0) {
-                        oParam = oParamHdr;
-                        oParam['CrtIOStylData'] = oParamData;
-                        oParam['CrtIOStylRetMsg'] = []
+                        if(sdProcessCd === "CRT_STY" || sdProcessCd === "CRT_STYIO"){
+                            oParam = oParamHdr;
+                            oParam['CrtIOStylData'] = oParamData;
+                            oParam['CrtIOStylSalDocItems'] = oParamCrtIOStylSalDocItems;
+                            oParam['CrtIOStylRetMsg'] = [];
+
+                        }else{
+                            oParam = oParamHdr;
+                            oParam['CrtIOStylData'] = oParamData;
+                            oParam['CrtIOStylRetMsg'] = []
+                        }
+                        
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.create("/CrtIOStylHdrSet", oParam, {
                                 method: "POST",
@@ -1343,28 +1396,42 @@ sap.ui.define([
                                             // liveChange: this.onInputLiveChange.bind(this)
                                         }));
                                     } else if (sColumnType === "STRING") {
-                                        col.setTemplate(new sap.m.Input({
-                                            // id: "ipt" + ci.name,
-                                            type: "Text",
-                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
-                                            enabled: {
-                                                path: "SALESDOCNO",
-                                                formatter: function (SALESDOCNO) {
-                                                    var result;
-                                                    tblData.forEach(async (data) => {
-                                                        if (data.LOGDESCSTAT === "S") {
-                                                            result = false;
-                                                        }
-                                                    });
-                                                    return result;
-                                                }
+                                        var sColumnName = ci.ColumnName;
+                                        console.log(sColumnName)
+                                        if (sColumnName === "STYLECD" || sColumnName === "STYLEDESC1") {
+                                            col.setTemplate(new sap.m.Input({
+                                                // id: "ipt" + ci.name,
+                                                type: "Text",
+                                                value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                                maxLength: +ci.Length,
+                                                showValueHelp: false,
+                                                liveChange: this.onInputLiveChange.bind(this)
+                                            }));
+                                        }else{
+                                            
+                                            col.setTemplate(new sap.m.Input({
+                                                // id: "ipt" + ci.name,
+                                                type: "Text",
+                                                value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                                enabled: {
+                                                    path: "SALESDOCNO",
+                                                    formatter: function (SALESDOCNO) {
+                                                        var result;
+                                                        tblData.forEach(async (data) => {
+                                                            if (data.LOGDESCSTAT === "S") {
+                                                                result = false;
+                                                            }
+                                                        });
+                                                        return result;
+                                                    }
 
-                                            },
-                                            maxLength: +ci.Length,
-                                            showValueHelp: true,
-                                            valueHelpRequest: this.handleValueHelp.bind(this),
-                                            liveChange: this.onInputLiveChange.bind(this)
-                                        }));
+                                                },
+                                                maxLength: +ci.Length,
+                                                showValueHelp: true,
+                                                valueHelpRequest: this.handleValueHelp.bind(this),
+                                                liveChange: this.onInputLiveChange.bind(this)
+                                            }));
+                                        }
                                     } else if (sColumnType === "DATETIME") {
                                         col.setTemplate(new sap.m.DatePicker({
                                             // id: "ipt" + ci.name,
