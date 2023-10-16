@@ -58,3 +58,9 @@
 /* .compValueHelpDialog .sapUiTableCtrl> thead > .sapUiTableCtrlCol > th:nth-child(1) {
     width: auto;
 } */
+
+.sapMLabelRequired, .sapMLabelRequired::before {
+
+    color: #c75858 !important;
+
+}

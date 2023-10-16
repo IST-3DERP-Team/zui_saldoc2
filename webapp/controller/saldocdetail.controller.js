@@ -9,18 +9,20 @@ sap.ui.define([
     'sap/ui/core/routing/HashChanger',
     "sap/ui/core/routing/History",
     'sap/m/MessageStrip',
+    "../js/TableValueHelp",
     "../control/DynamicTable"
 ],
-    /** 
-     * @param {typeof sap.ui.core.mvc.Controller} Controller 
+    /**
+     * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, History, MessageStrip, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, History, MessageStrip, TableValueHelp, control) {
         "use strict";
 
         var that;
 
         var Core = sap.ui.getCore();
         var _promiseResult;
+        var _captionList = [];
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "MM/dd/yyyy" });
         var sapDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
@@ -43,7 +45,7 @@ sap.ui.define([
 
                 this._onBeforeDetailData = []
                 this._isEdited = false
-                this._validationErrors = [];                
+                this._validationErrors = [];
 
                 //Initialize router
                 var oComponent = this.getOwnerComponent();
@@ -58,6 +60,10 @@ sap.ui.define([
                     LockError: ''
                 }), "ui");
 
+                this._tableValueHelp = TableValueHelp; 
+                
+                this.getView().setModel(new JSONModel(this.getOwnerComponent().getModel("CAPTION_MSGS_MODEL").getData().text), "ddtext");
+
                 this.getAppAction();
             },
 
@@ -69,7 +75,7 @@ sap.ui.define([
                     const fullHash = new HashChanger().getHash();
                     const urlParsing = await sap.ushell.Container.getServiceAsync("URLParsing");
                     const shellHash = urlParsing.parseShellHash(fullHash);
-                    csAction = shellHash.action;             
+                    csAction = shellHash.action;
                 }
 
                 var DisplayStateModel = new JSONModel();
@@ -79,14 +85,11 @@ sap.ui.define([
                 }
 
                 this.getView().getModel("ui").setProperty("/DisplayMode", csAction);
+                this.getView().setModel(new JSONModel(),"onSuggCustSoldTo");
+                this.getView().setModel(new JSONModel(),"onSuggCustBillTo");
 
                 DisplayStateModel.setData(DisplayData);
                 this.getView().setModel(DisplayStateModel, "DisplayActionModel");
-                // console.log(this.getView().getModel("DisplayActionModel"));
-                // console.log(this.getView());
-
-                // console.log(this.byId("btnHdrEdit"));
-                // console.log(this.byId("btnHdrDelete"));
 
                 // this.byId("btnHdrEdit").setVisible(csAction === "display" ? false : true);
                 // this.byId("btnHdrDelete").setVisible(csAction === "display" ? false : true);
@@ -96,8 +99,8 @@ sap.ui.define([
             },
 
             _routePatternMatched: async function (oEvent) {
-                Common.openLoadingDialog(that);         
-                var me = this;      
+                Common.openLoadingDialog(that);
+                var me = this;
 
                 this._salesDocNo = oEvent.getParameter("arguments").salesdocno; //get Style from route pattern
                 this._sbu = oEvent.getParameter("arguments").sbu; //get SBU from route pattern
@@ -105,14 +108,18 @@ sap.ui.define([
                 //set all as no changes at first load
                 this._headerChanged = false;
 
-                //set Change Status    
+                //set Change Status
                 this.setChangeStatus(false);
+                await this.onSuggestionItems();
 
                 //Load header
                 await this.getHeaderConfig(); //get visible header fields
 
+
                 if (this._salesDocNo === "NEW") {
                     //create new - only header is editable at first
+                    this.byId("CUSTSOLDTO").setEnabled(false);
+                    this.byId("CUSTBILLTO").setEnabled(false);
                     this.getView().getModel("ui").setProperty("/Mode", 'NEW');
                     await this.setNewHeaderEditMode();
                     // this.setDetailVisible(false);
@@ -120,6 +127,7 @@ sap.ui.define([
                     //existing style, get the style data
                     this.getView().getModel("ui").setProperty("/Mode", 'UPDATE');
                     await this.getHeaderData(); //get header data
+                    await this.onSuggestionItems_CUSTSHIPTO();
                     this.cancelHeaderEdit();
                     // this.setDetailVisible(true); //make detail section visible
                     this.byId("btnHdrEdit").setVisible(me.getView().getModel("ui").getProperty("/DisplayMode") === "display" ? false : true);
@@ -127,10 +135,11 @@ sap.ui.define([
                 }
 
                 // build Dynamic table for Sales Document Details
+
                 await this.getDynamicTableColumns();
 
-                //This Section remove required Field Indicator when initializing page 
-                this._validationErrors = [];     
+                //This Section remove required Field Indicator when initializing page
+                this._validationErrors = [];
                 var me = this;
                 var oView = this.getView();
                 var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
@@ -176,7 +185,379 @@ sap.ui.define([
                     }
 
                 }
+                await this.getColumnProp();
                 Common.closeLoadingDialog(that);
+            },
+
+            getColumnProp: async function() {
+                var sPath = jQuery.sap.getModulePath("zuisaldoc2.zuisaldoc2", "/model/columns.json");
+    
+                var oModelColumns = new JSONModel();
+                await oModelColumns.loadData(sPath);
+    
+                this._aColumns = oModelColumns.getData();
+                this._oModelColumns = oModelColumns.getData();
+            },
+
+            onSuggestionItems: async function(){
+                var me = this;
+                var vSBU = this._sbu;
+                var oModel = this.getOwnerComponent().getModel();
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                var oModel3DERP = this.getOwnerComponent().getModel('ZGW_3DERP_SH_SRV');
+
+                //SalesDocNo
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SALDOCTYP_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.SALESDOCTYP = item.Salesdoctyp;
+                                item.Item = item.Salesdoctyp;
+                                item.Desc = item.Description;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSalDocTyp");
+
+
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //SalesOrg
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SALESORG_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.SALESORG;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSalesOrg");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //CustGrp
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.CUSTGRP;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggCustGrp");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //PurTaxCd
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZBV_3D_PURTAX_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.PURTAXCD = item.Zolla;
+                                item.Item = item.Zolla;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggPurTaxCd");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //Sales Term
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3D_INCTRM_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.SALESTERM = item.Inco1;
+                                item.Item = item.Inco1;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSalesTerm");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //CurrencyCd
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_CURRSH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.CURRENCYCD = item.Waers;
+                                item.Item = item.Waers;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggCurrencyCd");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //DestChannel
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZBV_3D_DSTCHN_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.DSTCHAN = item.Vtweg;
+                                item.Item = item.Vtweg;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggDestChannel");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //Division
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZBV_3D_DIV_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.DIVISION = item.Spart;
+                                item.Item = item.Spart;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggDivision");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //SalesGrp
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SALESGRP_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.SALESGRP;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSalesGrp");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //SeasonCd
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.SEASONCD;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            data.results.sort((a, b) => (a.YR > b.YR ? 1 : -1));
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSeasonCd");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //UOM
+                await new Promise((resolve, reject) => {
+                    oModel.read('/UOMvhSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.UOM = item.MSEHI;
+                                item.Item = item.MSEHI;
+                                item.Desc = item.MSEHL;
+                            })
+                            me.getView().setModel(new JSONModel(data.results),"onSuggUOM");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+                //PRODUCTTYP
+                await new Promise((resolve, reject) => {
+                    oModel.read('/PRODUCTTYPvhSet', {
+                        urlParameters: {
+                            "$filter": "SBU eq '" + vSBU + "'"
+                        },
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.PRODUCTTYP = item.PRODTYP;
+                                item.Item = item.PRODTYP;
+                                item.Desc = item.DESC1;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggPRODUCTTYP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+            },
+
+            //Suggestion Items with Prerequisite and need to reinitialize
+            onSuggestionItems_CUSTSOLDTO: async function(){
+                var me = this;
+                var vSBU = this._sbu;
+                var oModel3DERP = this.getOwnerComponent().getModel('ZGW_3DERP_SH_SRV');
+                //Sold to Customer
+                var custGrp = this.getView().getModel("headerData").getData().CUSTGRP;
+                if(custGrp === "" || custGrp === null || custGrp === undefined){
+                    return;
+                }else{
+                    await new Promise((resolve, reject) => {
+                        oModel3DERP.setHeaders({
+                            sbu: vSBU
+                        });
+                        oModel3DERP.read('/SoldToCustSet', {
+                            success: function (data, response) {
+                                var dataResult = [];
+                                data.results.forEach(item => {
+                                    if(custGrp === item.Custgrp){
+                                        item.CUSTSOLDTO = item.Custno;
+                                        item.Item = item.Custno;
+                                        item.Desc = item.Desc1;
+                                        dataResult.push(item)
+                                    }
+                                })
+
+                                me.getView().setModel(new JSONModel(dataResult),"onSuggCustSoldTo");
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }
+            },
+            onSuggestionItems_CUSTBILLTO: async function(){
+                var me = this;
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+
+                //Bill To Customer
+                var custSoldTo = this.getView().getModel("headerData").getData().CUSTSOLDTO;
+                if(custSoldTo === "" || custSoldTo === null || custSoldTo === undefined){
+                    return;
+                }else{
+                    await new Promise((resolve, reject) => {
+                        oModelFilter.read('/ZVB_3D_CBLLTO_SH', {
+                            success: function (data, response) {
+                                var dataResult = [];
+                                data.results.forEach(item => {
+                                    while (item.KUNNR.length < 10) item.KUNNR = "0" + item.KUNNR;
+                                    while (item.SOLDTOCUST.length < 10) item.SOLDTOCUST = "0" + item.SOLDTOCUST;
+                                    if(item.SOLDTOCUST === custSoldTo){
+                                        item.CUSTBILLTO = item.KUNNR;
+                                        item.Item = item.KUNNR;
+                                        item.Desc = item.Name;
+                                        dataResult.push(item)
+                                    }
+                                })
+
+                                me.getView().setModel(new JSONModel(dataResult),"onSuggCustBillTo");
+                                resolve();
+                            },
+                            error: function (err) {
+                                resolve();
+                            }
+                        });
+                    });
+                }
+            },
+            onSuggestionItems_CUSTSHIPTO: async function(){
+                var me = this;
+                var oModel = this.getOwnerComponent().getModel();
+
+                //CustShipTo
+                var soldToCostHeader = this.getView().getModel("headerData").getData().CUSTSOLDTO;
+                await new Promise((resolve, reject) => {
+                    oModel.read('/SHIPTOvhSet', {
+                        success: function (data, response) {
+                            var dataResult = [];
+                            data.results.forEach(item => {
+                                if(soldToCostHeader === item.SOLDTOCUST){
+                                    item.CUSTSHIPTO = item.KUNNR;
+                                    item.Item = item.KUNNR;
+                                    item.Desc = item.DESC1;
+                                    dataResult.push(item)
+                                }
+                            })
+                            me.getView().setModel(new JSONModel(dataResult),"onSuggCUSTSHIPTO");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+            },
+
+            formatValueHelp: function(sValue, sPath, sKey, sText, sFormat) {
+                if(this.getView().getModel(sPath) !== undefined){
+                    if(this.getView().getModel(sPath).getData().length > 0){
+                        var oValue = this.getView().getModel(sPath).getData().filter(v => v[sKey] === sValue);
+                        if (oValue && oValue.length > 0) {
+                            if (sFormat === "Value") {
+                                return oValue[0][sText];
+                            }
+                            else if (sFormat === "ValueKey") {
+                                return oValue[0][sText] + " (" + sValue + ")";
+                            }
+                            else if (sFormat === "KeyValue") {
+                                return sValue + " (" + oValue[0][sText] + ")";
+                            }
+                            else {
+                                return sValue;
+                            }
+                        }
+                        else return sValue;
+                    }else return sValue;
+                }
+                
             },
 
             setReqField: async function(isEdit){
@@ -244,7 +625,7 @@ sap.ui.define([
 
                 var valueHelpObjects = [];
                 var title = "";
-                
+
                 if (fieldName === 'SALESGRP') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_SALESGRP_SH', {
@@ -324,6 +705,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3DERP_SALDOCTYP_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.SALESDOCTYP = item.Salesdoctyp;
                                     item.Item = item.Salesdoctyp;
                                     item.Desc = item.Description;
                                 })
@@ -355,12 +737,13 @@ sap.ui.define([
                                     var dataResult = [];
                                     data.results.forEach(item => {
                                         if(custGrp === item.Custgrp){
+                                            item.CUSTSOLDTO = item.Custno;
                                             item.Item = item.Custno;
                                             item.Desc = item.Desc1;
                                             dataResult.push(item)
                                         }
                                     })
-    
+
                                     valueHelpObjects = dataResult;
                                     title = "Sold-to Customer"
                                     resolve();
@@ -390,12 +773,13 @@ sap.ui.define([
                                         while (item.KUNNR.length < 10) item.KUNNR = "0" + item.KUNNR;
                                         while (item.SOLDTOCUST.length < 10) item.SOLDTOCUST = "0" + item.SOLDTOCUST;
                                         if(item.SOLDTOCUST === custSoldTo){
+                                            item.CUSTBILLTO = item.KUNNR;
                                             item.Item = item.KUNNR;
                                             item.Desc = item.Name;
                                             dataResult.push(item)
                                         }
                                     })
-    
+
                                     valueHelpObjects = dataResult;
                                     title = "Bill-to Customer"
                                     resolve();
@@ -417,14 +801,14 @@ sap.ui.define([
                                 success: function (data, response) {
                                     var dataResult = [];
                                     data.results.forEach(item => {
-                                        console.log(item);
                                         if(soldToCostHeader === item.SOLDTOCUST){
+                                            item.CUSTSHIPTO = item.KUNNR;
                                             item.Item = item.KUNNR;
                                             item.Desc = item.DESC1;
                                             dataResult.push(item)
                                         }
                                     })
-    
+
                                     valueHelpObjects = dataResult;
                                     title = "Ship-To Customer"
                                     resolve();
@@ -435,12 +819,13 @@ sap.ui.define([
                             });
                         });
                     }
-                    
+
                 } else if (fieldName === 'CURRENCYCD') {
                     await new Promise((resolve, reject) => {
                         oModelFilter.read('/ZVB_3DERP_CURRSH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.CURRENCYCD = item.Waers;
                                     item.Item = item.Waers;
                                     item.Desc = item.DESCRIPTION;
                                 })
@@ -459,6 +844,7 @@ sap.ui.define([
                         oModelFilter.read('/ZBV_3D_DSTCHN_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.DSTCHAN = item.Vtweg;
                                     item.Item = item.Vtweg;
                                     item.Desc = item.DESCRIPTION;
                                 })
@@ -477,6 +863,7 @@ sap.ui.define([
                         oModelFilter.read('/ZBV_3D_DIV_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.DIVISION = item.Spart;
                                     item.Item = item.Spart;
                                     item.Desc = item.DESCRIPTION;
                                 })
@@ -513,6 +900,7 @@ sap.ui.define([
                         oModelFilter.read('/ZBV_3D_PURTAX_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.PURTAXCD = item.Zolla;
                                     item.Item = item.Zolla;
                                     item.Desc = item.DESCRIPTION;
                                 })
@@ -531,6 +919,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3D_INCTRM_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.SALESTERM = item.Inco1;
                                     item.Item = item.Inco1;
                                     item.Desc = item.DESCRIPTION;
                                 })
@@ -549,6 +938,7 @@ sap.ui.define([
                         oModelFilter.read('/ZVB_3D_INCTRM_SH', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.SALESTERM = item.Inco1;
                                     item.Item = item.DESCRIPTION;
                                     item.Desc = item.Inco1;
                                 })
@@ -567,6 +957,7 @@ sap.ui.define([
                         oModel.read('/UOMvhSet', {
                             success: function (data, response) {
                                 data.results.forEach(item => {
+                                    item.UOM = item.MSEHI;
                                     item.Item = item.MSEHI;
                                     item.Desc = item.MSEHL;
                                 })
@@ -796,7 +1187,6 @@ sap.ui.define([
                 await new Promise((resolve, reject) => {
                     oModel.read("/ColumnsSet", {
                         success: function (oData, oResponse) {
-                            console.log(oData);
                             oJSONColumnsModel.setData(oData);
                             me.oJSONModel.setData(oData);
                             me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
@@ -823,7 +1213,6 @@ sap.ui.define([
                             "$filter": "SALESDOCNO eq '" + salesDocNo + "'"
                         },
                         success: function (oData, oResponse) {
-                            console.log(oData);
                             oData.results.forEach(item => {
                                 item.CPODT = dateFormat.format(item.CPODT);
                                 item.DLVDT = dateFormat.format(item.DLVDT);
@@ -897,7 +1286,7 @@ sap.ui.define([
                     return new sap.ui.table.Column({
                         id: sColumnId + "-Det",
                         label: sColumnLabel, //"{i18n>" + sColumnId + "}",
-                        template: me.columnTemplate(sColumnId, sColumnType, "Stat"),
+                        template: me.columnTemplate(sColumnId, sColumnType),
                         width: me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'px',
                         sortProperty: sColumnId,
                         filterProperty: sColumnId,
@@ -913,11 +1302,31 @@ sap.ui.define([
             },
 
             columnTemplate: function (sColumnId, sColumnType) {
+                var me = this;
                 var oDetColumnTemplate;
 
                 //different component based on field
 
                 oDetColumnTemplate = new sap.m.Text({ text: "{" + sColumnId + "}", wrapping: false }); //default text
+
+                if(sColumnId === "UOM" || sColumnId === "CUSTSHIPTO" || sColumnId === "PRODUCTTYP"){
+                    var columnnName = sColumnId;
+                    oDetColumnTemplate.bindText({
+                        parts: [  
+                            { path: sColumnId }
+                        ],  
+                        formatter: function(sColumnId) {
+                            var oValue = me.getView().getModel("onSugg"+ columnnName +"").getData().filter(v => v[columnnName] === sColumnId);
+                            
+                            if (oValue && oValue.length > 0) {
+                                return oValue[0].Desc + " (" + sColumnId + ")";
+                            }
+                            else return sColumnId;
+                        }
+                    })
+                }
+
+                
 
                 if (sColumnId === "DELETED") {
                     //Manage button
@@ -1029,8 +1438,6 @@ sap.ui.define([
 
                 var oView = this.getView();
 
-                console.log(salesDocNo);
-
                 // read Style header data
                 var entitySet = "/SALDOCHDRSet('" + salesDocNo + "')"
                 await new Promise((resolve, reject) => {
@@ -1056,6 +1463,10 @@ sap.ui.define([
 
             },
 
+            handleFormValueHelp: function (oEvent) {
+                TableValueHelp.handleFormValueHelp(oEvent, this);
+            },
+
             setHeaderEditMode: async function () {
                 //unlock editable fields of style header
                 var oJSONModel = new JSONModel();
@@ -1066,6 +1477,7 @@ sap.ui.define([
                 var edditableFields = []
                 if (await this.checkIfSalDocIsDeleted()) {
                     if (await this.checkIfSalDocIsEDI()) {
+                        await this.getHeaderData();
                         for (var oDatas in oDataEdit) {
                             //get only editable fields
                             edditableFields[oDatas] = true;
@@ -1079,7 +1491,7 @@ sap.ui.define([
                         // data.editMode = true;
                         oJSONModel.setData(edditableFields);
                         this.getView().setModel(oJSONModel, "HeaderEditModeModel");
-                        // this.getView().setModel(oJSONModel, "headerData"); 
+                        // this.getView().setModel(oJSONModel, "headerData");
 
                         this.byId("btnHdrEdit").setVisible(false);
                         this.byId("btnHdrDelete").setVisible(false);
@@ -1336,6 +1748,9 @@ sap.ui.define([
                         if (!bError) {
                             this.byId("btnHdrEdit").setVisible(true);
                             this.byId("btnHdrDelete").setVisible(true);
+
+                            //trigger suggestion items to load the customer ship to based on Header CUSTSOLDTO
+                            await this.onSuggestionItems_CUSTSHIPTO();
                             this.enableOtherTabs("itbDetail");
 
                             this.byId("btnHdrSave").setVisible(false);
@@ -1605,7 +2020,9 @@ sap.ui.define([
                 var aDataToEdit = [];
                 var iCounter = 0;
                 var bProceed = true;
-
+                                    
+                //trigger suggestion items to load the customer ship to based on Header CUSTSOLDTO
+                await this.onSuggestionItems_CUSTSHIPTO();
                 if (await this.checkIfSalDocIsDeleted()) {
                     if(await this.checkIfSalDocIsEDI()){
                         if (aSelIndices.length > 0) {
@@ -1677,7 +2094,7 @@ sap.ui.define([
                 } else {
                     MessageBox.error("Sales Doc. is already Deleted!");
                 }
-                
+
             },
             onRowEditSalDoc: async function (table, model) {
                 var me = this;
@@ -1689,7 +2106,7 @@ sap.ui.define([
 
                 oTable.getColumns().forEach((col, idx) => {
                     oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[0])
-                        .forEach(ci => {
+                        .forEach(async ci => {
                             var sColumnName = ci.ColumnName;
                             var sColumnType = ci.DataType;
                             if (ci.Editable) {
@@ -1701,7 +2118,7 @@ sap.ui.define([
                                     }));
                                 } else if (sColumnType === "STRING") {
                                     if (sColumnName === "CUSTSTYLE" || sColumnName === "CUSTSTYLEDESC" || sColumnName === "CPONO" || sColumnName === "CUSTCOLOR"
-                                        || sColumnName === "CUSTSIZE" || sColumnName === "PRODUCTCD" || sColumnName === "PRODUCTGRP" 
+                                        || sColumnName === "CUSTSIZE" || sColumnName === "PRODUCTCD" || sColumnName === "PRODUCTGRP"
                                         || sColumnName === "CUSTSHIPTOCD" || sColumnName === "CUSTSHIPTONM" || sColumnName === "CUSTCOLDESC" ) {
                                         col.setTemplate(new sap.m.Input({
                                             // id: "ipt" + ci.name,
@@ -1715,11 +2132,35 @@ sap.ui.define([
                                         col.setTemplate(new sap.m.Input({
                                             // id: "ipt" + ci.name,
                                             type: "Text",
-                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
-                                            maxLength: +ci.Length,
+                                            value: {
+                                                parts: [
+                                                    { path: ci.ColumnName }, 
+                                                    { value: "onSugg" + ci.ColumnName }, 
+                                                    { value: 'Item' }, 
+                                                    { value: 'Desc' }, 
+                                                    { value: 'ValueKey' }
+                                                ],
+                                                formatter: this.formatValueHelp.bind(this),
+                                                mandatory: ci.Mandatory
+                                            },
+                                            // value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            // maxLength: +ci.Length,
+                                            textFormatMode: 'ValueKey',
                                             showValueHelp: true,
-                                            valueHelpRequest: this.handleValueHelp.bind(this),
-                                            liveChange: this.onInputLiveChange.bind(this)
+                                            valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),//this.handleValueHelp.bind(this),
+                                            showSuggestion: true,
+                                            suggestionItems: {
+                                                path: 'onSugg' + ci.ColumnName + '>/',
+                                                length: 10000,
+                                                template: new sap.ui.core.ListItem({
+                                                    key: '{onSugg' + ci.ColumnName + '>Item}',
+                                                    text: '{onSugg' + ci.ColumnName + '>Desc}',
+                                                    additionalText: '{onSugg' + ci.ColumnName + '>Item}'
+                                                }),
+                                                templateShareable: false
+                                            },
+                                            maxSuggestionWidth: "160px",
+                                            change: this.onInputLiveChangeSuggestion.bind(this)
                                         }));
                                     }
                                 } else if (sColumnType === "DATETIME") {
@@ -1748,54 +2189,54 @@ sap.ui.define([
                                 }
                             }
                         });
-                    
+
                 });
             },
-            onHeaderChange: async function (oEvent) {
-                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
-                var resultData = "";
+            // onHeaderChange: async function (oEvent) {
+            //     var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+            //     var resultData = "";
 
-                if (oEvent.getSource().getId().includes("SALESTERM")) {
-                    var salesTermVal = this.getView().byId("SALESTERM").getValue();
-                    var salesTermTxtLbl = this.getView().byId("SALESTERMTEXT");
-                    await new Promise((resolve, reject) => {
-                        oModelFilter.read('/ZVB_3D_INCTRM_SH', {
-                            success: function (data, response) {
-                                data.results.forEach(item => {
-                                    if (item.Inco1 === salesTermVal) {
-                                        resultData = item.DESCRIPTION;
-                                    }
-                                })
+            //     if (oEvent.getSource().getId().includes("SALESTERM")) {
+            //         var salesTermVal = this.getView().byId("SALESTERM").getValue();
+            //         var salesTermTxtLbl = this.getView().byId("SALESTERMTEXT");
+            //         await new Promise((resolve, reject) => {
+            //             oModelFilter.read('/ZVB_3D_INCTRM_SH', {
+            //                 success: function (data, response) {
+            //                     data.results.forEach(item => {
+            //                         if (item.Inco1 === salesTermVal) {
+            //                             resultData = item.DESCRIPTION;
+            //                         }
+            //                     })
 
-                                salesTermTxtLbl.setValue(resultData);
-                                resolve();
-                            },
-                            error: function (err) {
-                                resolve();
-                            }
-                        });
-                    });
-                }
-                if (oEvent.getSource().getBindingInfo("value").mandatory) {
-                    if (oEvent.getParameters().value === "") {
-                        oEvent.getSource().setValueState("Error");
-                        oEvent.getSource().setValueStateText("Required Field");
-                        this._validationErrors.push(oEvent.getSource().getId());
-                    } else {
-                        oEvent.getSource().setValueState("None");
-                        this._validationErrors.forEach((item, index) => {
-                            if (item === oEvent.getSource().getId()) {
-                                this._validationErrors.splice(index, 1)
-                            }
-                        })
-                    }
-                }
-                if (oEvent.getParameters().value === oEvent.getSource().getBindingInfo("value").binding.oValue) {
-                    this._isEdited = false;
-                } else {
-                    this._isEdited = true;
-                }
-            },
+            //                     salesTermTxtLbl.setValue(resultData);
+            //                     resolve();
+            //                 },
+            //                 error: function (err) {
+            //                     resolve();
+            //                 }
+            //             });
+            //         });
+            //     }
+            //     if (oEvent.getSource().getBindingInfo("value").mandatory) {
+            //         if (oEvent.getParameters().value === "") {
+            //             oEvent.getSource().setValueState("Error");
+            //             oEvent.getSource().setValueStateText("Required Field");
+            //             this._validationErrors.push(oEvent.getSource().getId());
+            //         } else {
+            //             oEvent.getSource().setValueState("None");
+            //             this._validationErrors.forEach((item, index) => {
+            //                 if (item === oEvent.getSource().getId()) {
+            //                     this._validationErrors.splice(index, 1)
+            //                 }
+            //             })
+            //         }
+            //     }
+            //     if (oEvent.getParameters().value === oEvent.getSource().getBindingInfo("value").binding.oValue) {
+            //         this._isEdited = false;
+            //     } else {
+            //         this._isEdited = true;
+            //     }
+            // },
 
             onInputLiveChange: function (oEvent) {
                 var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
@@ -1831,6 +2272,123 @@ sap.ui.define([
                     }
                 }
             },
+
+            onInputLiveChangeSuggestion: async function(oEvent){
+                var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
+                var oSource = oEvent.getSource();
+                var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
+                var bProceed = true;
+
+                oSource.setValueState(isInvalid ? "Error" : "None");
+                oSource.setValueStateText("Invalid Entry");
+
+                if(oSource.getId().includes("CUSTGRP")){
+                    var custGrpHeaderData = this.getView().getModel("headerData").getData().CUSTGRP;
+                    if(custGrpHeaderData !== undefined || custGrpHeaderData !== "" || custGrpHeaderData !== null){
+                        if(oSource.getSelectedKey() !== custGrpHeaderData){
+                            var sModel = oSource.getBindingInfo("value").parts[0].model;
+                            var sPath = oSource.getBindingInfo("value").parts[0].path;
+                            this.getView().getModel(sModel).setProperty("/CUSTSOLDTO", "");
+                        }
+                        this.getView().byId("CUSTSOLDTO").setEnabled(true);
+                    }
+                    if(oEvent.getParameters().value === "") {
+                        var sModel = oSource.getBindingInfo("value").parts[0].model;
+                        var sPath = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel(sModel).setProperty("/CUSTSOLDTO", "");
+                        this.getView().byId("CUSTSOLDTO").setEnabled(false);
+                    }
+                    
+                }
+
+                if(oSource.getId().includes("CUSTSOLDTO")){
+                    var custSoldTo = this.getView().getModel("headerData").getData().CUSTSOLDTO;
+                    if(custSoldTo !== undefined || custSoldTo !== "" || custSoldTo !== null){
+                        if(oSource.getSelectedKey() !== custSoldTo){
+                            var sModel = oSource.getBindingInfo("value").parts[0].model;
+                            var sPath = oSource.getBindingInfo("value").parts[0].path;
+                            this.getView().getModel(sModel).setProperty("/CUSTBILLTO", "");
+                        }
+                        this.getView().byId("CUSTBILLTO").setEnabled(true);
+                    }
+                    if(oEvent.getParameters().value === "") {
+                        var sModel = oSource.getBindingInfo("value").parts[0].model;
+                        var sPath = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel(sModel).setProperty("/CUSTBILLTO", "");
+                        this.getView().byId("CUSTBILLTO").setEnabled(false);
+                    }
+                    
+                }
+                // if(oSource.getId().includes("CUSTSOLDTO")){
+                //     var custGrp = this.getView().byId("CUSTGRP").getSelectedKey();
+                //     if(custGrp === "" || custGrp === null || custGrp === undefined){
+                //         this.getView().byId("CUSTGRP").setValueState("Error");
+                //         this.getView().byId("CUSTGRP").setValueStateText("Required Field!");
+                //         oSource.setValue("");
+                //         bProceed = false;
+                //         MessageBox.error("Please Select Customer Group First!");
+                //     }
+                // }
+
+                if(bProceed){
+                    if(oSource.getSuggestionItems().length > 0){
+                        oSource.getSuggestionItems().forEach(item => {
+                            if (item.getProperty("key") === oSource.getSelectedKey()) {
+                                isInvalid = false;
+                                oSource.setValueState(isInvalid ? "Error" : "None");
+                            }
+                        })
+                    }else{
+                        isInvalid = true;
+                        oSource.setValueState(isInvalid ? "Error" : "None");
+                        oSource.setValueStateText("Invalid Entry");
+                    }
+                    
+                    var fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
+                    if (fieldIsMandatory) {
+                        if (oEvent.getParameters().value === "") {
+                            isInvalid = true;
+                            oSource.setValueState(isInvalid ? "Error" : "None");
+                            oEvent.getSource().setValueStateText("Required Field");
+                        }
+                    }
+
+                    if (isInvalid) {
+                        this._validationErrors.push(oEvent.getSource().getId());
+                    }
+                    else {
+                        if(oEvent.getSource().getParent().getId().includes("salDocDetDynTable")){
+                            var oInput = oEvent.getSource();
+                            var oCell = oInput.getParent();
+                            // var oRow = oCell.getBindingContext().getObject();
+                            var sPath = oCell.getBindingContext().getPath();
+                            var sRowPath = sPath == undefined ? null :"/results/"+ sPath.split("/")[2];
+
+                            var sCol = oSource.getBindingInfo("value").parts[0].path;
+                            this.getView().getModel("DetDataModel").setProperty(sRowPath + "/" + sCol, oSource.getSelectedKey())
+                        }else{
+                            var sModel = oSource.getBindingInfo("value").parts[0].model;
+                            var sPath = oSource.getBindingInfo("value").parts[0].path;
+                            this.getView().getModel(sModel).setProperty(sPath, oSource.getSelectedKey());
+                            if(oSource.getId().includes("CUSTGRP")){
+                                this.onSuggestionItems_CUSTSOLDTO();
+                            }
+
+                            if(oSource.getId().includes("CUSTSOLDTO")){
+                                this.onSuggestionItems_CUSTBILLTO();
+                            }
+                        }
+                        
+
+                        this._validationErrors.forEach((item, index) => {
+                            if (item === oEvent.getSource().getId()) {
+                                this._validationErrors.splice(index, 1)
+                            }
+                        })
+                    }
+                }
+            },
+
             onNumberLiveChange: function (oEvent) {
                 if (oEvent.getSource().getBindingInfo("value").mandatory) {
                     if (oEvent.getParameters().value === "") {
@@ -1939,7 +2497,6 @@ sap.ui.define([
                 })
 
                 oSelectedIndices = oTmpSelectedIndices;
-
                 var aItems = oTable.getRows();
                 if(oSelectedIndices.length > 0){
                     aItems.forEach(function(oItem) {
@@ -1959,7 +2516,7 @@ sap.ui.define([
                                                         me._validationErrors.splice(index, 1)
                                                     }
                                                 })
-                                            }   
+                                            }
                                         }
                                     }else if (oCell.isA("sap.m.DatePicker")) {
                                         if(oCell.getBindingInfo("value").mandatory === "true"){
@@ -1973,7 +2530,7 @@ sap.ui.define([
                                                         me._validationErrors.splice(index, 1)
                                                     }
                                                 })
-                                            }   
+                                            }
                                         }
                                     }
                                 })
@@ -1986,7 +2543,7 @@ sap.ui.define([
                     MessageBox.error("Please Fill Required Fields!");
                     bProceed = false;
                 }
-                
+
                 if (bProceed) {
                     if (type === "UPDATE") {
                         oSelectedIndices.forEach(async (item, index) => {

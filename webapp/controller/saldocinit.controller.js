@@ -8,19 +8,21 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/export/Spreadsheet",
     "../control/TableEvents",
-    "sap/ui/core/routing/HashChanger"
+    "sap/ui/core/routing/HashChanger",
+    "../js/TableFilter",
     // "../control/DynamicTable"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, FilterOperator, Spreadsheet, control, HashChanger) {
+    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, FilterOperator, Spreadsheet, control, HashChanger, TableFilter) {
         "use strict";
 
         var that;
-        var salDocNotxt;
         var _promiseResult;
         var sDisplayAction = "";
+        
+        var _captionList = [];
 
         var dateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "MM/dd/yyyy" });
         var timeFormat = sap.ui.core.format.DateFormat.getTimeInstance({ pattern: "KK:mm:ss a" });
@@ -73,10 +75,14 @@ sap.ui.define([
                     LockType: 'S',
                     LockMessage: '',
                     LockError: '',
-                    DisplayMode: 'change'
+                    DisplayMode: 'change',
+                    saldocCount: 0,
+                    activeSaldocNo: ''
                 }), "ui");
 
                 this.getAppAction();
+
+                this.callCaptionsAPI();
 
                 this._Model = this.getOwnerComponent().getModel();
                 this.setSmartFilterModel();
@@ -87,6 +93,11 @@ sap.ui.define([
 
                 this._isEdited = false;
                 this._validationErrors = [];
+                this._tableFullScreenRender = false;
+
+                this._aColumns = {};
+                this._tableFilter = TableFilter;
+                this._colFilters = {};
 
                 // if (this.getView().getModel("ui").getProperty("/DisplayAction") === "display") {
                 //     var btnAdd = this.getView().byId("btnAddSalDoc");
@@ -160,7 +171,8 @@ sap.ui.define([
 
                 var oRow = this.getView().getModel("DataModel").getProperty(sPath)
 
-                salDocNotxt = oRow.SALESDOCNO;
+                
+                this.getView().getModel("ui").setProperty("/activeSaldocNo", oRow.SALESDOCNO);
 
                 _promiseResult = new Promise((resolve, reject) => {
                     oTable.getRows().forEach(row => {
@@ -197,7 +209,7 @@ sap.ui.define([
                 var oRow = this.getView().getModel("DataModel").getProperty(sRowPath)
                 var oTable = this.getView().byId("salDocDynTable");
 
-                salDocNotxt = oRow.SALESDOCNO;
+                this.getView().getModel("ui").setProperty("/activeSaldocNo", oRow.SALESDOCNO);
 
                 _promiseResult = new Promise((resolve, reject) => {
                     oTable.getRows().forEach(row => {
@@ -286,6 +298,7 @@ sap.ui.define([
             },
 
             onSearch: async function () {
+                Common.openLoadingDialog(this);
                 var me = this;
                 // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
                 this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
@@ -318,6 +331,7 @@ sap.ui.define([
                         error: function (err) { }
                     });
                 })
+                Common.closeLoadingDialog(this);
 
 
                 // oTable.placeAt('scTable');
@@ -346,6 +360,7 @@ sap.ui.define([
                     oModel.read("/ColumnsSet", {
                         success: async function (oData, oResponse) {
                             if (model === 'SALDOCINIT') {
+                                me._aColumns["salDocDynTable"] = oData.results;
                                 oJSONColumnsModel.setData(oData);
                                 me.oJSONModel.setData(oData);
                                 me.getView().setModel(oJSONColumnsModel, "DynColumns");  //set the view model
@@ -433,7 +448,6 @@ sap.ui.define([
 
                 var aFilters = this.getView().byId("smartFilterBar").getFilters();
                 var aFiltersObj = [];
-                var oText = this.getView().byId("SalesDocCount");
 
                 var oColumnsModel;
                 var oData;
@@ -476,6 +490,9 @@ sap.ui.define([
                         oModel.read("/SALDOCHDRINITSet", {
                             filters: aFiltersObj,
                             success: function (oData, oResponse) {
+                                // for(var x = 0; x < oData.results.length; x++){
+                                //     var item = oData.results[x];
+                                // }
                                 oData.results.forEach(async item => {
 
                                     item.DLVDT = dateFormat.format(item.DLVDT);
@@ -485,19 +502,22 @@ sap.ui.define([
                                     item.UPDATEDTM = timeFormat.format(new Date(item.UPDATEDTM.ms + TZOffsetMs));
                                     item.CREATEDDT = dateFormat.format(item.CREATEDDT);
                                     item.UPDATEDDT = dateFormat.format(item.UPDATEDDT);
-                                    if(item.SALESORG){
-                                        var desc = await me.getDescTableColumn("SalesOrg", item.SALESORG);
-                                        item.SALESORG = item.SALESORG + " - " + desc;
-                                    }
-                                    if(item.CUSTGRP){
-                                        var desc = await me.getDescTableColumn("CustGrp", item.CUSTGRP);
-                                        item.CUSTGRP = item.CUSTGRP + " - " + desc;
-                                    }
+                                    item.SALESORG = item.SALESORG + " - " + item.SALESORGDESC;
+                                    item.CUSTGRP = item.CUSTGRP + " - " + item.CUSTGRPDESC;
+                                    // if(item.SALESORG){
+                                    //     var desc = await me.getDescTableColumn("SalesOrg", item.SALESORG);
+                                    //     item.SALESORG = item.SALESORG + " - " + desc;
+                                    // }
+                                    // if(item.CUSTGRP){
+                                    //     var desc = await me.getDescTableColumn("CustGrp", item.CUSTGRP);
+                                    //     item.CUSTGRP = item.CUSTGRP + " - " + desc;
+                                    // }
                                 })
 
                                 oData.results.sort((a, b) => (a.SALESDOCNO > b.SALESDOCNO ? -1 : 1));
 
-                                oText.setText(oData.results.length + "");
+                                // oText.setText(oData.results.length + "");
+                                me.getView().getModel("ui").setProperty("/saldocCount", oData.results.length);
                                 oJSONDataModel.setData(oData);
                                 me.getView().setModel(oJSONDataModel, "DataModel");
 
@@ -509,6 +529,7 @@ sap.ui.define([
 
                                 me.setTableData(oColumnsData, oData, 'salDocDynTable');
                                 me.setChangeStatus(false);
+                                TableFilter.applyColFilters("salDocDynTable", me);
                                 resolve();
                             },
                             error: function (err) {
@@ -616,28 +637,7 @@ sap.ui.define([
             setTableData: function (oColumnsData, oData, table) {
                 var me = this;
 
-                //the selected dynamic columns
-                // var oColumnsModel = this.getView().getModel("DynColumns");
-                // var oDataModel = this.getView().getModel("DataModel");
-
-                // //the selected styles data
-                // var oColumnsData = oColumnsModel.getProperty('/results');
-                // var oData = oDataModel.getProperty('/results');
-
-                // //add column for copy button
-                // oColumnsData.unshift({
-                //     "ColumnName": "Copy",
-                //     "ColumnType": "COPY",
-                //     "Visible": false
-                // });
-
-                //add column for manage button
-                // oColumnsData.unshift({
-                //     "ColumnName": "Manage",
-                //     "ColumnType": "SEL",
-                //     "Visible": false
-                // });
-
+                var salDocNotxt = this.getView().getModel("ui").getData().activeSaldocNo;
                 //set the column and data model
                 var oModel = new JSONModel();
                 oModel.setData({
@@ -666,7 +666,7 @@ sap.ui.define([
                     oTable.attachBrowserEvent('dblclick', function (e) {
                         e.preventDefault();
                         me.setChangeStatus(false); //remove change flag
-                        me.navToDetail(salDocNotxt); //navigate to detail page
+                        me.navToDetail(me.getView().getModel("ui").getData().activeSaldocNo); //navigate to detail page
 
                     });
                 }
@@ -686,7 +686,7 @@ sap.ui.define([
                     // if (sColumnWidth === 0) sColumnWidth = me.getColumnSize(sColumnId, sColumnType)
                     return new sap.ui.table.Column({
                         id: table + '-' + sColumnId,
-                        label: sColumnLabel, //"{i18n>" + sColumnId + "}",
+                        label: new sap.m.Text({text: sColumnLabel}), //"{i18n>" + sColumnId + "}",
                         template: me.columnTemplate(sColumnId, sColumnType),
                         width: sColumnWidth + 'px',//me.getFormatColumnSize(sColumnId, sColumnType, sColumnWidth) + 'px',
                         sortProperty: sColumnId,
@@ -698,8 +698,54 @@ sap.ui.define([
                     });
                 });
 
-                //bind the data to the table
+                //sorting with Date Sort
+                oTable.attachSort(function(oEvent) {
+            
+                    var sPath = oEvent.getParameter("column").getSortProperty();
+                    var bDescending = false;
+                    
+                    oEvent.getParameter("column").setSorted(true); //sort icon initiator
+                    if (oEvent.getParameter("sortOrder") == "Descending") {
+                        bDescending = true;
+                        oEvent.getParameter("column").setSortOrder("Descending") //sort icon Descending
+                    }else{
+                        oEvent.getParameter("column").setSortOrder("Ascending") //sort icon Ascending
+                    }
+
+                    var oSorter = new sap.ui.model.Sorter(sPath, bDescending ); //sorter(columnData, If Ascending(false) or Descending(True))
+                    
+                    var columnType = oEvent.getParameter("column").getTemplate().getBindingInfo("text") === undefined ? "" : oEvent.getParameter("column").getTemplate().getBindingInfo("text").columnType;
+                    if (columnType === "DATETIME") {
+                        oSorter.fnCompare = function(a, b) {
+                        
+                            // parse to Date object
+                            var aDate = new Date(a);
+                            var bDate = new Date(b);
+                            
+                            if (bDate == null) {
+                                return -1;
+                            }
+                            if (aDate == null) {
+                                return 1;
+                            }
+                            if (aDate < bDate) {
+                                return -1;
+                            }
+                            if (aDate > bDate) {
+                                return 1;
+                            }
+                            return 0;
+                        };
+                    } 
+                    
+                    oTable.getBinding('rows').sort(oSorter);
+                    // prevent internal sorting by table
+                    oEvent.preventDefault();
+                });
+                
                 oTable.bindRows("/rows");
+                TableFilter.updateColumnMenu(table, this);
+                //bind the data to the table
             },
 
             columnTemplate: function (sColumnId, sColumnType) {
@@ -800,6 +846,7 @@ sap.ui.define([
 
             onSapEnter(oEvent) {
                 // var salesDocNo = oButton.data("SALESDOCNO").SALESDOCNO; //get the styleno binded to manage button
+                var salDocNotxt = this.getView().getModel("ui").getData().activeSaldocNo;
                 that.setChangeStatus(false); //remove change flag
                 that.navToDetail(salDocNotxt, this._aSBU); //navigate to detail page
             },
@@ -842,7 +889,7 @@ sap.ui.define([
                     MessageBox.error(this.getView().getModel("ui").getProperty("/LockMessage"));
             },
 
-            onSearchSaldoc: async function (oEvent) {
+            onSearchSaldoc: function (oEvent) {
                 var me = this;
                 var oTable = this.byId("salDocDynTable");
                 // var sTable = oTable.getBindingInfo("rows");
@@ -862,8 +909,11 @@ sap.ui.define([
                             aFilter.push(new Filter(sDataType, FilterOperator.EQ, sQuery));
                     })
                     oFilter = new Filter(aFilter, false);
+                    
                 }
+                
                 oTable.getBinding("rows").filter(oFilter, "Application");
+                this.getView().getModel("ui").setProperty("/saldocCount", oTable.getBinding("rows").aIndices.length);
             },
 
             onSaldocCreateStyleIO: async function (type) {
@@ -913,7 +963,6 @@ sap.ui.define([
                 await new Promise((resolve, reject) => {
                     oModel.read('/CRTSTYLISTSet', {
                         success: function (data, response) {
-                            console.log(data);
                             data.results.forEach(element => {
                                 if(element.CUSTSOLDTO !== undefined || element.CUSTSOLDTO !== "" || element.CUSTSOLDTO !== null)
                                     while (element.CUSTSOLDTO.length < 10) element.CUSTSOLDTO = "0" + element.CUSTSOLDTO;
@@ -1400,7 +1449,6 @@ sap.ui.define([
                                         }));
                                     } else if (sColumnType === "STRING") {
                                         var sColumnName = ci.ColumnName;
-                                        console.log(sColumnName)
                                         if (sColumnName === "STYLECD" || sColumnName === "STYLEDESC1") {
                                             col.setTemplate(new sap.m.Input({
                                                 // id: "ipt" + ci.name,
@@ -1608,12 +1656,9 @@ sap.ui.define([
 
                 var vEntitySet = EntitySet;
 
-                console.log(aFilters);
-
                 this._Model.read(vEntitySet, {
                     filters: aFilters,
                     success: function (oData) {
-                        console.log("forecast", oData);
                         oForecast.setNumber(oData.results[0].FORECASTQTY);
                         oOrder.setNumber(oData.results[0].ORDERQTY);
                         oShipped.setNumber(oData.results[0].SHIPQTY);
@@ -1628,6 +1673,7 @@ sap.ui.define([
                 var oParamLock = {};
                 var oSALDOC_TAB = [];
                 var sError = "";
+                var salDocNotxt = me.getView().getModel("ui").getData().activeSaldocNo;
 
                 oSALDOC_TAB.push({
                     "Salesdocno": salDocNotxt,
@@ -1677,6 +1723,7 @@ sap.ui.define([
                 var oSALDOC_TAB = [];
                 var me = this;
                 var sError = "";
+                var salDocNotxt = this.getView().getModel("ui").getData().activeSaldocNo;
 
                 oSALDOC_TAB.push({
                     "Salesdocno": salDocNotxt,
@@ -2208,6 +2255,130 @@ sap.ui.define([
                 });
 
                 oEvent.getSource().getBinding("items").filter([oFilter]);
+            },
+
+            onTableResize: function(oEvent){
+                var event = oEvent.getSource();
+                var me = this;
+
+                var vFullScreen = oEvent.getSource().data("Max") === "1" ? true : false;
+                if(!this._tableFullScreenRender){
+                    this.byId("smartFilterBar").setFilterBarExpanded(!vFullScreen);
+                    this._tableFullScreenRender = true;
+                }else{
+                    this.byId("smartFilterBar").setFilterBarExpanded(vFullScreen);
+                    this._tableFullScreenRender = false;
+                }
+            },
+
+            onFilter: async function(oEvent){
+                var oTable = oEvent.getSource();
+
+                this.setActiveRowHighlight(oTable);
+            },
+
+            setActiveRowHighlight(arg) {
+                var oTable = this.byId(arg);
+                
+                setTimeout(() => {
+                    if (oTable.getModel(arg) !== undefined) {
+                        var iActiveRowIndex = oTable.getModel(arg).getData().results.findIndex(item => item.ACTIVE === "X");
+
+                        oTable.getRows().forEach(row => {
+                            if (row.getBindingContext(arg) && +row.getBindingContext(arg).sPath.replace("/", "") === iActiveRowIndex) {
+                                row.addStyleClass("activeRow");
+                            }
+                            else row.removeStyleClass("activeRow");
+                        })
+                    }
+                }, 1);
+            },
+
+            callCaptionsAPI: function(){
+                var me = this;
+                var oJSONModel = new JSONModel();
+                var oDDTextParam = [];
+                var oDDTextResult = [];
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+                oDDTextParam.push({CODE: "FLTRCRIT"});
+                oDDTextParam.push({CODE: "OK"});
+                oDDTextParam.push({CODE: "CANCEL"});
+                oDDTextParam.push({CODE: "CLRFLTRS"});
+                oDDTextParam.push({CODE: "REMOVEFLTR"});
+                oDDTextParam.push({CODE: "VALUELIST"});
+                oDDTextParam.push({CODE: "USERDEF"});
+                oDDTextParam.push({CODE: "SEARCH"});
+
+                oDDTextParam.push({CODE: "FULLSCREEN"});
+                oDDTextParam.push({CODE: "EXITFULLSCREEN"});
+                
+
+                oModel.create("/CaptionMsgSet", { CaptionMsgItems: oDDTextParam  }, {
+                    method: "POST",
+                    success: function(oData, oResponse) {
+                        oData.CaptionMsgItems.results.forEach(item=>{
+                            oDDTextResult[item.CODE] = item.TEXT;
+                        })
+                        _captionList = oDDTextResult;
+                        oJSONModel.setData(oDDTextResult);
+                        me.getView().setModel(oJSONModel, "captionMsg");
+                        me.getOwnerComponent().getModel("CAPTION_MSGS_MODEL").setData({text: oDDTextResult})
+                    },
+                    error: function(err) {
+                        sap.m.MessageBox.error(_captionList.INFO_ERROR);
+                    }
+                });
+            },
+
+            onColumnUpdated: function(oEvent){
+                var oTable = oEvent.getSource();
+                var sTabId = oTable.sId.split("--")[oTable.sId.split("--").length - 1];
+
+                
+                // console.log(sTabId)
+                // this._sActiveTable = sTabId;
+
+                // this.setActiveRowHighlightByTableId(sTabId);
+            },
+
+            //******************************************* */
+            // Column Filtering
+            //******************************************* */
+
+            onColFilterClear: function(oEvent) {
+                TableFilter.onColFilterClear(oEvent, this);
+            },
+
+            onColFilterCancel: function(oEvent) {
+                TableFilter.onColFilterCancel(oEvent, this);
+            },
+
+            onColFilterConfirm: function(oEvent) {
+                TableFilter.onColFilterConfirm(oEvent, this);
+            },
+
+            onFilterItemPress: function(oEvent) {
+                TableFilter.onFilterItemPress(oEvent, this);
+            },
+
+            onFilterValuesSelectionChange: function(oEvent) {
+                TableFilter.onFilterValuesSelectionChange(oEvent, this);
+            },
+
+            onSearchFilterValue: function(oEvent) {
+                TableFilter.onSearchFilterValue(oEvent, this);
+            },
+
+            onCustomColFilterChange: function(oEvent) {
+                TableFilter.onCustomColFilterChange(oEvent, this);
+            },
+
+            onSetUseColFilter: function(oEvent) {
+                TableFilter.onSetUseColFilter(oEvent, this);
+            },
+
+            onRemoveColFilter: function(oEvent) {
+                TableFilter.onRemoveColFilter(oEvent, this);
             },
 
             pad: Common.pad

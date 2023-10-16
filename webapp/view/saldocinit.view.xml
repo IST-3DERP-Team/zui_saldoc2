@@ -150,7 +150,7 @@
 				</GenericTag>	
             <!-- <HBox> -->
                 <ToolbarSpacer id="_IDGenToolbarSpacer3"/>
-                <Title id="SalesDocCount"/>
+                <Title id="SalesDocCount" text="{ui>/saldocCount}"/>
                 <Title text="{i18n>salesDocNo}" class="sapUiTinyMarginBegin"/>
                 <!-- </HBox> -->
                 <ToolbarSpacer id="_IDGenToolbarSpacer1"/>   
@@ -186,6 +186,26 @@
                     </Menu>
                 </menu>                    
                 </MenuButton> -->
+                 <Button id="btnFullScreenSaldocInit" 
+                    icon="sap-icon://full-screen"
+                    type="Ghost"
+                    press="onTableResize"
+                    tooltip="{captionMsg>/FULLSCREEN}"
+                    visible="true" >
+                    <customData>
+                         <core:CustomData key="Max" value="1" />
+                    </customData>
+                </Button>
+                <Button id="btnExitFullScreenSaldocInit" 
+                    icon="sap-icon://exit-full-screen"
+                    type="Ghost"
+                    press="onExitTableResize"
+                    tooltip="{captionMsg>/EXITFULLSCREEN}"
+                    visible="false">
+                    <customData>
+                        <core:CustomData key="Max" value="0" />
+                    </customData>
+                </Button>
                 <layoutData>
                     <OverflowToolbarLayoutData shrinkable="true" group="2" minWidth="70px"/>
                 </layoutData>
@@ -211,9 +231,18 @@
                 enableColumnFreeze="true"
                 selectionMode="MultiToggle"
                 selectionBehavior="RowSelector"
-                enableCellFilter="true"
                 rowSelectionChange="onRowChange"
                 cellClick="onCellClick"
+
+                rows="{DataModel>/}"
+                filter="onFilter"
+                columnFreeze="onColumnUpdated"
+                columnMove="onColumnUpdated"
+                columnResize="onColumnUpdated"
+                columnSelect="onColumnUpdated"
+                columnVisibility="onColumnUpdated"
+
+                enableCellFilter="true"
                 alternateRowColors="true"
                 sort="onSorted">
 

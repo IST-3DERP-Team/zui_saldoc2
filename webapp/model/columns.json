@@ -1,0 +1,187 @@
+{
+    "headerData": [
+        {"ColumnName": "SALESDOCTYP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSalDocTyp", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSalDocTyp>/", "text": "{onSuggSalDocTyp>Item}", "additionalText": "{onSuggSalDocTyp>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_salesdoctyp"
+            }
+        },
+        {"ColumnName": "SALESORG", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSalesOrg", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSalesOrg>/", "text": "{onSuggSalesOrg>Item}", "additionalText": "{onSuggSalesOrg>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_salesorg"
+            }
+        },
+        {"ColumnName": "CUSTGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCustGrp", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCustGrp>/", "text": "{onSuggCustGrp>Item}", "additionalText": "{onSuggCustGrp>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_custgrp"
+            }
+        },
+        {"ColumnName": "CUSTSOLDTO", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCustSoldTo", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCustSoldTo>/", "text": "{onSuggCustSoldTo>Item}", "additionalText": "{onSuggCustSoldTo>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_custsoldto"
+            }
+        },
+        {"ColumnName": "CUSTBILLTO", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCustBillTo", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCustBillTo>/", "text": "{onSuggCustBillTo>Item}", "additionalText": "{onSuggCustBillTo>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_custbillto"
+            }
+        },
+        {"ColumnName": "PURTAXCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggPurTaxCd", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggPurTaxCd>/", "text": "{onSuggPurTaxCd>Item}", "additionalText": "{onSuggPurTaxCd>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_purtaxcd"
+            }
+        },
+        {"ColumnName": "SALESTERM", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSalesTerm", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSalesTerm>/", "text": "{onSuggSalesTerm>Item}", "additionalText": "{onSuggSalesTerm>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_salesterm"
+            }
+        },
+        {"ColumnName": "CURRENCYCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCurrencyCd", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCurrencyCd>/", "text": "{onSuggCurrencyCd>Item}", "additionalText": "{onSuggCurrencyCd>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_currencycd"
+            }
+        },
+        {"ColumnName": "DSTCHAN", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggDestChannel", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggDestChannel>/", "text": "{onSuggDestChannel>Item}", "additionalText": "{onSuggDestChannel>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_dstchan"
+            }
+        },
+        {"ColumnName": "DIVISION", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggDivision", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggDivision>/", "text": "{onSuggDivision>Item}", "additionalText": "{onSuggDivision>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_division"
+            }
+        },
+        {"ColumnName": "SALESGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSalesGrp", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSalesGrp>/", "text": "{onSuggSalesGrp>Item}", "additionalText": "{onSuggSalesGrp>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_salesgrp"
+            }
+        },
+        {"ColumnName": "SEASONCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSeasonCd", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSeasonCd>/", "text": "{onSuggSeasonCd>Item}", "additionalText": "{onSuggSeasonCd>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_seasoncd"
+            }
+        }
+    ],
+    "salDocDetDynTable": [
+        {"ColumnName": "UOM", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggUOM", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggUOM>/", "text": "{onSuggUOM>Item}", "additionalText": "{onSuggUOM>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_uom"
+            }
+        },
+        {"ColumnName": "CUSTSHIPTO", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCUSTSHIPTO", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCUSTSHIPTO>/", "text": "{onSuggCUSTSHIPTO>Item}", "additionalText": "{onSuggCUSTSHIPTO>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_custshipto"
+            }
+        },
+        {"ColumnName": "PRODUCTTYP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggPRODUCTTYP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggPRODUCTTYP>/", "text": "{onSuggPRODUCTTYP>Item}", "additionalText": "{onSuggPRODUCTTYP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_producttyp"
+            }
+        }
+    ],
+    "tvh_salesdoctyp": [
+        {"ColumnName": "SALESDOCTYP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_salesorg": [
+        {"ColumnName": "SALESORG", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_custgrp": [
+        {"ColumnName": "CUSTGRP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_custsoldto": [
+        {"ColumnName": "CUSTSOLDTO", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_custbillto": [
+        {"ColumnName": "CUSTBILLTO", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_purtaxcd": [
+        {"ColumnName": "Zolla", "DataType": "STRING", "ColumnWidth": "100px", "Visible": false, "Key": false, "Value": false},
+        {"ColumnName": "PURTAXCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_salesterm": [
+        {"ColumnName": "SALESTERM", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_currencycd": [
+        {"ColumnName": "CURRENCYCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_dstchan": [
+        {"ColumnName": "DSTCHAN", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_division": [
+        {"ColumnName": "DIVISION", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_salesgrp": [
+        {"ColumnName": "SALESGRP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_seasoncd": [
+        {"ColumnName": "SEASONCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_uom": [
+        {"ColumnName": "UOM", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_custshipto": [
+        {"ColumnName": "CUSTSHIPTO", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_producttyp": [
+        {"ColumnName": "PRODUCTTYP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
+        {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ]
+}

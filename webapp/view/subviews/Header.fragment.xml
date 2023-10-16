@@ -28,8 +28,25 @@
                         <f:formElements>
                             <f:FormElement label="{i18n>SALESDOCNO}" visible="{= ${VisibleFieldsData>/SALESDOCTYP} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESDOCTYP" value="{path: 'headerData>/SALESDOCTYP', mandatory: 'SALESDOCTYP'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESDOCTYP}" valueStateText="Required"
-                                    change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="SALESDOCTYP" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/SALESDOCTYP'}, { value: 'onSuggSalDocTyp' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'SALESDOCTYP'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/SALESDOCTYP}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggSalDocTyp>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggSalDocTyp>Item}" text="{onSuggSalDocTyp>Desc}" additionalText="{onSuggSalDocTyp>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                     <Input id="SALESDOCNO" value="{path: 'headerData>/SALESDOCNO', mandatory: 'SALESDOCNO'}" editable="{HeaderEditModeModel>/SALESDOCNO}" valueStateText="Required">
                                     </Input>
@@ -37,36 +54,104 @@
                             </f:FormElement>  
                             <f:FormElement label="{i18n>SALESORG}" visible="{= ${VisibleFieldsData>/SALESORG} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESORG" value="{path: 'headerData>/SALESORG', mandatory: 'SALESORG'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESORG}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="SALESORG" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/SALESORG'}, { value: 'onSuggSalesOrg' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'SALESORG'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/SALESORG}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggSalesOrg>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggSalesOrg>Item}" text="{onSuggSalesOrg>Desc}" additionalText="{onSuggSalesOrg>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>   
                             <f:FormElement label="{i18n>CUSTGRP}" visible="{= ${VisibleFieldsData>/CUSTGRP} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CUSTGRP" value="{path: 'headerData>/CUSTGRP', mandatory: 'CUSTGRP'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTGRP}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="CUSTGRP" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/CUSTGRP'}, { value: 'onSuggCustGrp' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'CUSTGRP'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/CUSTGRP}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggCustGrp>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggCustGrp>Item}" text="{onSuggCustGrp>Desc}" additionalText="{onSuggCustGrp>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>CUSTSOLDTO}" visible="{= ${VisibleFieldsData>/CUSTSOLDTO} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CUSTSOLDTO" value="{path: 'headerData>/CUSTSOLDTO', mandatory: 'CUSTSOLDTO'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTSOLDTO}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="CUSTSOLDTO" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/CUSTSOLDTO'}, { value: 'onSuggCustSoldTo' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'CUSTSOLDTO'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/CUSTSOLDTO}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggCustSoldTo>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggCustSoldTo>Item}" text="{onSuggCustSoldTo>Desc}" additionalText="{onSuggCustSoldTo>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>CUSTBILLTO}" visible="{= ${VisibleFieldsData>/CUSTBILLTO} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CUSTBILLTO" value="{path: 'headerData>/CUSTBILLTO', mandatory: 'CUSTBILLTO'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CUSTBILLTO}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="CUSTBILLTO" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/CUSTBILLTO'}, { value: 'onSuggCustBillTo' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'CUSTBILLTO'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/CUSTBILLTO}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggCustBillTo>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggCustBillTo>Item}" text="{onSuggCustBillTo>Desc}" additionalText="{onSuggCustBillTo>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>CUSTSEASON}" visible="{= ${VisibleFieldsData>/CUSTSEASON} === true ? true : false }">
                                 <f:fields>
                                     <Input id="CUSTSEASON" value="{path: 'headerData>/CUSTSEASON', mandatory: 'CUSTSEASON'}" showSuggestion="true" showValueHelp="false" editable="{HeaderEditModeModel>/CUSTSEASON}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                         change="onInputLiveChange" valueHelpRequest="handleFormValueHelp" liveChange="onInputLiveChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -85,35 +170,69 @@
                             <f:FormElement label="{i18n>PAYMENTHODCD}" visible="{= ${VisibleFieldsData>/PAYMENTHODCD} === true ? true : false }">
                                 <f:fields>
                                     <Input id="PAYMENTHODCD" value="{path: 'headerData>/PAYMENTHODCD', mandatory: 'PAYMENTHODCD'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYMENTHODCD}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                         change="onInputLiveChange" valueHelpRequest="handleFormValueHelp" liveChange="onInputLiveChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>PAYTERMTEXT}" visible="{= ${VisibleFieldsData>/PAYTERMTEXT} === true ? true : false }">
                                 <f:fields>
                                     <Input id="PAYTERMTEXT" value="{path: 'headerData>/PAYTERMTEXT', mandatory: 'PAYTERMTEXT'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PAYTERMTEXT}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                         change="onInputLiveChange" valueHelpRequest="handleFormValueHelp" liveChange="onInputLiveChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>PURTAXCD}" visible="{= ${VisibleFieldsData>/PURTAXCD} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="PURTAXCD" value="{path: 'headerData>/PURTAXCD', mandatory: 'PURTAXCD'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/PURTAXCD}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="PURTAXCD" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/PURTAXCD'}, { value: 'onSuggPurTaxCd' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'PURTAXCD'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/PURTAXCD}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggPurTaxCd>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggPurTaxCd>Item}" text="{onSuggPurTaxCd>Desc}" additionalText="{onSuggPurTaxCd>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SALESTERM}" visible="{= ${VisibleFieldsData>/SALESTERM} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESTERM" value="{path: 'headerData>/SALESTERM', mandatory: 'SALESTERM'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESTERM}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="SALESTERM" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/SALESTERM'}, { value: 'onSuggSalesTerm' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'SALESTERM'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/SALESTERM}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggSalesTerm>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggSalesTerm>Item}" text="{onSuggSalesTerm>Desc}" additionalText="{onSuggSalesTerm>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SALESTERMTEXT}" visible="{= ${VisibleFieldsData>/SALESTERMTEXT} === true ? true : false }">
                                 <f:fields>
                                     <Input id="SALESTERMTEXT" value="{path: 'headerData>/SALESTERMTEXT', mandatory: 'SALESTERMTEXT'}" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESTERMTEXT}" valueStateText="Required"
-                                         change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                         change="onInputLiveChange" valueHelpRequest="handleFormValueHelp" liveChange="onInputLiveChange">
                                     </Input>
                                 </f:fields>
                             </f:FormElement> 
@@ -124,33 +243,97 @@
                         <f:formElements>
                             <f:FormElement label="{i18n>CURRENCYCD}" visible="{= ${VisibleFieldsData>/CURRENCYCD} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="CURRENCYCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/CURRENCYCD}" valueStateText="Required"
-                                        value="{path: 'headerData>/CURRENCYCD', mandatory: 'CURRENCYCD'}" 
-                                        change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="CURRENCYCD" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/CURRENCYCD'}, { value: 'onSuggCurrencyCd' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'CURRENCYCD'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/CURRENCYCD}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggCurrencyCd>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggCurrencyCd>Item}" text="{onSuggCurrencyCd>Desc}" additionalText="{onSuggCurrencyCd>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>DSTCHAN}" visible="{= ${VisibleFieldsData>/DSTCHAN} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="DSTCHAN" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DSTCHAN}" valueStateText="Required"
-                                        value="{path: 'headerData>/DSTCHAN', mandatory: 'DSTCHAN'}" 
-                                        change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="DSTCHAN" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/DSTCHAN'}, { value: 'onSuggDestChannel' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'DSTCHAN'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/DSTCHAN}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggDestChannel>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggDestChannel>Item}" text="{onSuggDestChannel>Desc}" additionalText="{onSuggDestChannel>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>DIVISION}" visible="{= ${VisibleFieldsData>/DIVISION} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="DIVISION" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/DIVISION}" valueStateText="Required"
-                                        value="{path: 'headerData>/DIVISION', mandatory: 'DIVISION'}" 
-                                        change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="DIVISION" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/DIVISION'}, { value: 'onSuggDivision' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'DIVISION'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/DIVISION}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggDivision>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggDivision>Item}" text="{onSuggDivision>Desc}" additionalText="{onSuggDivision>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
                             <f:FormElement label="{i18n>SALESGRP}" visible="{= ${VisibleFieldsData>/SALESGRP} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SALESGRP" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SALESGRP}" valueStateText="Required"
-                                        value="{path: 'headerData>/SALESGRP', mandatory: 'SALESGRP'}" 
-                                        change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="SALESGRP" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/SALESGRP'}, { value: 'onSuggSalesGrp' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'SALESGRP'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/SALESGRP}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggSalesGrp>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggSalesGrp>Item}" text="{onSuggSalesGrp>Desc}" additionalText="{onSuggSalesGrp>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -192,9 +375,25 @@
                             </f:FormElement>
                             <f:FormElement label="{i18n>SEASONCD}" visible="{= ${VisibleFieldsData>/SEASONCD} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="SEASONCD" type="Text" showSuggestion="true" showValueHelp="true" editable="{HeaderEditModeModel>/SEASONCD}" valueStateText="Required"
-                                        value="{path: 'headerData>/SEASONCD', mandatory: 'SEASONCD'}" 
-                                        change="onInputLiveChange" valueHelpRequest="handleValueHelp" liveChange="onInputLiveChange">
+                                    <Input id="SEASONCD" 
+                                        type="Text"
+                                        value="{
+                                            parts: [{path: 'headerData>/SEASONCD'}, { value: 'onSuggSeasonCd' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            formatter: '.formatValueHelp',
+                                            mandatory: 'SEASONCD'
+                                        }" 
+                                        textFormatMode="ValueKey"
+                                        showValueHelp="true" 
+                                        editable="{HeaderEditModeModel>/SEASONCD}" 
+                                        valueStateText="Required"
+                                        valueHelpRequest="handleFormValueHelp"
+                                        showSuggestion="true" 
+                                        suggestionItems="{path: 'onSuggSeasonCd>/', length: 10000, templateShareable: false}"
+                                        maxSuggestionWidth="160px"
+                                        change="onInputLiveChangeSuggestion">
+                                            <suggestionItems>
+                                                <core:ListItem key="{onSuggSeasonCd>Item}" text="{onSuggSeasonCd>Desc}" additionalText="{onSuggSeasonCd>Item}" />
+                                            </suggestionItems>
                                     </Input>
                                 </f:fields>
                             </f:FormElement>
@@ -210,7 +409,7 @@
                             </f:FormElement> 
                             <f:FormElement label="{i18n>REMARKS}"  visible="{= ${VisibleFieldsData>/REMARKS} === true ? true : false }">
                                 <f:fields>
-                                    <Input id="REMARKS" value="{path: 'headerData>/REMARKS', mandatory: 'REMARKS'}" editable="{HeaderEditModeModel>/REMARKS}" valueStateText="Required"/>
+                                    <Input id="REMARKS" value="{path: 'headerData>/REMARKS', mandatory: 'REMARKS'}" editable="{HeaderEditModeModel>/REMARKS}" liveChange="onInputLiveChange" change="onInputLiveChange" valueStateText="Required"/>
                                 </f:fields>
                             </f:FormElement> 
                             <f:FormElement label="{i18n>DELETED}"  visible="{= ${VisibleFieldsData>/DELETED} === true ? true : false }">
