@@ -235,14 +235,12 @@
                 cellClick="onCellClick"
 
                 rows="{DataModel>/}"
-                filter="onFilter"
                 columnFreeze="onColumnUpdated"
                 columnMove="onColumnUpdated"
                 columnResize="onColumnUpdated"
                 columnSelect="onColumnUpdated"
                 columnVisibility="onColumnUpdated"
 
-                enableCellFilter="true"
                 alternateRowColors="true"
                 sort="onSorted">
 

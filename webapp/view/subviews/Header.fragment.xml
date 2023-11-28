@@ -6,13 +6,15 @@
                 <Toolbar id="TB1" height="2rem">
                     <Title text="{i18n>Header}" />
                     <ToolbarSpacer />
-                    <Button id="btnHdrEdit" type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" text="Edit" press="setHeaderEditMode" 
+                    <Button id="btnHdrEdit" type="Ghost" icon="sap-icon://edit" tooltip="{i18n>Editsaldocheader}" press="setHeaderEditMode" 
                     visible="true"/>
-                    <Button id="btnHdrDelete" type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" text="Delete" press="onDeleteSalDoc" 
+                    <Button id="btnHdrDelete" type="Ghost" icon="sap-icon://delete" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" 
+                    visible="true"/> 
+                    <Button id="btnHdrClose" type="Ghost" icon="sap-icon://sys-cancel" tooltip="Close" press="onClosePageSalDoc" 
                     visible="true"/> 
                     <!-- <Button type="Ghost" icon="sap-icon://delete" text="{i18n>Deletesaldoc}" tooltip="{i18n>Deletesaldocheader}" press="onDeleteSalDoc" visible="${HeaderEditModeModel>/editMode} === true ? false : true }"/>  -->
-                    <Button id="btnHdrSave" type="Ghost" icon="sap-icon://save" tooltip="{i18n>Savesaldocheader}" text="Save" press="onSaveHeader" visible="false"/> 
-                    <Button id="btnHdrCancel" type="Ghost" icon="sap-icon://decline" tooltip="{i18n>Canceledit}" text="Cancel" press="cancelHeaderEdit" visible="false"/> 
+                    <Button id="btnHdrSave" type="Ghost" icon="sap-icon://save" tooltip="{i18n>Savesaldocheader}" press="onSaveHeader" visible="false"/> 
+                    <Button id="btnHdrCancel" type="Ghost" icon="sap-icon://decline" tooltip="{i18n>Canceledit}" press="cancelHeaderEdit" visible="false"/> 
                     
                 </Toolbar>
             </headerToolbar>
@@ -210,11 +212,11 @@
                                     <Input id="SALESTERM" 
                                         type="Text"
                                         value="{
-                                            parts: [{path: 'headerData>/SALESTERM'}, { value: 'onSuggSalesTerm' }, { value: 'Item' }, { value: 'Desc' }, { value: 'ValueKey' }],
+                                            parts: [{path: 'headerData>/SALESTERM'}, { value: 'onSuggSalesTerm' }, { value: 'Item' }, { value: 'Desc' }, { value: 'Other' }],
                                             formatter: '.formatValueHelp',
                                             mandatory: 'SALESTERM'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Key"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/SALESTERM}" 
                                         valueStateText="Required"

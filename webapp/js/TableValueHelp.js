@@ -275,7 +275,7 @@ sap.ui.define([
 
             // var me = this;
             var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
-            var vColProp = this._aColumns[sTabId].filter(item => item.ColumnName === this._inputField);
+            var vColProp = this._tblColumns[sTabId].filter(item => item.ColumnName === this._inputField);
             var sPath = vColProp[0].ValueHelp.items.path;
             var sKey = this._inputField, sValue = this._inputField;
             var sTextFormatMode = vColProp[0].TextFormatMode === undefined || vColProp[0].TextFormatMode === "" ? "Key" : vColProp[0].TextFormatMode;

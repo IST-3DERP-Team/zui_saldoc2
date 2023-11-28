@@ -60,16 +60,39 @@
                                             <!-- <Title text="{i18n>salesDocDetail}" class="sapUiTinyMarginBegin"/> -->
                                         </HBox>
                                         <ToolbarSpacer/>
-                                            <Button id = "btnDetAdd" type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" text="Add Detail" press="onSalDocDetAdd" visible="true"/>
-                                            <Button id = "btnDetEdit" type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" text="Edit Detail" press="onSalDocDetEdit" visible="true"/>
-                                            <Button id = "btnDetDelete" type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" text="Delete Detail" press="onSalDocDetDelete" visible="true"/>
+                                            <Button id = "btnDetAdd" type="Ghost"  icon="sap-icon://add" tooltip="Add Detail" press="onSalDocDetAdd" visible="true"/>
+                                            <Button id = "btnDetEdit" type="Ghost"  icon="sap-icon://edit" tooltip="Edit Detail" press="onSalDocDetEdit" visible="true"/>
+                                            <Button id = "btnDetDelete" type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDelete" visible="true"/>
+                                            <Button id = "btnDetDeleteEditRow" type="Ghost"  icon="sap-icon://delete" tooltip="Delete Detail" press="onSalDocDetDeleteEditRow" visible="false"/>
                                             <!-- <Button id = "btnDetPurge" type="Ghost"  icon="sap-icon://delete" tooltip="Purge Detail" press="onSalDocDetPurge"/> -->
-                                            <Button id = "btnDetSave" type="Ghost"  icon="sap-icon://save" tooltip="Save" text="Save" visible="false"  press="onSalDocDetSave"/>
-                                            <Button id = "btnDetCancel" type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" text="Cancel" visible="false"  press="onSalDocDetCancelEdit"/>
+                                            <Button id = "btnDetSave" type="Ghost"  icon="sap-icon://save" tooltip="Save" visible="false"  press="onSalDocDetSave"/>
+                                            <Button id = "btnDetCancel" type="Ghost"  icon="sap-icon://decline" tooltip="Cancel" visible="false"  press="onSalDocDetCancelEdit"/>
                                             <!-- <Button id = "btnDetCreateStyle" type="Ghost" text="Create Style" tooltip="{i18n>CreateStyle}" press="cancelDetailEdit" visible="true"/>
                                             <Button id = "btnDetCreateIO" type="Ghost" text="Create IO" tooltip="{i18n>CreateIO}" press="cancelDetailEdit" visible="true"/>
                                             <Button id = "btnDetCreateStyleIO" type="Ghost" text="Create Style/IO" tooltip="{i18n>CreateStyleIO}" press="cancelDetailEdit" visible="true"/> -->
-                                            <Button id = "btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" text="Save Table Layout" press="onSaveTableLayout" visible="true"/>
+                                            <Button id = "btnDetTabLayout" type="Ghost" icon="sap-icon://grid" tooltip="Save Table Layout" press="onSaveTableLayout" visible="true"/>
+                                            <Button id="btnDetBtnFullScreen" 
+                                                icon="sap-icon://full-screen"
+                                                type="Ghost"
+                                                press="onTableResize"
+                                                tooltip="{captionMsg>/FULLSCREEN}"
+                                                visible="true" >
+                                                <customData>
+                                                    <core:CustomData key="Type" value="Dtl" />
+                                                    <core:CustomData key="Max" value="1" />
+                                                </customData>
+                                            </Button>
+                                            <Button id="btnDetBtnExitFullScreen" 
+                                                icon="sap-icon://exit-full-screen"
+                                                type="Ghost"
+                                                press="onTableResize"
+                                                tooltip="{captionMsg>/EXITFULLSCREEN}"
+                                                visible="false">
+                                                <customData>
+                                                    <core:CustomData key="Type" value="Dtl" />
+                                                    <core:CustomData key="Max" value="0" />
+                                                </customData>
+                                            </Button>
                                         
                                     </OverflowToolbar>
                                 </uiT:extension>
