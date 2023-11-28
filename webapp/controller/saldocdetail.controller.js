@@ -10,12 +10,12 @@ sap.ui.define([
     "sap/ui/core/routing/History",
     'sap/m/MessageStrip',
     "../js/TableValueHelp",
-    "../control/DynamicTable"
+    "../js/TableFilter"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, History, MessageStrip, TableValueHelp, control) {
+    function (Controller, Filter, Common, Utils, JSONModel, jQuery, MessageBox, HashChanger, History, MessageStrip, TableValueHelp, TableFilter) {
         "use strict";
 
         var that;
@@ -33,7 +33,7 @@ sap.ui.define([
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocdetail", {
             onInit: async function () {
                 that = this;
-
+                this.callCaptionsAPI();
                 //get current userid
                 var oModel = new sap.ui.model.json.JSONModel();
                 oModel.loadData("/sap/bc/ui2/start_up").then(() => {
@@ -60,11 +60,50 @@ sap.ui.define([
                     LockError: ''
                 }), "ui");
 
-                this._tableValueHelp = TableValueHelp; 
+                this._aColumns = {};
+                this._tableFilter = TableFilter;
+                this._colFilters = {};
+
+                this._tableValueHelp = TableValueHelp;
+                this._tblColumns = {}; 
                 
                 this.getView().setModel(new JSONModel(this.getOwnerComponent().getModel("CAPTION_MSGS_MODEL").getData().text), "ddtext");
 
                 this.getAppAction();
+            },
+
+            callCaptionsAPI: async function(){
+                var me = this;
+                var oJSONModel = new JSONModel();
+                var oDDTextParam = [];
+                var oDDTextResult = [];
+                var oModel = this.getOwnerComponent().getModel("ZGW_3DERP_COMMON_SRV");
+
+                oDDTextParam.push({CODE: "FLTRCRIT"});
+                oDDTextParam.push({CODE: "OK"});
+                oDDTextParam.push({CODE: "CANCEL"});
+                oDDTextParam.push({CODE: "CLRFLTRS"});
+                oDDTextParam.push({CODE: "REMOVEFLTR"});
+                oDDTextParam.push({CODE: "VALUELIST"});
+                oDDTextParam.push({CODE: "USERDEF"});
+                oDDTextParam.push({CODE: "SEARCH"});
+
+                await oModel.create("/CaptionMsgSet", { CaptionMsgItems: oDDTextParam  }, {
+                    method: "POST",
+                    success: function(oData, oResponse) {
+                        oData.CaptionMsgItems.results.forEach(item=>{
+                            oDDTextResult[item.CODE] = item.TEXT;
+                        })
+                        
+                        // console.log(oDDTextResult)
+                        oJSONModel.setData(oDDTextResult);
+                        that.getView().setModel(oJSONModel, "captionMsg");
+                        me.getOwnerComponent().getModel("CAPTION_MSGS_MODEL").setData({text: oDDTextResult});
+                    },
+                    error: function(err) {
+                        sap.m.MessageBox.error(err);
+                    }
+                });
             },
 
             getAppAction: async function () {
@@ -135,7 +174,6 @@ sap.ui.define([
                 }
 
                 // build Dynamic table for Sales Document Details
-
                 await this.getDynamicTableColumns();
 
                 //This Section remove required Field Indicator when initializing page
@@ -189,13 +227,72 @@ sap.ui.define([
                 Common.closeLoadingDialog(that);
             },
 
+            validateIfSoldCustAndBillCustHasValue: async function(){
+                var headerData = this.getView().getModel("headerData").getData();
+                var me = this;
+                var oView = this.getView();
+                var formView = this.getView().byId("SalesDocHeaderForm1"); //Form View
+                var formContainers = formView.getFormContainers(); // Form Container
+                var formElements = ""; //Form Elements
+                var formFields = ""; // Form Field
+                var formElementsIsVisible = false; //is Form Element Visible Boolean
+                var fieldIsEditable = false; // is Field Editable Boolean
+                var fieldMandatory = ""; // Field Mandatory variable
+                var fieldIsMandatory = false; // Is Field Mandatory Boolean
+                var oMandatoryModel = oView.getModel("MandatoryFieldsData").getProperty("/");
+
+                //Form Validations
+                //Iterate Form Containers
+                for (var index in formContainers) {
+                    formElements = formContainers[index].getFormElements(); //get Form Elements
+
+                    //iterate Form Elements
+                    for (var elementIndex in formElements) {
+                        formElementsIsVisible = formElements[elementIndex].getProperty("visible"); //get the property Visible of Element
+                        if (formElementsIsVisible) {
+                            formFields = formElements[elementIndex].getFields(); //get FIelds in Form Element
+
+                            //Iterate Fields
+                            for (var formIndex in formFields) {
+                                fieldMandatory = formFields[formIndex].getBindingInfo("value") === undefined ? "" : formFields[formIndex].getBindingInfo("value").mandatory;
+
+                                fieldIsMandatory = oMandatoryModel[fieldMandatory] === undefined ? false : oMandatoryModel[fieldMandatory];
+
+                                if (fieldIsMandatory) {
+                                    fieldIsEditable = formFields[formIndex].getProperty("editable"); //get the property Editable of Fields
+                                    if (fieldIsEditable) {
+                                        if(formFields[formIndex].getId().includes("CUSTGRP")){
+                                            if(formFields[formIndex].getSuggestionItems().length > 0){
+                                                formFields[formIndex].getSuggestionItems().forEach(async item => {
+                                                    if (item.getProperty("key") === headerData.CUSTGRP) {
+                                                        await me.onSuggestionItems_CUSTSOLDTO();
+                                                        if(me.getView().getModel("onSuggCustSoldTo").getData().length > 0){
+                                                            me.getView().getModel("onSuggCustSoldTo").getData().forEach(async item =>{
+                                                                if (item.CUSTSOLDTO === headerData.CUSTSOLDTO) {
+                                                                    await me.onSuggestionItems_CUSTBILLTO();
+                                                                }
+                                                            })
+                                                        }
+                                                    }
+                                                })
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            },
+
             getColumnProp: async function() {
                 var sPath = jQuery.sap.getModulePath("zuisaldoc2.zuisaldoc2", "/model/columns.json");
     
                 var oModelColumns = new JSONModel();
                 await oModelColumns.loadData(sPath);
     
-                this._aColumns = oModelColumns.getData();
+                this._tblColumns = oModelColumns.getData();
                 this._oModelColumns = oModelColumns.getData();
             },
 
@@ -608,6 +705,8 @@ sap.ui.define([
 
                 }
             },
+
+            //Handle Value Help Not Used
             handleValueHelp: async function (oEvent) {
                 var me = this;
                 var vSBU = this._sbu;
@@ -1168,6 +1267,7 @@ sap.ui.define([
 
                 oEvent.getSource().getBinding("items").filter([oFilter]);
             },
+            //Handle Value Help Not Used
 
             getDynamicTableColumns: async function () {
                 var me = this;
@@ -1187,6 +1287,7 @@ sap.ui.define([
                 await new Promise((resolve, reject) => {
                     oModel.read("/ColumnsSet", {
                         success: function (oData, oResponse) {
+                            me._aColumns["salDocDetDynTable"] = oData.results;
                             oJSONColumnsModel.setData(oData);
                             me.oJSONModel.setData(oData);
                             me.getView().setModel(oJSONColumnsModel, "DetDynColumns");  //set the view model
@@ -1297,8 +1398,69 @@ sap.ui.define([
                     });
                 });
 
+                //date/number sorting
+                oDetTable.attachSort(function(oEvent) {
+                    var sPath = oEvent.getParameter("column").getSortProperty();
+                    var bDescending = false;
+                    
+                    //remove sort icon of currently sorted column
+                    oDetTable.getColumns().forEach(col => {
+                        if (col.getSorted()) {
+                            col.setSorted(false);
+                        }
+                    })
+
+                    oEvent.getParameter("column").setSorted(true); //sort icon initiator
+
+                    if (oEvent.getParameter("sortOrder") === "Descending") {
+                        bDescending = true;
+                        oEvent.getParameter("column").setSortOrder("Descending") //sort icon Descending
+                    }
+                    else {
+                        oEvent.getParameter("column").setSortOrder("Ascending") //sort icon Ascending
+                    }
+
+                    var oSorter = new sap.ui.model.Sorter(sPath, bDescending ); //sorter(columnData, If Ascending(false) or Descending(True))
+                    var oColumn = oDetColumnsData.filter(fItem => fItem.ColumnName === oEvent.getParameter("column").getProperty("sortProperty"));
+                    var columnType = oColumn[0].DataType;
+
+                    if (columnType === "DATETIME") {
+                        oSorter.fnCompare = function(a, b) {
+                            // parse to Date object
+                            var aDate = new Date(a);
+                            var bDate = new Date(b);
+
+                            if (bDate === null) { return -1; }
+                            if (aDate === null) { return 1; }
+                            if (aDate < bDate) { return -1; }
+                            if (aDate > bDate) { return 1; }
+
+                            return 0;
+                        };
+                    }
+                    else if (columnType === "NUMBER") {
+                        oSorter.fnCompare = function(a, b) {
+                            // parse to Date object
+                            var aNumber = +a;
+                            var bNumber = +b;
+
+                            if (bNumber === null) { return -1; }
+                            if (aNumber === null) { return 1; }
+                            if (aNumber < bNumber) { return -1; }
+                            if (aNumber > bNumber) { return 1; }
+
+                            return 0;
+                        };
+                    }
+                    
+                    oDetTable.getBinding('rows').sort(oSorter);
+                    // prevent internal sorting by table
+                    oEvent.preventDefault();
+                });
+
                 //bind the data to the table
                 oDetTable.bindRows("/rows");
+                TableFilter.updateColumnMenu("salDocDetDynTable", me);
             },
 
             columnTemplate: function (sColumnId, sColumnType) {
@@ -1316,10 +1478,13 @@ sap.ui.define([
                             { path: sColumnId }
                         ],  
                         formatter: function(sColumnId) {
-                            var oValue = me.getView().getModel("onSugg"+ columnnName +"").getData().filter(v => v[columnnName] === sColumnId);
+                            if(me.getView().getModel("onSugg"+ columnnName +"") !== undefined){
+                                var oValue = me.getView().getModel("onSugg"+ columnnName +"").getData().filter(v => v[columnnName] === sColumnId);
                             
-                            if (oValue && oValue.length > 0) {
-                                return oValue[0].Desc + " (" + sColumnId + ")";
+                                if (oValue && oValue.length > 0) {
+                                    return oValue[0].Desc + " (" + sColumnId + ")";
+                                }
+                                else return sColumnId;
                             }
                             else return sColumnId;
                         }
@@ -1493,8 +1658,13 @@ sap.ui.define([
                         this.getView().setModel(oJSONModel, "HeaderEditModeModel");
                         // this.getView().setModel(oJSONModel, "headerData");
 
+                        /*Check if Customer Group is not empty and check if SoldCust and BillCust will have 
+                        suggestion items based on Customer Group for Sold To Customer and Sold to Customer for Bill to Customer */
+                        await this.validateIfSoldCustAndBillCustHasValue();
+
                         this.byId("btnHdrEdit").setVisible(false);
                         this.byId("btnHdrDelete").setVisible(false);
+                        this.byId("btnHdrClose").setVisible(false);
                         this.disableOtherTabs("itbDetail");
 
                         this.byId("btnHdrSave").setVisible(true);
@@ -1536,6 +1706,7 @@ sap.ui.define([
 
                 this.byId("btnHdrEdit").setVisible(false);
                 this.byId("btnHdrDelete").setVisible(false);
+                this.byId("btnHdrClose").setVisible(false);
                 this.disableOtherTabs("itbDetail");
 
                 this.byId("btnHdrSave").setVisible(true);
@@ -1562,6 +1733,34 @@ sap.ui.define([
                 } else {
                     return false;
                 }
+            },
+
+            checkIfSalDocHasIO: function(){
+                var oTable = this.byId("salDocDetDynTable");
+                var oSelectedIndices = oTable.getBinding("rows").aIndices;
+                var oTmpSelectedIndices = [];
+                var aData = oTable.getModel().getData().rows;
+
+                var hasIO = false;
+
+                oSelectedIndices.forEach(item => {
+                    oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                })
+    
+                oSelectedIndices = oTmpSelectedIndices;
+
+                for(var item in oSelectedIndices){
+                    if(!hasIO){
+                        if(!aData.at(item).DELETED){
+                            if(aData.at(item).IONO !== "" && aData.at(item).IONO !== null && aData.at(item).IONO !== undefined){
+                                hasIO = true;
+                            }
+                        }
+                    }
+                }
+
+                return hasIO;
+
             },
 
             // setDetailVisible: function(bool) {
@@ -1619,12 +1818,41 @@ sap.ui.define([
                                             me._validationErrors.push(formFields[formIndex].getId())
                                             bProceed = false;
                                         } else {
-                                            formFields[formIndex].setValueState("None");
-                                            me._validationErrors.forEach((item, index) => {
-                                                if (item === formFields[formIndex].getId()) {
-                                                    me._validationErrors.splice(index, 1)
+                                            if(formFields[formIndex].isA("sap.m.Input")){
+                                                if(formFields[formIndex].getSuggestionItems().length > 0){
+                                                    formFields[formIndex].getSuggestionItems().forEach(item => {
+                                                        if (item.getProperty("key") === formFields[formIndex].getSelectedKey() || item.getProperty("key") === formFields[formIndex].getValue().trim()) {
+                                                            formFields[formIndex].setValueState("None");
+                                                            me._validationErrors.forEach((item, index) => {
+                                                                if (item === formFields[formIndex].getId()) {
+                                                                    me._validationErrors.splice(index, 1)
+                                                                }
+                                                            })
+                                                        }
+                                                    })
+                                                }else{
+                                                    formFields[formIndex].setValueState("None");
+                                                    me._validationErrors.forEach((item, index) => {
+                                                        if (item === formFields[formIndex].getId()) {
+                                                            me._validationErrors.splice(index, 1)
+                                                        }
+                                                    })
                                                 }
-                                            })
+                                            }else{
+                                                formFields[formIndex].setValueState("None");
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === formFields[formIndex].getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }
+                                            
+                                            // formFields[formIndex].setValueState("None");
+                                            // me._validationErrors.forEach((item, index) => {
+                                            //     if (item === formFields[formIndex].getId()) {
+                                            //         me._validationErrors.splice(index, 1)
+                                            //     }
+                                            // })
                                         }
                                     }
                                 }
@@ -1748,6 +1976,7 @@ sap.ui.define([
                         if (!bError) {
                             this.byId("btnHdrEdit").setVisible(true);
                             this.byId("btnHdrDelete").setVisible(true);
+                            this.byId("btnHdrClose").setVisible(true);
 
                             //trigger suggestion items to load the customer ship to based on Header CUSTSOLDTO
                             await this.onSuggestionItems_CUSTSHIPTO();
@@ -1884,67 +2113,70 @@ sap.ui.define([
                 var oModel = this.getOwnerComponent().getModel();
 
                 if (await this.checkIfSalDocIsDeleted()) {
-                    var actionSel;
-                    var bCompact = !!this.getView().$().closest(".sapUiSizeCompact").length;
-                    _promiseResult = new Promise((resolve, reject) => {
-                        MessageBox.information(
-                            "Are you sure you want to delete Sales Document No.: " + oDataEdit.SALESDOCNO + "?",
-                            {
-                                actions: ["Yes", "No"],
-                                styleClass: bCompact ? "sapUiSizeCompact" : "",
-                                onClose: function (sAction) {
-                                    actionSel = sAction;
-                                    resolve(actionSel);
+                    if(!this.checkIfSalDocHasIO()){
+                        var actionSel;
+                        var bCompact = !!this.getView().$().closest(".sapUiSizeCompact").length;
+                         await new Promise((resolve, reject) => {
+                            MessageBox.information(
+                                "Are you sure you want to delete Sales Document No.: " + oDataEdit.SALESDOCNO + "?",
+                                {
+                                    actions: ["Yes", "No"],
+                                    styleClass: bCompact ? "sapUiSizeCompact" : "",
+                                    onClose: function (sAction) {
+                                        actionSel = sAction;
+                                        resolve(actionSel);
+                                    }
                                 }
+                            );
+                        })
+                        if (actionSel === "Yes") {
+                            Common.openLoadingDialog(that);
+                            oParamData = {
+                                SALESDOCNO: oDataEdit.SALESDOCNO,
+                                SALESDOCTYP: oDataEdit.SALESDOCTYP,
+                                DOCDT: oDataEdit.DOCDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00" : null,
+                                SALESORG: oDataEdit.SALESORG,
+                                CUSTGRP: oDataEdit.CUSTGRP,
+                                CUSTSOLDTO: oDataEdit.CUSTSOLDTO,
+                                CUSTBILLTO: oDataEdit.CUSTBILLTO,
+                                DSTCHAN: oDataEdit.DSTCHAN,
+                                DIVISION: oDataEdit.DIVISION,
+                                SALESGRP: oDataEdit.SALESGRP,
+                                PAYMENTHODCD: oDataEdit.PAYMENTHODCD,
+                                PAYTERMCD: oDataEdit.PAYTERMCD,
+                                PURTAXCD: oDataEdit.PURTAXCD,
+                                SALESTERM: oDataEdit.SALESTERM,
+                                SALESTERMTEXT: oDataEdit.SALESTERMTEXT,
+                                CURRENCYCD: oDataEdit.CURRENCYCD,
+                                CPONO: oDataEdit.CPONO,
+                                CPOREV: +oDataEdit.CPOREV,
+                                CPODT: oDataEdit.CPODT !== "" ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00" : null,
+                                DLVDT: oDataEdit.DLVDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00" : null,
+                                SEASONCD: oDataEdit.SEASONCD,
+                                STATUS: oDataEdit.STATUS,
+                                REMARKS: oDataEdit.REMARKS,
+                                EDISOURCE: oDataEdit.EDISOURCE,
+                                DELETED: true
                             }
-                        );
-                    })
-                    await _promiseResult;
-                    if (actionSel === "Yes") {
-                        Common.openLoadingDialog(that);
-                        oParamData = {
-                            SALESDOCNO: oDataEdit.SALESDOCNO,
-                            SALESDOCTYP: oDataEdit.SALESDOCTYP,
-                            DOCDT: oDataEdit.DOCDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DOCDT)) + "T00:00:00" : null,
-                            SALESORG: oDataEdit.SALESORG,
-                            CUSTGRP: oDataEdit.CUSTGRP,
-                            CUSTSOLDTO: oDataEdit.CUSTSOLDTO,
-                            CUSTBILLTO: oDataEdit.CUSTBILLTO,
-                            DSTCHAN: oDataEdit.DSTCHAN,
-                            DIVISION: oDataEdit.DIVISION,
-                            SALESGRP: oDataEdit.SALESGRP,
-                            PAYMENTHODCD: oDataEdit.PAYMENTHODCD,
-                            PAYTERMCD: oDataEdit.PAYTERMCD,
-                            PURTAXCD: oDataEdit.PURTAXCD,
-                            SALESTERM: oDataEdit.SALESTERM,
-                            SALESTERMTEXT: oDataEdit.SALESTERMTEXT,
-                            CURRENCYCD: oDataEdit.CURRENCYCD,
-                            CPONO: oDataEdit.CPONO,
-                            CPOREV: +oDataEdit.CPOREV,
-                            CPODT: oDataEdit.CPODT !== "" ? sapDateFormat.format(new Date(oDataEdit.CPODT)) + "T00:00:00" : null,
-                            DLVDT: oDataEdit.DLVDT !== "" ? sapDateFormat.format(new Date(oDataEdit.DLVDT)) + "T00:00:00" : null,
-                            SEASONCD: oDataEdit.SEASONCD,
-                            STATUS: oDataEdit.STATUS,
-                            REMARKS: oDataEdit.REMARKS,
-                            EDISOURCE: oDataEdit.EDISOURCE,
-                            DELETED: true
+                            _promiseResult = new Promise((resolve, reject) => {
+                                oModel.update("/SALDOCHDRSet(SALESDOCNO='" + oDataEdit.SALESDOCNO + "')", oParamData, {
+                                    method: "PUT",
+                                    success: function (oData, oResponse) {
+                                        resolve();
+                                    }, error: function (error) {
+                                        MessageBox.error(error);
+                                        resolve()
+                                    }
+                                })
+                            });
+                            await _promiseResult;
+                            await this.closeHeaderEdit();
+                            Common.closeLoadingDialog(that);
+                        } else if (actionSel === "Cancel") {
+                            MessageBox.Action.CLOSE
                         }
-                        _promiseResult = new Promise((resolve, reject) => {
-                            oModel.update("/SALDOCHDRSet(SALESDOCNO='" + oDataEdit.SALESDOCNO + "')", oParamData, {
-                                method: "PUT",
-                                success: function (oData, oResponse) {
-                                    resolve();
-                                }, error: function (error) {
-                                    MessageBox.error(error);
-                                    resolve()
-                                }
-                            })
-                        });
-                        await _promiseResult;
-                        await this.closeHeaderEdit();
-                        Common.closeLoadingDialog(that);
-                    } else if (actionSel === "Cancel") {
-                        MessageBox.Action.CLOSE
+                    }else{
+                        MessageBox.error("Sales Doc. has IO Already!");
                     }
                 } else {
                     MessageBox.error("Sales Doc. is already Deleted!");
@@ -1952,9 +2184,13 @@ sap.ui.define([
 
             },
 
+            onClosePageSalDoc: function(){
+                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+                oRouter.navTo("Routesaldocinit", {}, true);
+            },
+
             onSalDocDetAdd: async function () {
                 var me = this;
-                var bProceed = true
 
                 var detailsItemArr = [];
                 var detailsItemLastCnt = 0;
@@ -1986,10 +2222,12 @@ sap.ui.define([
                     detailsItemObj.push(newInsertField);
 
                     this.getView().getModel("DetDataModel").setProperty("/results", detailsItemObj);
+                    TableFilter.applyColFilters("salDocDetDynTable", me);
                     await this.setTableData();
                     this.byId("btnDetAdd").setVisible(true);
                     this.byId("btnDetEdit").setVisible(false);
                     this.byId("btnDetDelete").setVisible(false);
+                    this.byId("btnDetDeleteEditRow").setVisible(true);
                     this.byId("btnDetSave").setVisible(true);
                     this.byId("btnDetCancel").setVisible(true);
                     // this.byId("btnDetCreateStyle").setVisible(false);
@@ -2123,7 +2361,7 @@ sap.ui.define([
                                         col.setTemplate(new sap.m.Input({
                                             // id: "ipt" + ci.name,
                                             type: "Text",
-                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            value: "{path: '" + ci.ColumnName + "', mandatory: " + ci.Mandatory + "}",
                                             maxLength: +ci.Length,
                                             showValueHelp: false,
                                             liveChange: this.onInputLiveChange.bind(this)
@@ -2166,9 +2404,9 @@ sap.ui.define([
                                 } else if (sColumnType === "DATETIME") {
                                     col.setTemplate(new sap.m.DatePicker({
                                         // id: "ipt" + ci.name,
-                                        value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                        value: "{path: '" + ci.ColumnName + "', mandatory: " + ci.Mandatory + "}",
                                         displayFormat: "short",
-                                        change: "handleChange",
+                                        change: this.onInputLiveChange.bind(this),
 
                                         liveChange: this.onInputLiveChange.bind(this)
                                     }));
@@ -2176,7 +2414,7 @@ sap.ui.define([
                                     col.setTemplate(new sap.m.Input({
                                         // id: "ipt" + ci.name,
                                         type: sap.m.InputType.Number,
-                                        value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
+                                        value: "{path:'" + ci.ColumnName + "', mandatory: " + ci.Mandatory + ", type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
 
                                         maxLength: +ci.Length,
 
@@ -2241,7 +2479,12 @@ sap.ui.define([
             onInputLiveChange: function (oEvent) {
                 var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
 
-                var fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
+                var fieldIsMandatory;
+                if(oEvent.getSource().getParent().getId().includes("salDocDetDynTable")){
+                    fieldIsMandatory = oEvent.getSource().getBindingInfo("value").mandatory;
+                }else{
+                    fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
+                }
                 if (fieldIsMandatory) {
                     if (oEvent.getParameters().value === "") {
                         oEvent.getSource().setValueState("Error");
@@ -2277,7 +2520,6 @@ sap.ui.define([
                 var oMandatoryModel = this.getView().getModel("MandatoryFieldsData").getProperty("/");
                 var oSource = oEvent.getSource();
                 var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
-                var bProceed = true;
 
                 oSource.setValueState(isInvalid ? "Error" : "None");
                 oSource.setValueStateText("Invalid Entry");
@@ -2319,6 +2561,23 @@ sap.ui.define([
                     }
                     
                 }
+
+                if(oSource.getId().includes("SALESTERM")){
+                    var fieldName = this.getView().getModel("headerData").getData().SALESTERM;
+                    if(fieldName !== undefined || fieldName !== "" || fieldName !== null){
+                        if(oSource.getSelectedKey() !== fieldName){
+                            var sModel = oSource.getBindingInfo("value").parts[0].model;
+                            var sPath = oSource.getBindingInfo("value").parts[0].path;
+                            this.getView().getModel(sModel).setProperty("/SALESTERMTEXT", "");
+                        }
+                    }
+                    if(oEvent.getParameters().value === "") {
+                        var sModel = oSource.getBindingInfo("value").parts[0].model;
+                        var sPath = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel(sModel).setProperty("/SALESTERMTEXT", "");
+                    }
+                    
+                }
                 // if(oSource.getId().includes("CUSTSOLDTO")){
                 //     var custGrp = this.getView().byId("CUSTGRP").getSelectedKey();
                 //     if(custGrp === "" || custGrp === null || custGrp === undefined){
@@ -2330,63 +2589,89 @@ sap.ui.define([
                 //     }
                 // }
 
-                if(bProceed){
-                    if(oSource.getSuggestionItems().length > 0){
-                        oSource.getSuggestionItems().forEach(item => {
-                            if (item.getProperty("key") === oSource.getSelectedKey()) {
-                                isInvalid = false;
-                                oSource.setValueState(isInvalid ? "Error" : "None");
-                            }
-                        })
-                    }else{
+                if(oSource.getSuggestionItems().length > 0){
+                    oSource.getSuggestionItems().forEach(item => {
+                        if (item.getProperty("key") === oSource.getSelectedKey() || item.getProperty("key") === oSource.getValue().trim()) {
+                            isInvalid = false;
+                            oSource.setValueState(isInvalid ? "Error" : "None");
+                        }
+                        if(oSource.getValue().trim() === item.getProperty("key")){
+
+                            oSource.setSelectedKey(item.getProperty("key"));
+                            isInvalid = false;
+                            oSource.setValueState(isInvalid ? "Error" : "None");
+                        }
+                    })
+                }else{
+                    isInvalid = true;
+                    oSource.setValueState(isInvalid ? "Error" : "None");
+                    oSource.setValueStateText("Invalid Entry");
+                }
+                var fieldIsMandatory;
+                if(oEvent.getSource().getParent().getId().includes("salDocDetDynTable")){
+                    fieldIsMandatory = oEvent.getSource().getBindingInfo("value").mandatory;
+                }else{
+                    fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
+                }
+                if (fieldIsMandatory) {
+                    if (oEvent.getParameters().value === "") {
                         isInvalid = true;
                         oSource.setValueState(isInvalid ? "Error" : "None");
-                        oSource.setValueStateText("Invalid Entry");
-                    }
-                    
-                    var fieldIsMandatory = oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory] === undefined ? false : oMandatoryModel[oEvent.getSource().getBindingInfo("value").mandatory];
-                    if (fieldIsMandatory) {
-                        if (oEvent.getParameters().value === "") {
-                            isInvalid = true;
-                            oSource.setValueState(isInvalid ? "Error" : "None");
-                            oEvent.getSource().setValueStateText("Required Field");
-                        }
-                    }
-
-                    if (isInvalid) {
-                        this._validationErrors.push(oEvent.getSource().getId());
-                    }
-                    else {
-                        if(oEvent.getSource().getParent().getId().includes("salDocDetDynTable")){
-                            var oInput = oEvent.getSource();
-                            var oCell = oInput.getParent();
-                            // var oRow = oCell.getBindingContext().getObject();
-                            var sPath = oCell.getBindingContext().getPath();
-                            var sRowPath = sPath == undefined ? null :"/results/"+ sPath.split("/")[2];
-
-                            var sCol = oSource.getBindingInfo("value").parts[0].path;
-                            this.getView().getModel("DetDataModel").setProperty(sRowPath + "/" + sCol, oSource.getSelectedKey())
-                        }else{
-                            var sModel = oSource.getBindingInfo("value").parts[0].model;
-                            var sPath = oSource.getBindingInfo("value").parts[0].path;
-                            this.getView().getModel(sModel).setProperty(sPath, oSource.getSelectedKey());
-                            if(oSource.getId().includes("CUSTGRP")){
-                                this.onSuggestionItems_CUSTSOLDTO();
-                            }
-
-                            if(oSource.getId().includes("CUSTSOLDTO")){
-                                this.onSuggestionItems_CUSTBILLTO();
-                            }
-                        }
-                        
-
-                        this._validationErrors.forEach((item, index) => {
-                            if (item === oEvent.getSource().getId()) {
-                                this._validationErrors.splice(index, 1)
-                            }
-                        })
+                        oEvent.getSource().setValueStateText("Required Field");
                     }
                 }
+
+                if (isInvalid) {
+                    this._validationErrors.push(oEvent.getSource().getId());
+                }
+                else {
+                    if(oEvent.getSource().getParent().getId().includes("salDocDetDynTable")){
+                        var oInput = oEvent.getSource();
+                        var oCell = oInput.getParent();
+                        // var oRow = oCell.getBindingContext().getObject();
+                        var sPath = oCell.getBindingContext().getPath();
+                        var sRowPath = sPath == undefined ? null :"/results/"+ sPath.split("/")[2];
+
+                        var sCol = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel("DetDataModel").setProperty(sRowPath + "/" + sCol, oSource.getSelectedKey())
+                    }else{
+                        var sModel = oSource.getBindingInfo("value").parts[0].model;
+                        var sPath = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel(sModel).setProperty(sPath, oSource.getSelectedKey());
+                        if(oSource.getId().includes("CUSTGRP")){
+                            this.onSuggestionItems_CUSTSOLDTO();
+                        }
+
+                        if(oSource.getId().includes("CUSTSOLDTO")){
+                            this.onSuggestionItems_CUSTBILLTO();
+                        }
+
+                        if(oSource.getId().includes("SALESTERM")){
+                            this.setValueToTextField(oSource.getSelectedKey(), "onSuggSalesTerm", "SALESTERMTEXT");
+                        }
+                    }
+                    
+
+                    this._validationErrors.forEach((item, index) => {
+                        if (item === oEvent.getSource().getId()) {
+                            this._validationErrors.splice(index, 1)
+                        }
+                    })
+                }
+            },
+
+            setValueToTextField: async function(sKey, sModel, sFIeldName){
+                var resultData = "";
+                var textField = this.getView().byId(sFIeldName);
+
+                var oSuggestionData = this.getView().getModel(sModel).getData();
+
+                for(var item = 0; item < oSuggestionData.length; item++){
+                    if(oSuggestionData[item].Item === sKey){
+                        resultData = oSuggestionData[item].DESCRIPTION
+                    }
+                }
+                textField.setValue(resultData);
             },
 
             onNumberLiveChange: function (oEvent) {
@@ -2505,21 +2790,41 @@ sap.ui.define([
                                 var aCells = oItem.getCells();
                                 aCells.forEach(function(oCell) {
                                     if (oCell.isA("sap.m.Input")) {
-                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                        if(oCell.getBindingInfo("value").mandatory){
                                             if(oCell.getValue() === ""){
                                                 oCell.setValueState(sap.ui.core.ValueState.Error);
                                                 me._validationErrors.push(oCell.getId());
                                             }else{
-                                                oCell.setValueState(sap.ui.core.ValueState.None);
-                                                me._validationErrors.forEach((item, index) => {
-                                                    if (item === oCell.getId()) {
-                                                        me._validationErrors.splice(index, 1)
-                                                    }
-                                                })
+                                                if(oCell.getSuggestionItems().length > 0){
+                                                    oCell.getSuggestionItems().forEach(item => {
+                                                        if (item.getProperty("key") === oCell.getSelectedKey() || item.getProperty("key") === oCell.getValue().trim()) {
+                                                            oCell.setValueState("None");
+                                                            me._validationErrors.forEach((item, index) => {
+                                                                if (item === oCell.getId()) {
+                                                                    me._validationErrors.splice(index, 1)
+                                                                }
+                                                            })
+                                                        }
+                                                    })
+                                                }else{
+                                                    oCell.setValueState("None");
+                                                    me._validationErrors.forEach((item, index) => {
+                                                        if (item === oCell.getId()) {
+                                                            me._validationErrors.splice(index, 1)
+                                                        }
+                                                    })
+                                                }
+
+                                                // oCell.setValueState(sap.ui.core.ValueState.None);
+                                                // me._validationErrors.forEach((item, index) => {
+                                                //     if (item === oCell.getId()) {
+                                                //         me._validationErrors.splice(index, 1)
+                                                //     }
+                                                // })
                                             }
                                         }
                                     }else if (oCell.isA("sap.m.DatePicker")) {
-                                        if(oCell.getBindingInfo("value").mandatory === "true"){
+                                        if(oCell.getBindingInfo("value").mandatory){
                                             if(oCell.getValue() === ""){
                                                 oCell.setValueState(sap.ui.core.ValueState.Error);
                                                 me._validationErrors.push(oCell.getId());
@@ -2698,6 +3003,7 @@ sap.ui.define([
                         this.byId("btnDetAdd").setVisible(true);
                         this.byId("btnDetEdit").setVisible(true);
                         this.byId("btnDetDelete").setVisible(true);
+                        this.byId("btnDetDeleteEditRow").setVisible(false);
                         this.byId("btnDetSave").setVisible(false);
                         this.byId("btnDetCancel").setVisible(false);
                         this.byId("btnDetTabLayout").setVisible(true);
@@ -2758,6 +3064,22 @@ sap.ui.define([
                         sap.m.MessageBox.error(err);
                     }
                 });
+            },
+
+            onTableResize: function(oEvent){
+                var vFullScreen = oEvent.getSource().data("Max") === "1" ? true : false;
+                var vTableTyp = oEvent.getSource().data("Type");
+                if(vTableTyp === "Dtl"){
+                    if(vFullScreen){
+                        this.byId("headerPanel").setVisible(false);
+                        this.byId("btnDetBtnFullScreen").setVisible(false);
+                        this.byId("btnDetBtnExitFullScreen").setVisible(true);
+                    }else{
+                        this.byId("headerPanel").setVisible(true);
+                        this.byId("btnDetBtnFullScreen").setVisible(true);
+                        this.byId("btnDetBtnExitFullScreen").setVisible(false);
+                    }
+                }
             },
 
             onSalDocDetDelete: async function () {
@@ -2998,6 +3320,44 @@ sap.ui.define([
                 }
             },
 
+            onSalDocDetDeleteEditRow: async function(){
+                var oTable;
+                var aSelIndices;
+
+                var oTmpSelectedIndices = [];
+                var aDataRes = [];
+
+                var aData;
+
+                oTable = this.byId("salDocDetDynTable");
+                aSelIndices = oTable.getSelectedIndices();
+                oTmpSelectedIndices = [];
+                aData = this.getView().getModel("DetDataModel").getData().results;
+
+                if(aSelIndices.length > 0) {
+                    aSelIndices.forEach(item => {
+                        oTmpSelectedIndices.push(oTable.getBinding("rows").aIndices[item])
+                    });
+                    aSelIndices = oTmpSelectedIndices;
+
+                    aSelIndices.forEach((item, index) => {
+                        delete aData[item];
+                    })
+
+                    aData.forEach(item => {
+                        aDataRes.push(item)
+                    });
+
+                    this._onBeforeDetailData = aDataRes;
+                    this.getView().getModel("DetDataModel").setProperty("/results", aDataRes);
+                    this.setTableData();
+
+                    Common.openLoadingDialog(this);
+                    await this.onRowEditSalDoc('salDocDetDynTable', 'DetDynColumns');
+                    Common.closeLoadingDialog(this);
+                }
+            },
+
             onSalDocDetCancelEdit: async function () {
                 var me = this;
                 if (this._isEdited) {
@@ -3006,6 +3366,7 @@ sap.ui.define([
                     this.byId("btnDetAdd").setVisible(true);
                     this.byId("btnDetEdit").setVisible(true);
                     this.byId("btnDetDelete").setVisible(true);
+                    this.byId("btnDetDeleteEditRow").setVisible(false);
                     this.byId("btnDetSave").setVisible(false);
                     this.byId("btnDetCancel").setVisible(false);
                     // this.byId("btnDetCreateStyle").setVisible(true);
@@ -3042,6 +3403,48 @@ sap.ui.define([
                 oIconTabBar.getItems().filter(item => item.getProperty("key"))
                     .forEach(item => item.setProperty("enabled", true));
 
-            }
+            },
+
+            //******************************************* */
+            // Column Filtering
+            //******************************************* */
+
+            onColFilterClear: function(oEvent) {
+                TableFilter.onColFilterClear(oEvent, this);
+            },
+
+            onColFilterCancel: function(oEvent) {
+                TableFilter.onColFilterCancel(oEvent, this);
+            },
+
+            onColFilterConfirm: function(oEvent) {
+                TableFilter.onColFilterConfirm(oEvent, this);
+            },
+
+            onFilterItemPress: function(oEvent) {
+                TableFilter.onFilterItemPress(oEvent, this);
+            },
+
+            onFilterValuesSelectionChange: function(oEvent) {
+                TableFilter.onFilterValuesSelectionChange(oEvent, this);
+            },
+
+            onSearchFilterValue: function(oEvent) {
+                TableFilter.onSearchFilterValue(oEvent, this);
+            },
+
+            onCustomColFilterChange: function(oEvent) {
+                TableFilter.onCustomColFilterChange(oEvent, this);
+            },
+
+            onSetUseColFilter: function(oEvent) {
+                TableFilter.onSetUseColFilter(oEvent, this);
+            },
+
+            onRemoveColFilter: function(oEvent) {
+                TableFilter.onRemoveColFilter(oEvent, this);
+            },
+
+            pad: Common.pad
         });
     });

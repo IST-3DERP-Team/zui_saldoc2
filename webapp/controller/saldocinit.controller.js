@@ -494,7 +494,7 @@ sap.ui.define([
                                 //     var item = oData.results[x];
                                 // }
                                 oData.results.forEach(async item => {
-
+                                    item.STATUS = item.STATUS === "New" ? "NEW" : item.STATUS;
                                     item.DLVDT = dateFormat.format(item.DLVDT);
                                     item.DOCDT = dateFormat.format(item.DOCDT);
                                     item.CPODT = dateFormat.format(item.CPODT);
@@ -698,54 +698,69 @@ sap.ui.define([
                     });
                 });
 
-                //sorting with Date Sort
+                //date/number sorting
                 oTable.attachSort(function(oEvent) {
-            
                     var sPath = oEvent.getParameter("column").getSortProperty();
                     var bDescending = false;
                     
+                    //remove sort icon of currently sorted column
+                    oTable.getColumns().forEach(col => {
+                        if (col.getSorted()) {
+                            col.setSorted(false);
+                        }
+                    })
+
                     oEvent.getParameter("column").setSorted(true); //sort icon initiator
-                    if (oEvent.getParameter("sortOrder") == "Descending") {
+
+                    if (oEvent.getParameter("sortOrder") === "Descending") {
                         bDescending = true;
                         oEvent.getParameter("column").setSortOrder("Descending") //sort icon Descending
-                    }else{
+                    }
+                    else {
                         oEvent.getParameter("column").setSortOrder("Ascending") //sort icon Ascending
                     }
 
                     var oSorter = new sap.ui.model.Sorter(sPath, bDescending ); //sorter(columnData, If Ascending(false) or Descending(True))
-                    
-                    var columnType = oEvent.getParameter("column").getTemplate().getBindingInfo("text") === undefined ? "" : oEvent.getParameter("column").getTemplate().getBindingInfo("text").columnType;
+                    var oColumn = oColumnsData.filter(fItem => fItem.ColumnName === oEvent.getParameter("column").getProperty("sortProperty"));
+                    var columnType = oColumn[0].DataType;
+
                     if (columnType === "DATETIME") {
                         oSorter.fnCompare = function(a, b) {
-                        
                             // parse to Date object
                             var aDate = new Date(a);
                             var bDate = new Date(b);
-                            
-                            if (bDate == null) {
-                                return -1;
-                            }
-                            if (aDate == null) {
-                                return 1;
-                            }
-                            if (aDate < bDate) {
-                                return -1;
-                            }
-                            if (aDate > bDate) {
-                                return 1;
-                            }
+
+                            if (bDate === null) { return -1; }
+                            if (aDate === null) { return 1; }
+                            if (aDate < bDate) { return -1; }
+                            if (aDate > bDate) { return 1; }
+
                             return 0;
                         };
-                    } 
+                    }
+                    else if (columnType === "NUMBER") {
+                        oSorter.fnCompare = function(a, b) {
+                            // parse to Date object
+                            var aNumber = +a;
+                            var bNumber = +b;
+
+                            if (bNumber === null) { return -1; }
+                            if (aNumber === null) { return 1; }
+                            if (aNumber < bNumber) { return -1; }
+                            if (aNumber > bNumber) { return 1; }
+
+                            return 0;
+                        };
+                    }
                     
                     oTable.getBinding('rows').sort(oSorter);
                     // prevent internal sorting by table
                     oEvent.preventDefault();
                 });
                 
+                //bind the data to the table
                 oTable.bindRows("/rows");
                 TableFilter.updateColumnMenu(table, this);
-                //bind the data to the table
             },
 
             columnTemplate: function (sColumnId, sColumnType) {
@@ -755,7 +770,7 @@ sap.ui.define([
                 if (sColumnId === "STATUS") { //display infolabel for Status Code
                     oColumnTemplate = new sap.tnt.InfoLabel({
                         text: "{" + sColumnId + "}",
-                        colorScheme: "{= ${" + sColumnId + "} === 'New' ? 8 : ${" + sColumnId + "} === 'CRT' ? 3 : 1}"
+                        colorScheme: "{= ${" + sColumnId + "} === 'New' ? 8 : ${" + sColumnId + "} === 'CRT' ? 3 : 3}"
                     })
                 } else if (sColumnId === "STATUSCD") { //display infolabel for Status Code
                     oColumnTemplate = new sap.tnt.InfoLabel({
@@ -1758,6 +1773,7 @@ sap.ui.define([
                 this._oLock = [];
             },
 
+            //Handle Value Help Not Used
             handleValueHelp: async function (oEvent) {
                 var me = this;
                 var vSBU = this._sbu;
@@ -2256,6 +2272,7 @@ sap.ui.define([
 
                 oEvent.getSource().getBinding("items").filter([oFilter]);
             },
+            //Handle Value Help Not Used
 
             onTableResize: function(oEvent){
                 var event = oEvent.getSource();
@@ -2271,11 +2288,11 @@ sap.ui.define([
                 }
             },
 
-            onFilter: async function(oEvent){
-                var oTable = oEvent.getSource();
+            // onFilter: async function(oEvent){
+            //     var oTable = oEvent.getSource();
 
-                this.setActiveRowHighlight(oTable);
-            },
+            //     this.setActiveRowHighlight(oTable);
+            // },
 
             setActiveRowHighlight(arg) {
                 var oTable = this.byId(arg);

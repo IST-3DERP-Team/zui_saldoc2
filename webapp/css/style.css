@@ -64,3 +64,8 @@
     color: #c75858 !important;
 
 }
+
+/* for Standards Valuehelp */
+.sapMDialogScroll {
+    height: 98%;
+}
