@@ -140,6 +140,7 @@ sap.ui.define([
             _routePatternMatched: async function (oEvent) {
                 Common.openLoadingDialog(that);
                 var me = this;
+                this.initButtons();
 
                 this._salesDocNo = oEvent.getParameter("arguments").salesdocno; //get Style from route pattern
                 this._sbu = oEvent.getParameter("arguments").sbu; //get SBU from route pattern
@@ -226,6 +227,29 @@ sap.ui.define([
                 await this.getColumnProp();
                 Common.closeLoadingDialog(that);
             },
+
+            initButtons: function(){
+                this.getView().getModel("ui").setProperty("/editMode", 'READ');
+                //Header
+                this.byId("TB1").setEnabled(true);
+                this.byId("btnHdrEdit").setVisible(true);
+                this.byId("btnHdrDelete").setVisible(true);
+                this.byId("btnHdrClose").setVisible(true);
+                this.byId("btnHdrSave").setVisible(false);
+                this.byId("btnHdrCancel").setVisible(false);
+
+                //Details
+                this.byId("btnDetAdd").setVisible(true);
+                this.byId("btnDetEdit").setVisible(true);
+                this.byId("btnDetDelete").setVisible(true);
+                this.byId("btnDetDeleteEditRow").setVisible(false);
+                this.byId("btnDetSave").setVisible(false);
+                this.byId("btnDetCancel").setVisible(false);
+                this.byId("btnDetTabLayout").setVisible(true);
+                this.byId("btnDetBtnFullScreen").setVisible(true);
+                this.byId("btnDetBtnExitFullScreen").setVisible(false);
+            },
+
 
             validateIfSoldCustAndBillCustHasValue: async function(){
                 var headerData = this.getView().getModel("headerData").getData();
@@ -1861,7 +1885,7 @@ sap.ui.define([
                     }
 
                 }
-
+                
                 if (this._validationErrors.length > 0) {
                     // MessageBox.error(this.getView().getModel("captionMsg").getData()["INFO_FILL_REQUIRED_FIELDS"]);
                     MessageBox.error("Please Fill Required Fields!");
@@ -2822,6 +2846,26 @@ sap.ui.define([
                                                 //     }
                                                 // })
                                             }
+                                        }else{
+                                            if(oCell.getSuggestionItems().length > 0){
+                                                oCell.getSuggestionItems().forEach(item => {
+                                                    if (item.getProperty("key") === oCell.getSelectedKey() || item.getProperty("key") === oCell.getValue().trim()) {
+                                                        oCell.setValueState("None");
+                                                        me._validationErrors.forEach((item, index) => {
+                                                            if (item === oCell.getId()) {
+                                                                me._validationErrors.splice(index, 1)
+                                                            }
+                                                        })
+                                                    }
+                                                })
+                                            }else{
+                                                oCell.setValueState("None");
+                                                me._validationErrors.forEach((item, index) => {
+                                                    if (item === oCell.getId()) {
+                                                        me._validationErrors.splice(index, 1)
+                                                    }
+                                                })
+                                            }
                                         }
                                     }else if (oCell.isA("sap.m.DatePicker")) {
                                         if(oCell.getBindingInfo("value").mandatory){
@@ -2848,7 +2892,7 @@ sap.ui.define([
                     MessageBox.error("Please Fill Required Fields!");
                     bProceed = false;
                 }
-
+                
                 if (bProceed) {
                     if (type === "UPDATE") {
                         oSelectedIndices.forEach(async (item, index) => {

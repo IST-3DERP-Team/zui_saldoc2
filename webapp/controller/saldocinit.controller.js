@@ -10,12 +10,16 @@ sap.ui.define([
     "../control/TableEvents",
     "sap/ui/core/routing/HashChanger",
     "../js/TableFilter",
+    "../js/TableValueHelp",
+    'sap/m/SearchField',
+    'sap/ui/model/type/String',
+    "sap/m/Token",
     // "../control/DynamicTable"
 ],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, FilterOperator, Spreadsheet, control, HashChanger, TableFilter) {
+    function (Controller, Filter, Common, Utils, JSONModel, MessageBox, FilterOperator, Spreadsheet, control, HashChanger, TableFilter, TableValueHelp, SearchField, typeString, Token) {
         "use strict";
 
         var that;
@@ -29,7 +33,7 @@ sap.ui.define([
         var TZOffsetMs = new Date(0).getTimezoneOffset() * 60 * 1000;
 
         return Controller.extend("zuisaldoc2.zuisaldoc2.controller.saldocinit", {
-            onInit: function (oEvent) {
+            onInit: async function (oEvent) {
                 that = this;
 
                 //get current userid
@@ -83,13 +87,13 @@ sap.ui.define([
                 this.getAppAction();
 
                 this.callCaptionsAPI();
-
+                this.getView().setModel(new JSONModel(this.getOwnerComponent().getModel("CAPTION_MSGS_MODEL").getData().text), "ddtext");
+                
                 this._Model = this.getOwnerComponent().getModel();
                 this.setSmartFilterModel();
                 // this.onSearch();
 
                 this.byId("_IDGenOverflowToolbars1").setEnabled(false);
-
 
                 this._isEdited = false;
                 this._validationErrors = [];
@@ -98,6 +102,12 @@ sap.ui.define([
                 this._aColumns = {};
                 this._tableFilter = TableFilter;
                 this._colFilters = {};
+
+                this._tableValueHelp = TableValueHelp; 
+                this._tblColumns = {}; 
+
+                //OnRow Edit Increment Count
+                this._tblOnRowEditincCount = 0;
 
                 // if (this.getView().getModel("ui").getProperty("/DisplayAction") === "display") {
                 //     var btnAdd = this.getView().byId("btnAddSalDoc");
@@ -110,6 +120,202 @@ sap.ui.define([
                 //         btnMenu.setVisible(false);
                 //     }
                 // }
+                this._oMultiInputSeasonCd = this.getView().byId("multiInputSEASONCD");
+                this._oMultiInputSeasonCd.addValidator(this._onMultiInputValidate.bind(this));
+            },
+
+            onCustomSmartFilterValueHelp: function(oEvent){
+                var oSource = oEvent.getSource();
+                var sModel = oSource.mBindingInfos.suggestionRows.model;
+                var oCustomSmartFilterModel;
+                var oSmartField = {};
+
+                if (sModel == "seasonCDSHSource") {
+                    oSmartField = {
+                        idLabel: "Season",
+                        idName: "SEASONCD"
+                    }
+
+                    this.oColModel = new JSONModel({
+                        "cols": [
+                            {
+                                "label": "Company",
+                                "template": "SEASONCD",
+                                "width": "10rem",
+                                "sortProperty": "SEASONCD"
+                            },
+                            {
+                                "label": "Description",
+                                "template": "DESCRIPTION",
+                                "sortProperty": "DESCRIPTION"
+                            },
+                        ]
+                    });
+
+                    oCustomSmartFilterModel = new JSONModel({
+                        "title": "Season",
+                        "key": "SEASONCD"
+                    })
+                }
+
+                var aCols = this.oColModel.getData().cols;
+                this._oBasicSearchField = new SearchField({
+                    showSearchButton: false
+                });
+
+                this._oCustomSmartFilterValueHelpDialog = sap.ui.xmlfragment("zuisaldoc2.zuisaldoc2..view.fragments.valuehelp.SmartFilterValueHelpDialog", this);
+                this.getView().addDependent(this._oCustomSmartFilterValueHelpDialog);
+
+                this._oCustomSmartFilterValueHelpDialog.setModel(oCustomSmartFilterModel);
+
+                this._oCustomSmartFilterValueHelpDialog.setRangeKeyFields([{
+                    label: oSmartField.idLabel,
+                    key: oSmartField.idName,
+                    type: "string",
+                    typeInstance: new typeString({}, {
+                        maxLength: 4
+                    })
+                }]);
+
+                this._oCustomSmartFilterValueHelpDialog.getTableAsync().then(function (oTable) {
+                    oTable.setModel(this.getView().getModel(sModel));
+                    oTable.setModel(this.oColModel, "columns");
+                    if (oTable.bindRows) {
+                        oTable.bindAggregation("rows", "/results");
+                    }
+    
+                    if (oTable.bindItems) {
+                        oTable.bindAggregation("items", "/results", function () {
+                            return new ColumnListItem({
+                                cells: aCols.map(function (column) {
+                                    return new Label({ text: "{" + column.template + "}" });
+                                })
+                            });
+                        });
+                    }
+    
+                    this._oCustomSmartFilterValueHelpDialog.update();
+                }.bind(this));
+
+                if (sModel == "seasonCDSHSource") this._oCustomSmartFilterValueHelpDialog.setTokens(this._oMultiInputSeasonCd.getTokens());
+                this._oCustomSmartFilterValueHelpDialog.open();
+            },
+
+            onCustomSmartFilterValueHelpOkPress: function (oEvent) {
+                var me = this;
+                var aTokens = oEvent.getParameter("tokens");
+                var oSource = oEvent.getSource();
+                var sKey = Object.values(oSource.oModels)[0].oData.key;
+
+                aTokens.forEach(item => {
+                    item.mProperties.text = item.mProperties.key;
+                })
+
+                if (sKey == "SEASONCD") {
+                    this._oMultiInputSeasonCd.setTokens(aTokens);
+                }
+                this._oCustomSmartFilterValueHelpDialog.close();
+            },
+
+            onCustomSmartFilterValueHelpCancelPress: function () {
+                this._oCustomSmartFilterValueHelpDialog.close();
+            },
+    
+            onCustomSmartFilterValueHelpAfterClose: function () {
+                this._oCustomSmartFilterValueHelpDialog.destroy();
+            },
+
+            onFilterBarSearch: function (oEvent) {
+                var sSearchQuery = this._oBasicSearchField.getValue(),
+                    aSelectionSet = oEvent.getParameter("selectionSet");
+                
+                var aFilters = aSelectionSet.reduce(function (aResult, oControl) {
+    
+                    var sKey = that._oCustomSmartFilterValueHelpDialog.getModel().oData.key;
+                    if (oControl.getValue()) {
+                        aResult.push(new Filter({
+                            path: sKey, //oControl.getName(),
+                            operator: FilterOperator.Contains,
+                            value1: oControl.getValue()
+                        }));
+                    }
+    
+                    return aResult;
+                }, []);
+    
+                this._filterTable(new Filter({
+                    filters: aFilters,
+                    and: true
+                }));
+            },
+            _filterTable: function (oFilter) {
+                var oValueHelpDialog = this._oCustomSmartFilterValueHelpDialog;
+    
+                oValueHelpDialog.getTableAsync().then(function (oTable) {
+                    if (oTable.bindRows) {
+                        oTable.getBinding("rows").filter(oFilter);
+                    }
+    
+                    if (oTable.bindItems) {
+                        oTable.getBinding("items").filter(oFilter);
+                    }
+    
+                    oValueHelpDialog.update();
+                });
+            },
+
+            _onMultiInputValidate: function(oArgs){
+                var oSmartField = {};
+
+                if (oArgs.suggestionObject.sId.includes("multiInputSEASONCD")) {
+                    oSmartField.model = "seasonCDSHSource";
+                    oSmartField.id = "SEASONCD";
+                    oSmartField.desc = "DESCRIPTION";
+                }
+
+                var aToken;
+
+                if (oSmartField.model == "seasonCDSHSource") aToken = this._oMultiInputSeasonCd.getTokens();
+
+                if (oArgs.suggestionObject) {
+                    var oObject = oArgs.suggestionObject.getBindingContext(oSmartField.model).getObject(),
+                        oToken = new Token();
+
+                    oToken.setKey(oObject[oSmartField.id]);
+                    //oToken.setText(oObject[oSmartField.desc] + " (" + oObject[oSmartField.id] + ")");
+                    oToken.setText(oObject[oSmartField.id]);
+                    aToken.push(oToken)
+
+                    if (oSmartField.model == "seasonCDSHSource") {
+                        this._oMultiInputSeasonCd.setTokens(aToken);
+                        this._oMultiInputSeasonCd.setValueState("None");
+                    }
+                }else if (oArgs.text !== "") {
+                    if (oSmartField.model == "seasonCDSHSource") {
+                        this._oMultiInputSeasonCd.setValueState("Error");
+                    }
+                }
+
+                return null;
+            },
+
+            onCustomSmartFilterValueHelpChange: function(oEvent) {
+                var me = this;
+                var oSource = oEvent.getSource();
+                if (oSource.sId.includes("multiInputSEASONCD")) {
+                    if (oEvent.getParameter("value") === "") this._oMultiInputSeasonCd.setValueState("None");
+                }
+            },
+
+            onCustomSmartFilterValueHelpTokenUpdate(oEvent) {
+                var me = this;
+                var oSource = oEvent.getSource();
+                var oParameter = oEvent.getParameters();
+
+                if (oParameter.type == "removed") {
+                    if (oSource.sId.includes("multiInputSEASONCD")) {
+                    }
+                }
             },
 
             getAppAction: async function () {
@@ -299,14 +505,23 @@ sap.ui.define([
 
             onSearch: async function () {
                 Common.openLoadingDialog(this);
-                var me = this;
                 // this._sbu = this.getView().byId("smartFilterBar").getFilterData().SBU;
                 this._sbu = this.getView().byId("cboxSBU").getSelectedKey();
 
                 this.getDynamicTableColumns('SALDOCINIT', 'ZDV_3DERP_SALDOC');
                 this.getStatistics("/SalDocStatSet"); //style statistics
                 this.byId("_IDGenOverflowToolbars1").setEnabled(true);
+                await this.getSeasonCdSH();
+                await this.onSuggestionItems();
+                await this.getColumnProp();
+                Common.closeLoadingDialog(this);
 
+
+                // oTable.placeAt('scTable');
+            },
+
+            getSeasonCdSH: async function(){
+                var me = this;
                 var oJSONModel = new JSONModel();
                 var iCounter = 0;
                 var itemResult = [];
@@ -322,8 +537,8 @@ sap.ui.define([
                                     itemResult.push(oData.results[item])
                                 }
                                 if (iCounter === oData.results.length) {
-                                    oJSONModel.setData(itemResult)
-                                    me.getView().setModel(oJSONModel, "seasonSource");
+                                    oJSONModel.setData({results: itemResult})
+                                    me.getView().setModel(oJSONModel, "seasonCDSHSource");
                                     resolve();
                                 }
                             }
@@ -331,10 +546,6 @@ sap.ui.define([
                         error: function (err) { }
                     });
                 })
-                Common.closeLoadingDialog(this);
-
-
-                // oTable.placeAt('scTable');
             },
 
             getDynamicTableColumns: async function (model, dataSource) {
@@ -436,18 +647,6 @@ sap.ui.define([
 
                 //get dynamic data
                 var oJSONDataModel = new sap.ui.model.json.JSONModel();
-                // oModel.setHeaders({
-                //     sbu: 'VER',
-                //     salesgrp: 'POL',
-                //     custgrp: '6A',
-                //     season: 'SP21',
-                //     prodtyp: '1000',
-                //     type: 'STYLINIT'
-                // });
-                // var aFilters1 = this.getView().byId("smartFilterBar").getFilters();
-
-                var aFilters = this.getView().byId("smartFilterBar").getFilters();
-                var aFiltersObj = [];
 
                 var oColumnsModel;
                 var oData;
@@ -456,39 +655,62 @@ sap.ui.define([
                 var oColumnsData;
                 var oData;
 
-                aFiltersObj.push(aFilters);
-                aFiltersObj = aFiltersObj[0];
+                var aFilters = this.getView().byId("smartFilterBar").getFilters();
 
                 if (this.getView().byId("smartFilterBar")) {
-                    var oCtrlSeasonCd = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
-                    if (oCtrlSeasonCd) {
-                        if (oCtrlSeasonCd.getSelectedKey() !== "") {
-                            if (aFilters.length === 0) {
-                                aFiltersObj.push({
-                                    aFilters: [{
-                                        sPath: "SEASONCD",
-                                        sOperator: "EQ",
-                                        oValue1: oCtrlSeasonCd.getSelectedKey(),
-                                        _bMultiFilter: false
-                                    }]
-                                })
-                            } else {
-                                aFiltersObj[0].aFilters[parseInt(Object.keys(aFiltersObj[0].aFilters).pop()) + 1] = ({
-                                    sPath: "SEASONCD",
-                                    sOperator: "EQ",
-                                    oValue1: oCtrlSeasonCd.getSelectedKey(),
-                                    _bMultiFilter: false
-                                })
-                            }
+                    var oCtrl = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
+    
+                    if (oCtrl) {
+                        var aCustomFilter = [];
+    
+                        if (oCtrl.getTokens().length === 1) {
+                            oCtrl.getTokens().map(function(oToken) {
+                                aFilters.push(new Filter("SEASONCD", FilterOperator.EQ, oToken.getKey()))
+                            })
+                        }
+                        else if (oCtrl.getTokens().length > 1) {
+                            oCtrl.getTokens().map(function(oToken) {
+                                aCustomFilter.push(new Filter("SEASONCD", FilterOperator.EQ, oToken.getKey()))
+                            })
+    
+                            aFilters.push(new Filter(aCustomFilter));
                         }
                     }
                 }
+
+                // aFiltersObj.push(aFilters);
+                // aFiltersObj = aFiltersObj[0];
+
+                // if (this.getView().byId("smartFilterBar")) {
+                //     var oCtrlSeasonCd = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
+                //     if (oCtrlSeasonCd) {
+                //         if (oCtrlSeasonCd.getSelectedKey() !== "") {
+                //             if (aFilters.length === 0) {
+                //                 aFiltersObj.push({
+                //                     aFilters: [{
+                //                         sPath: "SEASONCD",
+                //                         sOperator: "EQ",
+                //                         oValue1: oCtrlSeasonCd.getSelectedKey(),
+                //                         _bMultiFilter: false
+                //                     }]
+                //                 })
+                //             } else {
+                //                 aFiltersObj[0].aFilters[parseInt(Object.keys(aFiltersObj[0].aFilters).pop()) + 1] = ({
+                //                     sPath: "SEASONCD",
+                //                     sOperator: "EQ",
+                //                     oValue1: oCtrlSeasonCd.getSelectedKey(),
+                //                     _bMultiFilter: false
+                //                 })
+                //             }
+                //         }
+                //     }
+                // }
 
                 // this.addDateFilters(aFilters); //date not automatically added to filters
                 if (model === 'SALDOCINIT') {
                     await new Promise((resolve, reject)=>{
                         oModel.read("/SALDOCHDRINITSet", {
-                            filters: aFiltersObj,
+                            filters: aFilters,
                             success: function (oData, oResponse) {
                                 // for(var x = 0; x < oData.results.length; x++){
                                 //     var item = oData.results[x];
@@ -893,8 +1115,6 @@ sap.ui.define([
                         await this.lock(this);
                 }
 
-                console.log(this.getView().getModel("ui").getProperty("/LockType"));
-
                 if (this.getView().getModel("ui").getProperty("/LockType") !== "E") {
                     this._router.navTo("RouteSalesDocDetail", {
                         salesdocno: salesDocNo,
@@ -1133,6 +1353,7 @@ sap.ui.define([
 
                         })
                     })
+                    this.getView().byId("vpoAddPRToPOSaveBtn").setVisible(true);
                     crtStyleIOJSON.setData(crtStyleIOObj);
                     this.onCreateStyleIO.setModel(crtStyleIOJSON);
                     this.getView().addDependent(this.onCreateStyleIO);
@@ -1313,7 +1534,7 @@ sap.ui.define([
                                     CUSTSOLDTO: aData.at(item).CUSTSOLDTO === undefined ? "" : aData.at(item).CUSTSOLDTO,
                                     UOM: aData.at(item).UOM === undefined ? "" : aData.at(item).UOM,
                                     STYLECAT: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLECAT,
-                                    STYLENO: styleNo,
+                                    STYLENO: aData.at(item).STYLECAT === undefined ? "" : aData.at(item).STYLENO,
                                     VERNO: aData.at(item).VERNO === "" ? "1" : aData.at(item).VERNO,
                                     IONO: ioNo,
                                     IOTYPE: aData.at(item).IOTYPE === undefined ? "" : aData.at(item).IOTYPE,
@@ -1335,7 +1556,7 @@ sap.ui.define([
                             oParam['CrtIOStylData'] = oParamData;
                             oParam['CrtIOStylRetMsg'] = []
                         }
-                        
+
                         _promiseResult = new Promise((resolve, reject) => {
                             oModel.create("/CrtIOStylHdrSet", oParam, {
                                 method: "POST",
@@ -1403,6 +1624,7 @@ sap.ui.define([
 
                                     await me.setTableData(columnData.results, oRowData, 'createStyleIOTbl');
                                     await me.onRowEditSalDoc('createStyleIOTbl', columnData.results);
+                                    me.getView().byId("vpoAddPRToPOSaveBtn").setVisible(false);
                                     me.setChangeStatus(false);
 
                                     if (oData.CrtIOStylData.results !== undefined) {
@@ -1424,6 +1646,7 @@ sap.ui.define([
                             })
                         })
                         await _promiseResult;
+                        me.setChangeStatus(false);
                     } else {
                         MessageBox.information("No Data to Process!");
                     }
@@ -1454,6 +1677,8 @@ sap.ui.define([
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
+                                me._tblOnRowEditincCount++;
+                                var sColumnName = ci.ColumnName;
                                 var sColumnType = ci.DataType;
                                 if (ci.Editable) {
                                     if (ci.ColumnName === "UNLIMITED") {
@@ -1463,10 +1688,9 @@ sap.ui.define([
                                             // liveChange: this.onInputLiveChange.bind(this)
                                         }));
                                     } else if (sColumnType === "STRING") {
-                                        var sColumnName = ci.ColumnName;
                                         if (sColumnName === "STYLECD" || sColumnName === "STYLEDESC1") {
                                             col.setTemplate(new sap.m.Input({
-                                                // id: "ipt" + ci.name,
+                                                id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                                 type: "Text",
                                                 value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
                                                 maxLength: +ci.Length,
@@ -1476,9 +1700,39 @@ sap.ui.define([
                                         }else{
                                             
                                             col.setTemplate(new sap.m.Input({
-                                                // id: "ipt" + ci.name,
+                                                // // id: "ipt" + ci.name,
+                                                // type: "Text",
+                                                // value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                                // enabled: {
+                                                //     path: "SALESDOCNO",
+                                                //     formatter: function (SALESDOCNO) {
+                                                //         var result;
+                                                //         tblData.forEach(async (data) => {
+                                                //             if (data.LOGDESCSTAT === "S") {
+                                                //                 result = false;
+                                                //             }
+                                                //         });
+                                                //         return result;
+                                                //     }
+
+                                                // },
+                                                // maxLength: +ci.Length,
+                                                // showValueHelp: true,
+                                                // valueHelpRequest: this.handleValueHelp.bind(this),
+                                                // liveChange: this.onInputLiveChange.bind(this)
+                                                id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                                 type: "Text",
-                                                value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                                value: {
+                                                    parts: [
+                                                        { path: ci.ColumnName }, 
+                                                        { value: "onSugg" + ci.ColumnName }, 
+                                                        { value: 'Item' }, 
+                                                        { value: 'Desc' }, 
+                                                        { value: 'Other' }
+                                                    ],
+                                                    formatter: this.formatValueHelp.bind(this),
+                                                    mandatory: ci.Mandatory
+                                                },
                                                 enabled: {
                                                     path: "SALESDOCNO",
                                                     formatter: function (SALESDOCNO) {
@@ -1492,15 +1746,27 @@ sap.ui.define([
                                                     }
 
                                                 },
-                                                maxLength: +ci.Length,
+                                                textFormatMode: 'Key',
                                                 showValueHelp: true,
-                                                valueHelpRequest: this.handleValueHelp.bind(this),
-                                                liveChange: this.onInputLiveChange.bind(this)
+                                                valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),//this.handleValueHelp.bind(this),
+                                                showSuggestion: true,
+                                                suggestionItems: {
+                                                    path: 'onSugg' + ci.ColumnName + '>/',
+                                                    length: 10000,
+                                                    template: new sap.ui.core.ListItem({
+                                                        key: '{onSugg' + ci.ColumnName + '>Item}',
+                                                        text: '{onSugg' + ci.ColumnName + '>Desc}',
+                                                        additionalText: '{onSugg' + ci.ColumnName + '>Item}'
+                                                    }),
+                                                    templateShareable: false
+                                                },
+                                                maxSuggestionWidth: "160px",
+                                                change: this.onInputLiveChangeSuggestion.bind(this)
                                             }));
                                         }
                                     } else if (sColumnType === "DATETIME") {
                                         col.setTemplate(new sap.m.DatePicker({
-                                            // id: "ipt" + ci.name,
+                                            id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                             value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
                                             enabled: {
                                                 path: "SALESDOCNO",
@@ -1522,7 +1788,7 @@ sap.ui.define([
                                         }));
                                     } else if (sColumnType === "NUMBER") {
                                         col.setTemplate(new sap.m.Input({
-                                            // id: "ipt" + ci.name,
+                                            id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                             type: sap.m.InputType.Number,
                                             value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
 
@@ -1546,6 +1812,8 @@ sap.ui.define([
                     oTable.getColumns().forEach((col, idx) => {
                         oColumnsData.filter(item => item.ColumnName === col.sId.split("-")[1])
                             .forEach(ci => {
+                                me._tblOnRowEditincCount++;
+                                var sColumnName = ci.ColumnName;
                                 var sColumnType = ci.DataType;
                                 if (ci.Editable) {
                                     if (ci.ColumnName === "UNLIMITED") {
@@ -1556,17 +1824,46 @@ sap.ui.define([
                                         }));
                                     } else if (sColumnType === "STRING") {
                                         col.setTemplate(new sap.m.Input({
-                                            // id: "ipt" + ci.name,
+                                            // // id: "ipt" + ci.name,
+                                            // type: "Text",
+                                            // value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
+                                            // maxLength: +ci.Length,
+                                            // showValueHelp: true,
+                                            // valueHelpRequest: this.handleValueHelp.bind(this),
+                                            // liveChange: this.onInputLiveChange.bind(this)
+                                            id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                             type: "Text",
-                                            value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
-                                            maxLength: +ci.Length,
+                                            value: {
+                                                parts: [
+                                                    { path: ci.ColumnName }, 
+                                                    { value: "onSugg" + ci.ColumnName }, 
+                                                    { value: 'Item' }, 
+                                                    { value: 'Desc' }, 
+                                                    { value: 'Other' }
+                                                ],
+                                                formatter: this.formatValueHelp.bind(this),
+                                                mandatory: ci.Mandatory
+                                            },
+                                            textFormatMode: 'Key',
                                             showValueHelp: true,
-                                            valueHelpRequest: this.handleValueHelp.bind(this),
-                                            liveChange: this.onInputLiveChange.bind(this)
+                                            valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),//this.handleValueHelp.bind(this),
+                                            showSuggestion: true,
+                                            suggestionItems: {
+                                                path: 'onSugg' + ci.ColumnName + '>/',
+                                                length: 10000,
+                                                template: new sap.ui.core.ListItem({
+                                                    key: '{onSugg' + ci.ColumnName + '>Item}',
+                                                    text: '{onSugg' + ci.ColumnName + '>Desc}',
+                                                    additionalText: '{onSugg' + ci.ColumnName + '>Item}'
+                                                }),
+                                                templateShareable: false
+                                            },
+                                            maxSuggestionWidth: "160px",
+                                            change: this.onInputLiveChangeSuggestion.bind(this)
                                         }));
                                     } else if (sColumnType === "DATETIME") {
                                         col.setTemplate(new sap.m.DatePicker({
-                                            // id: "ipt" + ci.name,
+                                            id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                             value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
                                             displayFormat: "short",
                                             change: "handleChange",
@@ -1575,7 +1872,7 @@ sap.ui.define([
                                         }));
                                     } else if (sColumnType === "NUMBER") {
                                         col.setTemplate(new sap.m.Input({
-                                            // id: "ipt" + ci.name,
+                                            id: "col"+ me._tblOnRowEditincCount +"-" + sColumnName,
                                             type: sap.m.InputType.Number,
                                             value: "{path:'" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "', type:'sap.ui.model.type.Decimal', formatOptions:{ minFractionDigits:" + null + ", maxFractionDigits:" + null + " }, constraints:{ precision:" + ci.Decimal + ", scale:" + null + " }}",
 
@@ -1597,6 +1894,90 @@ sap.ui.define([
                     });
                 }
             },
+
+            formatValueHelp: function(sValue, sPath, sKey, sText, sFormat) {
+                if(this.getView().getModel(sPath) !== undefined){
+                    if(this.getView().getModel(sPath).getData().length > 0){
+                        var oValue = this.getView().getModel(sPath).getData().filter(v => v[sKey] === sValue);
+                        if (oValue && oValue.length > 0) {
+                            if (sFormat === "Value") {
+                                return oValue[0][sText];
+                            }
+                            else if (sFormat === "ValueKey") {
+                                return oValue[0][sText] + " (" + sValue + ")";
+                            }
+                            else if (sFormat === "KeyValue") {
+                                return sValue + " (" + oValue[0][sText] + ")";
+                            }
+                            else {
+                                return sValue;
+                            }
+                        }
+                        else return sValue;
+                    }else return sValue;
+                }
+                
+            },
+
+            onInputLiveChangeSuggestion: async function(oEvent){
+                var oSource = oEvent.getSource();
+                var isInvalid = !oSource.getSelectedKey() && oSource.getValue().trim();
+                oSource.setValueState(isInvalid ? "Error" : "None");
+                oSource.setValueStateText("Invalid Entry");
+
+                if(oSource.getSuggestionItems().length > 0){
+                    oSource.getSuggestionItems().forEach(item => {
+                        if (item.getProperty("key") === oSource.getSelectedKey() || item.getProperty("key") === oSource.getValue().trim()) {
+                            isInvalid = false;
+                            oSource.setValueState(isInvalid ? "Error" : "None");
+                        }
+                        if(oSource.getValue().trim() === item.getProperty("key")){
+
+                            oSource.setSelectedKey(item.getProperty("key"));
+                            isInvalid = false;
+                            oSource.setValueState(isInvalid ? "Error" : "None");
+                        }
+                    })
+                }else{
+                    isInvalid = true;
+                    oSource.setValueState(isInvalid ? "Error" : "None");
+                    oSource.setValueStateText("Invalid Entry");
+                }
+
+                var fieldIsMandatory = oEvent.getSource().getBindingInfo("value").mandatory === undefined ? false : oEvent.getSource().getBindingInfo("value").mandatory;
+                if (fieldIsMandatory) {
+                    if (oEvent.getParameters().value === "") {
+                        isInvalid = true;
+                        oSource.setValueState(isInvalid ? "Error" : "None");
+                        oEvent.getSource().setValueStateText("Required Field");
+                    }
+                }
+                if (isInvalid) {
+                    this._validationErrors.push(oEvent.getSource().getId());
+                }else {
+                    if(oEvent.getSource().getParent().getId().includes("createStyleIOTbl")){
+                        var oInput = oEvent.getSource();
+                        var oCell = oInput.getParent();
+                        // var oRow = oCell.getBindingContext().getObject();
+                        var sPath = oCell.getBindingContext().getPath();
+                        var sRowPath = sPath == undefined ? null :"/"+ sPath.split("/")[2];
+                        var sCol = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel("CrtStyleIOData").setProperty(sRowPath + "/" + sCol, oSource.getSelectedKey())
+                    }else{
+                        var sModel = oSource.getBindingInfo("value").parts[0].model;
+                        var sPath = oSource.getBindingInfo("value").parts[0].path;
+                        this.getView().getModel(sModel).setProperty(sPath, oSource.getSelectedKey());
+                    }
+                    
+
+                    this._validationErrors.forEach((item, index) => {
+                        if (item === oEvent.getSource().getId()) {
+                            this._validationErrors.splice(index, 1)
+                        }
+                    })
+                }
+            },
+
             onInputLiveChange: function (oEvent) {
                 if (oEvent.getSource().getBindingInfo("value").mandatory) {
                     if (oEvent.getParameters().value === "") {
@@ -2273,6 +2654,268 @@ sap.ui.define([
                 oEvent.getSource().getBinding("items").filter([oFilter]);
             },
             //Handle Value Help Not Used
+
+            getColumnProp: async function() {
+                var sPath = jQuery.sap.getModulePath("zuisaldoc2.zuisaldoc2", "/model/columns.json");
+    
+                var oModelColumns = new JSONModel();
+                await oModelColumns.loadData(sPath);
+    
+                this._tblColumns = oModelColumns.getData();
+                this._oModelColumns = oModelColumns.getData();
+            },
+
+            onSuggestionItems: async function(){
+                var me = this;
+                var vSBU = this._sbu;
+
+                var oModel = this.getOwnerComponent().getModel();
+                var oModelFilter = this.getOwnerComponent().getModel('ZVB_3DERP_SALDOC_FILTERS_CDS');
+                var oModel3DERP = this.getOwnerComponent().getModel('ZGW_3DERP_SH_SRV');
+
+                //SEASONCD
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SEASON_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.SEASONCD;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSEASONCD");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //WEAVETYP
+                await new Promise((resolve, reject) => {
+                    oModel3DERP.setHeaders({
+                        attribtyp: "WVTYP"
+                    });
+                    oModel3DERP.read('/AttribCode2Set', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.Attribcd;
+                                item.Desc = item.Desc1;
+                            })
+                            me.getView().setModel(new JSONModel(data.results),"onSuggWEAVETYP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //PRODUCTTYP
+                await new Promise((resolve, reject) => {
+                    oModel.read('/PRODUCTTYPvhSet', {
+                        urlParameters: {
+                            "$filter": "SBU eq '" + vSBU + "'"
+                        },
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.PRODTYP;
+                                item.Desc = item.DESC1;
+                            })
+                            me.getView().setModel(new JSONModel(data.results),"onSuggPRODUCTTYP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //STYLECAT
+                await new Promise((resolve, reject) => {
+                    oModel3DERP.setHeaders({
+                        sbu: vSBU
+                    });
+                    oModel3DERP.read('/StyleCatSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.Stylcat;
+                                item.Desc = item.Desc1;
+                            });
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSTYLECAT");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //SIZEGRP
+                await new Promise((resolve, reject) => {
+                    oModel3DERP.read('/SizeGrpSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.AttribGrp;
+                                // item.Desc = item.Desc1;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSIZEGRP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //SALESGRP
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_SALESGRP_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.SALESGRP;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggSALESGRP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //CUSTSOLDTO
+                // var custGrp = this.getView().byId("CUSTGRP").getValue();
+                // if (custGrp === "" || custGrp === null || custGrp === undefined) {
+                //     this.getView().byId("CUSTGRP").setValueState("Error");
+                //     this.getView().byId("CUSTGRP").setValueStateText("Required Field!");
+                //     MessageBox.error("Please Select Customer Group First!");
+                //     return;
+                // } else {
+                //     await new Promise((resolve, reject) => {
+                //         oModel3DERP.setHeaders({
+                //             sbu: this._sbu
+                //         });
+                //         oModel3DERP.read('/SoldToCustSet', {
+                //             success: function (data, response) {
+                //                 var dataResult = [];
+                //                 data.results.forEach(item => {
+                //                     if (custGrp === item.Custgrp) {
+                //                         item.Item = item.Custno;
+                //                         item.Desc = item.Desc1;
+                //                         dataResult.push(item)
+                //                     }
+                //                 })
+
+                //                 valueHelpObjects = dataResult;
+                //                 title = "Sold-to Customer"
+                //                 resolve();
+                //             },
+                //             error: function (err) {
+                //                 resolve();
+                //             }
+                //         });
+                //     });
+
+                // }
+                //CUSTGRP
+                await new Promise((resolve, reject) => {
+                    oModelFilter.read('/ZVB_3DERP_CUSTGRP_SH', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.CUSTGRP;
+                                item.Desc = item.DESCRIPTION;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggCUSTGRP");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //UOM
+                await new Promise((resolve, reject) => {
+                    oModel.read('/UOMvhSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.MSEHI;
+                                item.Desc = item.MSEHL;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggUOM");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //IOTYPE
+                await new Promise((resolve, reject) => {
+                    oModel.read('/IOTYPvhSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.IOTYPE;
+                                item.Desc = item.DESC1;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggIOTYPE");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+                //PRODSCEN
+                await new Promise((resolve, reject) => {
+                    oModel.read('/PRODSCENvhSet', {
+                        success: function (data, response) {
+                            data.results.forEach(item => {
+                                item.Item = item.PRODSCEN;
+                                item.Desc = item.DESC1;
+                            })
+
+                            me.getView().setModel(new JSONModel(data.results),"onSuggPRODSCEN");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+
+            },
+
+            onSuggCustSoldTo: async function(oEvent){
+                var me = this;
+                var oModel3DERP = this.getOwnerComponent().getModel('ZGW_3DERP_SH_SRV');
+                var oSource = oEvent.getSource();
+                var sRowPath = oSource.oParent.getBindingContext().sPath;
+                var vFieldVal = oEvent.getSource().oParent.oParent.getModel().getProperty(sRowPath + "/CUSTGRP");
+
+                await new Promise((resolve, reject) => {
+                    oModel3DERP.setHeaders({
+                        sbu: this._sbu
+                    });
+                    oModel3DERP.read('/SoldToCustSet', {
+                        success: function (data, response) {
+                            var dataResult = [];
+                            data.results.forEach(item => {
+                                if (vFieldVal === item.Custgrp) {
+                                    item.Item = item.Custno;
+                                    item.Desc = item.Desc1;
+                                    dataResult.push(item)
+                                }
+                            })
+                            me.getView().setModel(new JSONModel(dataResult),"onSuggCUSTSOLDTO");
+                            resolve();
+                        },
+                        error: function (err) {
+                            resolve();
+                        }
+                    });
+                });
+            },
 
             onTableResize: function(oEvent){
                 var event = oEvent.getSource();

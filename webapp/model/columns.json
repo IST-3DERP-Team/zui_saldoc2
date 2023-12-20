@@ -93,6 +93,83 @@
             }
         }
     ],
+    "createStyleIOTbl": [
+        {"ColumnName": "SEASONCD", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSEASONCD", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSEASONCD>/", "text": "{onSuggSEASONCD>Item}", "additionalText": "{onSuggSEASONCD>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_seasoncd"
+            }
+        },
+        {"ColumnName": "WEAVETYP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggWEAVETYP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggWEAVETYP>/", "text": "{onSuggWEAVETYP>Item}", "additionalText": "{onSuggWEAVETYP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_WEAVETYP"
+            }
+        },
+        {"ColumnName": "PRODUCTTYP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggPRODUCTTYP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggPRODUCTTYP>/", "text": "{onSuggPRODUCTTYP>Item}", "additionalText": "{onSuggPRODUCTTYP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_producttyp"
+            }
+        },
+        {"ColumnName": "STYLECAT", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSTYLECAT", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSTYLECAT>/", "text": "{onSuggSTYLECAT>Item}", "additionalText": "{onSuggSTYLECAT>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_STYLECAT"
+            }
+        },
+        {"ColumnName": "SIZEGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSIZEGRP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSIZEGRP>/", "text": "{onSuggSIZEGRP>Item}", "additionalText": "{onSuggSIZEGRP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_SIZEGRP"
+            }
+        },
+        {"ColumnName": "SALESGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggSALESGRP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggSALESGRP>/", "text": "{onSuggSALESGRP>Item}", "additionalText": "{onSuggSALESGRP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_salesgrp"
+            }
+        },
+        {"ColumnName": "CUSTGRP", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCUSTGRP", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCUSTGRP>/", "text": "{onSuggCUSTGRP>Item}", "additionalText": "{onSuggCUSTGRP>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_custgrp"
+            }
+        },
+        {"ColumnName": "UOM", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggUOM", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggUOM>/", "text": "{onSuggUOM>Item}", "additionalText": "{onSuggUOM>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_uom"
+            }
+        },
+        {"ColumnName": "IOTYPE", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggIOTYPE", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggIOTYPE>/", "text": "{onSuggIOTYPE>Item}", "additionalText": "{onSuggIOTYPE>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_IOTYPE"
+            }
+        },
+        {"ColumnName": "PRODSCEN", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggPRODSCEN", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggPRODSCEN>/", "text": "{onSuggPRODSCEN>Item}", "additionalText": "{onSuggPRODSCEN>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_PRODSCEN"
+            }
+        },
+        {"ColumnName": "CUSTSOLDTO", "TextFormatMode": "ValueKey",
+            "ValueHelp": {"show": true, "items": {"path": "onSuggCUSTSOLDTO", "value": "Item", "text": "Desc"},
+                "SuggestionItems": {"path": "onSuggCUSTSOLDTO>/", "text": "{onSuggCUSTSOLDTO>Item}", "additionalText": "{onSuggCUSTSOLDTO>Desc}", "maxSuggestionWidth": "300px" },
+                "columns": "tvh_CUSTSOLDTO"
+            }
+        }
+
+    ],
+    "tvh_CUSTSOLDTO": [
+        {"ColumnName": "Custno", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": false, "Value": false},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Desc1", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": true, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Custgrp", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
     "tvh_salesdoctyp": [
         {"ColumnName": "SALESDOCTYP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
         {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
@@ -164,7 +241,9 @@
         {"ColumnName": "SEASONCD", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
         {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
         {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
-        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "SBU", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "DESC2", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
     ],
     "tvh_uom": [
         {"ColumnName": "UOM", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
@@ -182,6 +261,37 @@
         {"ColumnName": "PRODUCTTYP", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": false},
         {"ColumnName": "DESCRIPTION", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
         {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
-        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "SBU", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_WEAVETYP": [
+        {"ColumnName": "Attribcd", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc1", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Valuetyp", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Valunit", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Attribgrp", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Attribtyp", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_STYLECAT": [
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true},
+        {"ColumnName": "Desc1", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Desc2", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true},
+        {"ColumnName": "Stylcat", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_SIZEGRP": [
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": true, "Value": true},
+        {"ColumnName": "AttribGrp", "DataType": "STRING", "ColumnWidth": "300px", "Visible": false, "Key": false, "Value": true}
+    ],
+    "tvh_IOTYPE": [
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
+    ],
+    "tvh_PRODSCEN": [
+        {"ColumnName": "Item", "DataType": "STRING", "ColumnWidth": "100px", "Visible": true, "Key": true, "Value": true},
+        {"ColumnName": "Desc", "DataType": "STRING", "ColumnWidth": "300px", "Visible": true, "Key": false, "Value": true}
     ]
 }
