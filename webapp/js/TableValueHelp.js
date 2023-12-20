@@ -265,6 +265,24 @@ sap.ui.define([
         handleTableValueHelp: async function (oEvent) {
             var me = this;
             var oSource = oEvent.getSource();
+
+            //extra code and not included in this standard code
+            if(oEvent.getSource().getParent().getId().includes("createStyleIOTbl")){
+                if(oSource.getId().includes("CUSTSOLDTO")){
+                    var sRowPath = oSource.oParent.getBindingContext().sPath;
+                    var oSource = oEvent.getSource();
+                    var vFieldVal = oEvent.getSource().oParent.oParent.getModel().getProperty(sRowPath + "/CUSTGRP");
+                    if(vFieldVal === undefined || vFieldVal === "" || vFieldVal === null){
+                        oEvent.getSource().setValue("");
+                        MessageBox.error("Customer Group is Required!");
+                        // MessageBox.error(this.getView().getModel("captionMsg").getData()["INFO_PURORG_REQUIRED"]);
+                        return;
+                    }else{
+                        await this.onSuggCustSoldTo(oEvent);
+                    }
+                }
+            }
+
             this._inputSource = oSource;
             this._inputId = oSource.getId();
             this._inputValue = oSource.getValue();

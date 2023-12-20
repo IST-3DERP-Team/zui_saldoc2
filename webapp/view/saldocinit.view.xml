@@ -79,7 +79,7 @@
                     </smartfilterbar:controlConfiguration>
 
                     <smartfilterbar:controlConfiguration>
-                        <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false" displayBehaviour ="idOnly">
+                        <!-- <smartfilterbar:ControlConfiguration key="SEASONCD" groupId="_BASIC" label="{i18n>SEASONCD}" preventInitialDataFetchInValueHelpDialog="false" displayBehaviour ="idOnly">
                             <smartfilterbar:customControl>
                                 <ComboBox id="cboxSEASON"
                                     items="{
@@ -87,6 +87,37 @@
                                     }">
                                     <core:Item key="{seasonSource>SEASONCD}" text="{seasonSource>SEASONCD} - {seasonSource>DESCRIPTION}" />
                                 </ComboBox>       
+                            </smartfilterbar:customControl>
+                        </smartfilterbar:ControlConfiguration> -->
+                        <smartfilterbar:ControlConfiguration id="SEASONCD" label="{i18n>SEASONCD}" key="SEASONCD" groupId="_BASIC" preventInitialDataFetchInValueHelpDialog="false"> 
+                            <smartfilterbar:customControl>
+                                <MultiInput id="multiInputSEASONCD"
+                                    change="onCustomSmartFilterValueHelpChange"
+                                    valueHelpRequest=".onCustomSmartFilterValueHelp"
+                                    tokenUpdate="onCustomSmartFilterValueHelpTokenUpdate"
+                                    suggestionRows="{
+                                        path: 'seasonCDSHSource>/results',
+                                        sorter: { path: 'SEASONCD' },
+                                        length: 1000,
+                                        templateShareable: false
+                                    }">
+                                    <suggestionColumns>
+                                        <Column>
+                                            <Label text="Season"/>
+                                        </Column>
+                                        <!-- <Column>
+                                            <Label text="Description"/>
+                                        </Column> -->
+                                    </suggestionColumns>
+                                    <suggestionRows>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Label text="{seasonCDSHSource>SEASONCD}" />
+                                                <Label text="{seasonCDSHSource>DESCRIPTION}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </suggestionRows>
+                                </MultiInput>
                             </smartfilterbar:customControl>
                         </smartfilterbar:ControlConfiguration>
                     </smartfilterbar:controlConfiguration>
