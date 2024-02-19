@@ -355,7 +355,7 @@ sap.ui.define([
             setSmartFilterModel: function () {
                 //Model StyleHeaderFilters is for the smartfilterbar
                 var oModel = this.getOwnerComponent().getModel("ZVB_3DERP_SALDOC_FILTERS_CDS");
-                var oSmartFilter = this.getView().byId("smartFilterBar");
+                var oSmartFilter = this.getView().byId("SmartFilterBar");
                 oSmartFilter.setModel(oModel);
 
                 // oModel.read("/ZVB_3DERP_VENDOR_SH", {
@@ -655,10 +655,10 @@ sap.ui.define([
                 var oColumnsData;
                 var oData;
 
-                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                var aFilters = this.getView().byId("SmartFilterBar").getFilters();
 
-                if (this.getView().byId("smartFilterBar")) {
-                    var oCtrl = this.getView().byId("smartFilterBar").determineControlByName("SEASONCD");
+                if (this.getView().byId("SmartFilterBar")) {
+                    var oCtrl = this.getView().byId("SmartFilterBar").determineControlByName("SEASONCD");
     
                     if (oCtrl) {
                         var aCustomFilter = [];
@@ -2023,7 +2023,7 @@ sap.ui.define([
                 var oOrder = this.getView().byId("orderNumber");
                 var oShipped = this.getView().byId("shippedNumber");
 
-                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                var aFilters = this.getView().byId("SmartFilterBar").getFilters();
 
                 this._Model.read("/SalDocStatsSet", {
                     filters: aFilters,
@@ -2042,7 +2042,7 @@ sap.ui.define([
                 var oOrder = this.getView().byId("orderNumber");
                 var oShipped = this.getView().byId("shippedNumber");
 
-                var aFilters = this.getView().byId("smartFilterBar").getFilters();
+                var aFilters = this.getView().byId("SmartFilterBar").getFilters();
                 // var lv_updatedDateFilter = new sap.ui.model.Filter({
                 //     path: "SBU",
                 //     operator: sap.ui.model.FilterOperator.EQ,
@@ -2923,10 +2923,10 @@ sap.ui.define([
 
                 var vFullScreen = oEvent.getSource().data("Max") === "1" ? true : false;
                 if(!this._tableFullScreenRender){
-                    this.byId("smartFilterBar").setFilterBarExpanded(!vFullScreen);
+                    this.byId("SmartFilterBar").setFilterBarExpanded(!vFullScreen);
                     this._tableFullScreenRender = true;
                 }else{
-                    this.byId("smartFilterBar").setFilterBarExpanded(vFullScreen);
+                    this.byId("SmartFilterBar").setFilterBarExpanded(vFullScreen);
                     this._tableFullScreenRender = false;
                 }
             },

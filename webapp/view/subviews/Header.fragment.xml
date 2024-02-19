@@ -37,7 +37,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'SALESDOCTYP'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/SALESDOCTYP}" 
                                         valueStateText="Required"
@@ -47,7 +47,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggSalDocTyp>Item}" text="{onSuggSalDocTyp>Desc}" additionalText="{onSuggSalDocTyp>Item}" />
+                                                <core:ListItem key="{onSuggSalDocTyp>Item}" text="{onSuggSalDocTyp>Desc} ({onSuggSalDocTyp>Item})" additionalText="{onSuggSalDocTyp>Item}" />
                                             </suggestionItems>
                                     </Input>
                                     <Input id="SALESDOCNO" value="{path: 'headerData>/SALESDOCNO', mandatory: 'SALESDOCNO'}" editable="{HeaderEditModeModel>/SALESDOCNO}" valueStateText="Required">
@@ -63,7 +63,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'SALESORG'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/SALESORG}" 
                                         valueStateText="Required"
@@ -73,7 +73,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggSalesOrg>Item}" text="{onSuggSalesOrg>Desc}" additionalText="{onSuggSalesOrg>Item}" />
+                                                <core:ListItem key="{onSuggSalesOrg>Item}" text="{onSuggSalesOrg>Desc} ({onSuggSalesOrg>Item})" additionalText="{onSuggSalesOrg>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -87,7 +87,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'CUSTGRP'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/CUSTGRP}" 
                                         valueStateText="Required"
@@ -97,7 +97,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggCustGrp>Item}" text="{onSuggCustGrp>Desc}" additionalText="{onSuggCustGrp>Item}" />
+                                                <core:ListItem key="{onSuggCustGrp>Item}" text="{onSuggCustGrp>Desc} ({onSuggCustGrp>Item})" additionalText="{onSuggCustGrp>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -111,7 +111,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'CUSTSOLDTO'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/CUSTSOLDTO}" 
                                         valueStateText="Required"
@@ -121,7 +121,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggCustSoldTo>Item}" text="{onSuggCustSoldTo>Desc}" additionalText="{onSuggCustSoldTo>Item}" />
+                                                <core:ListItem key="{onSuggCustSoldTo>Item}" text="{onSuggCustSoldTo>Desc} ({onSuggCustSoldTo>Item})" additionalText="{onSuggCustSoldTo>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -135,7 +135,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'CUSTBILLTO'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/CUSTBILLTO}" 
                                         valueStateText="Required"
@@ -145,7 +145,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggCustBillTo>Item}" text="{onSuggCustBillTo>Desc}" additionalText="{onSuggCustBillTo>Item}" />
+                                                <core:ListItem key="{onSuggCustBillTo>Item}" text="{onSuggCustBillTo>Desc} ({onSuggCustBillTo>Item})" additionalText="{onSuggCustBillTo>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -192,7 +192,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'PURTAXCD'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/PURTAXCD}" 
                                         valueStateText="Required"
@@ -202,7 +202,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggPurTaxCd>Item}" text="{onSuggPurTaxCd>Desc}" additionalText="{onSuggPurTaxCd>Item}" />
+                                                <core:ListItem key="{onSuggPurTaxCd>Item}" text="{onSuggPurTaxCd>Desc} ({onSuggPurTaxCd>Item})" additionalText="{onSuggPurTaxCd>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -226,7 +226,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggSalesTerm>Item}" text="{onSuggSalesTerm>Desc}" additionalText="{onSuggSalesTerm>Item}" />
+                                                <core:ListItem key="{onSuggSalesTerm>Item}" text="{onSuggSalesTerm>Desc} ({onSuggSalesTerm>Item})" additionalText="{onSuggSalesTerm>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -252,7 +252,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'CURRENCYCD'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/CURRENCYCD}" 
                                         valueStateText="Required"
@@ -262,7 +262,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggCurrencyCd>Item}" text="{onSuggCurrencyCd>Desc}" additionalText="{onSuggCurrencyCd>Item}" />
+                                                <core:ListItem key="{onSuggCurrencyCd>Item}" text="{onSuggCurrencyCd>Desc} ({onSuggCurrencyCd>Item})" additionalText="{onSuggCurrencyCd>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -276,7 +276,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'DSTCHAN'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/DSTCHAN}" 
                                         valueStateText="Required"
@@ -286,7 +286,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggDestChannel>Item}" text="{onSuggDestChannel>Desc}" additionalText="{onSuggDestChannel>Item}" />
+                                                <core:ListItem key="{onSuggDestChannel>Item}" text="{onSuggDestChannel>Desc} ({onSuggDestChannel>Item})" additionalText="{onSuggDestChannel>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -300,7 +300,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'DIVISION'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/DIVISION}" 
                                         valueStateText="Required"
@@ -310,7 +310,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggDivision>Item}" text="{onSuggDivision>Desc}" additionalText="{onSuggDivision>Item}" />
+                                                <core:ListItem key="{onSuggDivision>Item}" text="{onSuggDivision>Desc} ({onSuggDivision>Item})" additionalText="{onSuggDivision>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -324,7 +324,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'SALESGRP'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/SALESGRP}" 
                                         valueStateText="Required"
@@ -334,7 +334,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggSalesGrp>Item}" text="{onSuggSalesGrp>Desc}" additionalText="{onSuggSalesGrp>Item}" />
+                                                <core:ListItem key="{onSuggSalesGrp>Item}" text="{onSuggSalesGrp>Desc} ({onSuggSalesGrp>Item})" additionalText="{onSuggSalesGrp>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>
@@ -384,7 +384,7 @@
                                             formatter: '.formatValueHelp',
                                             mandatory: 'SEASONCD'
                                         }" 
-                                        textFormatMode="ValueKey"
+                                        textFormatMode="Value"
                                         showValueHelp="true" 
                                         editable="{HeaderEditModeModel>/SEASONCD}" 
                                         valueStateText="Required"
@@ -394,7 +394,7 @@
                                         maxSuggestionWidth="160px"
                                         change="onInputLiveChangeSuggestion">
                                             <suggestionItems>
-                                                <core:ListItem key="{onSuggSeasonCd>Item}" text="{onSuggSeasonCd>Desc}" additionalText="{onSuggSeasonCd>Item}" />
+                                                <core:ListItem key="{onSuggSeasonCd>Item}" text="{onSuggSeasonCd>Desc} ({onSuggSeasonCd>Item})" additionalText="{onSuggSeasonCd>Item}" />
                                             </suggestionItems>
                                     </Input>
                                 </f:fields>

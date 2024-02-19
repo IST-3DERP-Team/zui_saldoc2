@@ -8,7 +8,8 @@ sap.ui.define([
 
         return UIComponent.extend("zuisaldoc2.zuisaldoc2.Component", {
             metadata: {
-                manifest: "json"
+                manifest: "json",
+                config: { fullWidth: true }
             },
 
             /**
@@ -25,6 +26,18 @@ sap.ui.define([
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
+            },
+            
+            destroy: function () {
+
+                if (this.oRouteHandler) {
+
+                    this.oRouteHandler.destroy();
+
+                }
+
+                sap.ui.core.UIComponent.prototype.destroy.apply(this, arguments);
+
             }
         });
     }
