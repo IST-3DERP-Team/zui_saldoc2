@@ -1885,7 +1885,7 @@ sap.ui.define([
                     }
 
                 }
-                
+
                 if (this._validationErrors.length > 0) {
                     // MessageBox.error(this.getView().getModel("captionMsg").getData()["INFO_FILL_REQUIRED_FIELDS"]);
                     MessageBox.error("Please Fill Required Fields!");
@@ -2407,7 +2407,7 @@ sap.ui.define([
                                             },
                                             // value: "{path: '" + ci.ColumnName + "', mandatory: '" + ci.Mandatory + "'}",
                                             // maxLength: +ci.Length,
-                                            textFormatMode: 'ValueKey',
+                                            textFormatMode: 'Value',
                                             showValueHelp: true,
                                             valueHelpRequest: TableValueHelp.handleTableValueHelp.bind(this),//this.handleValueHelp.bind(this),
                                             showSuggestion: true,
@@ -2416,7 +2416,7 @@ sap.ui.define([
                                                 length: 10000,
                                                 template: new sap.ui.core.ListItem({
                                                     key: '{onSugg' + ci.ColumnName + '>Item}',
-                                                    text: '{onSugg' + ci.ColumnName + '>Desc}',
+                                                    text: '{onSugg' + ci.ColumnName + '>Desc} ({onSugg' + ci.ColumnName + '>Item})',
                                                     additionalText: '{onSugg' + ci.ColumnName + '>Item}'
                                                 }),
                                                 templateShareable: false
